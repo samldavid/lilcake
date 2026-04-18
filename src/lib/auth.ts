@@ -28,10 +28,43 @@ declare module "next-auth/jwt" {
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
-  providers: [
+  providers: [],
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id as string
+        token.role = user.role
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (token && session.user) {
+        session.user.id = token.id
+        session.user.role = token.role
+      }
+      return session
+    },
+  },
+  session: {
+    strategy: "jwt",
+    maxAge: 7 * 24 * 60 * 60, // 7 days
+  },
+  pages: {
+    signIn: "/login",
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+}
+
+const googleClientId = process.env.GOOGLE_CLIENT_ID
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET
+
+export const googleAuthEnabled = Boolean(googleClientId && googleClientSecret)
+
+if (googleAuthEnabled) {
+  authOptions.providers.push(
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      clientId: googleClientId!,
+      clientSecret: googleClientSecret!,
       // Map Google profiles to DB schema defaults
       profile(profile) {
         return {
@@ -41,9 +74,13 @@ export const authOptions: NextAuthOptions = {
           image: profile.picture,
           role: "CUSTOMER", // default role for OAuth
         }
-      }
-    }),
-    CredentialsProvider({
+      },
+    })
+  )
+}
+
+authOptions.providers.push(
+  CredentialsProvider({
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
@@ -78,30 +115,5 @@ export const authOptions: NextAuthOptions = {
           role: user.role,
         }
       },
-    }),
-  ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id as string
-        token.role = user.role
-      }
-      return token
-    },
-    async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.id
-        session.user.role = token.role
-      }
-      return session
-    },
-  },
-  session: {
-    strategy: "jwt",
-    maxAge: 7 * 24 * 60 * 60, // 7 days
-  },
-  pages: {
-    signIn: "/login",
-  },
-  secret: process.env.NEXTAUTH_SECRET,
-}
+    })
+)
