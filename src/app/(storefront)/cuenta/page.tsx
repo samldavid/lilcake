@@ -23,12 +23,27 @@ export default async function AccountPage() {
 
   const dbUser = await prisma.user.findUnique({
     where: { id: session.user.id },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      image: true,
+      phone: true,
+      address: true,
+      city: true,
       orders: {
         orderBy: { createdAt: "desc" },
-        include: {
-          items: {
-            select: { id: true },
+        select: {
+          id: true,
+          orderNumber: true,
+          createdAt: true,
+          status: true,
+          paymentStatus: true,
+          total: true,
+          _count: {
+            select: {
+              items: true,
+            },
           },
         },
       },
@@ -116,7 +131,7 @@ export default async function AccountPage() {
                       })}
                     </p>
                     <p className="text-sm text-lc-gray">
-                      {order.items.length} {order.items.length === 1 ? "articulo" : "articulos"}
+                      {order._count.items} {order._count.items === 1 ? "articulo" : "articulos"}
                     </p>
                   </div>
 

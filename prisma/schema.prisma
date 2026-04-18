@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ──────────────────────────────────────────────
@@ -28,6 +29,8 @@ model User {
   sessions      Session[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  @@index([role, createdAt])
 }
 
 model Account {
@@ -95,6 +98,9 @@ model Product {
   isFeatured     Boolean          @default(false)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
+
+  @@index([isActive, isFeatured, createdAt])
+  @@index([categoryId, isActive, createdAt])
 }
 
 model ProductImage {
@@ -104,6 +110,8 @@ model ProductImage {
   url       String
   altText   String?
   sortOrder Int     @default(0)
+
+  @@index([productId, sortOrder])
 }
 
 model ProductVariant {
@@ -117,6 +125,8 @@ model ProductVariant {
   priceOverride Float?      // Optional price override for this variant
   orderItems    OrderItem[]
   cartItems     CartItem[]
+
+  @@index([productId])
 }
 
 // ──────────────────────────────────────────────
@@ -163,6 +173,9 @@ model Order {
   notes           String?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
 }
 
 model OrderItem {
@@ -176,6 +189,8 @@ model OrderItem {
   productColor String?
   quantity    Int
   unitPrice   Float
+
+  @@index([orderId])
 }
 
 // ──────────────────────────────────────────────

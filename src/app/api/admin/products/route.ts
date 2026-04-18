@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import {
   adminProductPayloadSchema,
@@ -67,6 +68,10 @@ export async function POST(req: Request) {
         images: true,
       },
     })
+
+    revalidatePath("/")
+    revalidatePath("/productos")
+    revalidatePath(`/productos/${product.slug}`)
 
     return NextResponse.json(product, { status: 201 })
   } catch (error) {

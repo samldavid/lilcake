@@ -3,12 +3,11 @@ import {
   ProductCard,
   type ProductCardProduct,
 } from "@/components/storefront/ProductCard"
-import { prisma } from "@/lib/prisma"
+import { getFeaturedProducts } from "@/lib/storefront-data"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 
-// This page uses Server Components
-export const dynamic = "force-dynamic" // In a real app, you might want to revalidate every X hours
+export const revalidate = 60
 
 // Dummy products if DB is empty - same vibe as original, but adapted to LilCake
 const dummyProducts: ProductCardProduct[] = [
@@ -58,18 +57,7 @@ export default async function HomePage() {
   let featuredProducts: ProductCardProduct[] = []
   
   try {
-    featuredProducts = await prisma.product.findMany({
-      where: { isActive: true },
-      include: {
-        images: { orderBy: { sortOrder: 'asc' }, take: 1 },
-        category: { select: { name: true } }
-      },
-      orderBy: [
-        { isFeatured: 'desc' },
-        { createdAt: 'desc' }
-      ],
-      take: 4
-    })
+    featuredProducts = await getFeaturedProducts()
   } catch (error) {
     console.error("Error fetching products:", error)
   }

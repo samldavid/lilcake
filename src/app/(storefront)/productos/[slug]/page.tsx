@@ -1,12 +1,12 @@
-import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import { formatCOP } from "@/lib/utils"
 import { Badge } from "@/components/ui/Badge"
 import { AddToCartBtn } from "@/components/storefront/AddToCartBtn"
 import { ProductImageGallery } from "@/components/storefront/ProductImageGallery"
+import { getProductBySlug } from "@/lib/storefront-data"
 import Link from "next/link"
 
-export const dynamic = "force-dynamic"
+export const revalidate = 60
 
 export default async function ProductDetailPage({
   params,
@@ -15,16 +15,9 @@ export default async function ProductDetailPage({
 }) {
   const { slug } = await params
 
-  const product = await prisma.product.findUnique({
-    where: { slug: slug },
-    include: {
-      images: { orderBy: { sortOrder: 'asc' } },
-      variants: true,
-      category: true,
-    }
-  })
+  const product = await getProductBySlug(slug)
 
-  if (!product || !product.isActive) {
+  if (!product) {
     notFound()
   }
 
