@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { Prisma } from "@prisma/client"
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { Package, SearchX } from "lucide-react"
@@ -14,6 +15,36 @@ import {
   getPaymentStatusLabel,
 } from "@/lib/order-status"
 
+const accountPageUserSelect = {
+  id: true,
+  name: true,
+  email: true,
+  image: true,
+  phone: true,
+  address: true,
+  city: true,
+  orders: {
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      orderNumber: true,
+      createdAt: true,
+      status: true,
+      paymentStatus: true,
+      total: true,
+      _count: {
+        select: {
+          items: true,
+        },
+      },
+    },
+  },
+} satisfies Prisma.UserSelect
+
+type AccountPageUser = Prisma.UserGetPayload<{
+  select: typeof accountPageUserSelect
+}>
+
 export default async function AccountPage() {
   const session = await getServerSession(authOptions)
 
@@ -21,33 +52,9 @@ export default async function AccountPage() {
     redirect("/login?callbackUrl=/cuenta")
   }
 
-  const dbUser = await prisma.user.findUnique({
+  const dbUser: AccountPageUser | null = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      image: true,
-      phone: true,
-      address: true,
-      city: true,
-      orders: {
-        orderBy: { createdAt: "desc" },
-        select: {
-          id: true,
-          orderNumber: true,
-          createdAt: true,
-          status: true,
-          paymentStatus: true,
-          total: true,
-          _count: {
-            select: {
-              items: true,
-            },
-          },
-        },
-      },
-    },
+    select: accountPageUserSelect,
   })
 
   if (!dbUser) {
