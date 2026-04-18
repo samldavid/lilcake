@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import {
   adminProductPayloadSchema,
@@ -57,7 +58,8 @@ export async function PUT(
 
     const existingProduct = await prisma.product.findUnique({
       where: { id },
-      include: {
+      select: {
+        slug: true,
         variants: {
           select: { id: true },
         },
@@ -155,6 +157,16 @@ export async function PUT(
         },
       })
     })
+
+    if (updatedProduct?.slug) {
+      revalidatePath("/")
+      revalidatePath("/productos")
+      revalidatePath(`/productos/${updatedProduct.slug}`)
+
+      if (existingProduct.slug !== updatedProduct.slug) {
+        revalidatePath(`/productos/${existingProduct.slug}`)
+      }
+    }
 
     return NextResponse.json(updatedProduct)
   } catch (error) {

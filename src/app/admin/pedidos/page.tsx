@@ -14,11 +14,17 @@ export const dynamic = "force-dynamic"
 
 export default async function AdminOrdersPage() {
   const orders = await prisma.order.findMany({
-    include: {
+    select: {
+      id: true,
+      orderNumber: true,
+      createdAt: true,
+      shippingName: true,
+      paymentMethod: true,
+      paymentStatus: true,
+      status: true,
+      total: true,
       user: { select: { name: true, email: true } },
-      items: {
-        select: { id: true },
-      },
+      _count: { select: { items: true } },
     },
     orderBy: { createdAt: "desc" },
   })
@@ -116,7 +122,7 @@ export default async function AdminOrdersPage() {
                         {formatCOP(order.total)}
                       </div>
                       <div className="text-xs text-lc-gray mt-0.5">
-                        {order.items.length} items
+                        {order._count.items} items
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">

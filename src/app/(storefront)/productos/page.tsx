@@ -1,13 +1,15 @@
-import { Prisma } from "@prisma/client"
-import { prisma } from "@/lib/prisma"
 import {
   ProductCard,
   type ProductCardProduct,
 } from "@/components/storefront/ProductCard"
+import {
+  getCatalogProducts,
+  getStorefrontCategories,
+} from "@/lib/storefront-data"
 import Link from "next/link"
 import { Search } from "lucide-react"
 
-export const dynamic = "force-dynamic"
+export const revalidate = 60
 
 export default async function ProductosPage({
   searchParams,
@@ -18,30 +20,11 @@ export default async function ProductosPage({
   const categorySlug = typeof resolvedParams.categoria === "string" ? resolvedParams.categoria : undefined
   const searchQuery = typeof resolvedParams.q === "string" ? resolvedParams.q : undefined
 
-  // Build Prisma query
-  const query: Prisma.ProductWhereInput = { isActive: true }
-  
-  if (categorySlug) {
-    query.category = { slug: categorySlug }
-  }
-  
-  if (searchQuery) {
-    query.name = { contains: searchQuery } // Note: SQLite contains is case-sensitive, but fine for MVP
-  }
-
-  const products = await prisma.product.findMany({
-    where: query,
-    include: {
-      images: { orderBy: { sortOrder: 'asc' }, take: 1 },
-      category: { select: { name: true } }
-    },
-    orderBy: { createdAt: 'desc' }
-  })
+  const [products, categories] = await Promise.all([
+    getCatalogProducts(categorySlug, searchQuery),
+    getStorefrontCategories(),
+  ])
   const typedProducts: ProductCardProduct[] = products
-
-  const categories = await prisma.category.findMany({
-    orderBy: { sortOrder: 'asc' }
-  })
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in">

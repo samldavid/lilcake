@@ -6,14 +6,15 @@ import { formatCOP } from "@/lib/utils"
 export const dynamic = "force-dynamic"
 
 export default async function AdminDashboard() {
-  // Fetch basic stats
-  const productsCount = await prisma.product.count()
-  const ordersCount = await prisma.order.count()
-  const usersCount = await prisma.user.count({ where: { role: "CUSTOMER" } })
-  const salesResult = await prisma.order.aggregate({
-    _sum: { total: true },
-    where: { status: { notIn: ["CANCELLED", "PENDING"] } }
-  })
+  const [productsCount, ordersCount, usersCount, salesResult] = await Promise.all([
+    prisma.product.count(),
+    prisma.order.count(),
+    prisma.user.count({ where: { role: "CUSTOMER" } }),
+    prisma.order.aggregate({
+      _sum: { total: true },
+      where: { status: { notIn: ["CANCELLED", "PENDING"] } },
+    }),
+  ])
   const totalSales = salesResult._sum.total || 0
 
   return (
