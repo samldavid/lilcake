@@ -14,6 +14,39 @@ import {
   getPaymentStatusLabel,
 } from "@/lib/order-status"
 
+type CustomerOrderItem = {
+  id: string
+  productName: string
+  productSize: string | null
+  productColor: string | null
+  quantity: number
+  unitPrice: number
+  variant: {
+    product: {
+      images: Array<{
+        url: string
+      }>
+    }
+  }
+}
+
+type CustomerOrder = {
+  id: string
+  orderNumber: string
+  createdAt: Date
+  status: string
+  paymentStatus: string
+  total: number
+  paymentMethod: string
+  shippingName: string
+  shippingAddress: string
+  shippingCity: string
+  shippingPhone: string
+  trackingNumber: string | null
+  notes: string | null
+  items: CustomerOrderItem[]
+}
+
 export default async function CustomerOrderDetailPage({
   params,
   searchParams,
@@ -29,7 +62,7 @@ export default async function CustomerOrderDetailPage({
 
   const { id } = await params
   const resolvedSearchParams = await searchParams
-  const order = await prisma.order.findFirst({
+  const order: CustomerOrder | null = await prisma.order.findFirst({
     where: {
       id,
       userId: session.user.id,
