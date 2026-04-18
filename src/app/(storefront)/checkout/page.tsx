@@ -8,6 +8,8 @@ import { formatCOP } from "@/lib/utils"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 
+const stripeEnabled = process.env.NEXT_PUBLIC_STRIPE_ENABLED === "true"
+
 function CheckoutPageContent() {
   const { items, total, clearCart } = useCart()
   const router = useRouter()
@@ -25,7 +27,7 @@ function CheckoutPageContent() {
     shippingAddress: "",
     shippingCity: "",
     shippingPhone: "",
-    paymentMethod: "STRIPE",
+    paymentMethod: stripeEnabled ? "STRIPE" : "WHATSAPP",
   })
 
   const successParam = searchParams.get("success") === "true"
@@ -293,28 +295,30 @@ function CheckoutPageContent() {
                 2. Metodo de Pago
               </h2>
               <div className="space-y-4">
-                <label
-                  className={`block p-4 border rounded-xl cursor-pointer transition-colors ${formData.paymentMethod === "STRIPE" ? "border-lc-purple bg-lc-purple/10" : "border-lc-border bg-lc-darker hover:border-lc-gray"}`}
-                >
-                  <div className="flex items-center">
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="STRIPE"
-                      checked={formData.paymentMethod === "STRIPE"}
-                      onChange={() =>
-                        setFormData({ ...formData, paymentMethod: "STRIPE" })
-                      }
-                      className="w-5 h-5 text-lc-purple bg-lc-black border-lc-gray focus:ring-lc-purple focus:ring-offset-lc-black"
-                    />
-                    <span className="ml-4 font-bold text-lc-white">
-                      Tarjeta de Credito / Debito (Stripe)
-                    </span>
-                  </div>
-                  <p className="ml-9 mt-1 text-sm text-lc-gray">
-                    Pago seguro e inmediato.
-                  </p>
-                </label>
+                {stripeEnabled && (
+                  <label
+                    className={`block p-4 border rounded-xl cursor-pointer transition-colors ${formData.paymentMethod === "STRIPE" ? "border-lc-purple bg-lc-purple/10" : "border-lc-border bg-lc-darker hover:border-lc-gray"}`}
+                  >
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        name="payment"
+                        value="STRIPE"
+                        checked={formData.paymentMethod === "STRIPE"}
+                        onChange={() =>
+                          setFormData({ ...formData, paymentMethod: "STRIPE" })
+                        }
+                        className="w-5 h-5 text-lc-purple bg-lc-black border-lc-gray focus:ring-lc-purple focus:ring-offset-lc-black"
+                      />
+                      <span className="ml-4 font-bold text-lc-white">
+                        Tarjeta de Credito / Debito (Stripe)
+                      </span>
+                    </div>
+                    <p className="ml-9 mt-1 text-sm text-lc-gray">
+                      Pago seguro e inmediato.
+                    </p>
+                  </label>
+                )}
 
                 <label
                   className={`block p-4 border rounded-xl cursor-pointer transition-colors ${formData.paymentMethod === "WHATSAPP" ? "border-lc-success bg-lc-success/10" : "border-lc-border bg-lc-darker hover:border-lc-gray"}`}
@@ -338,6 +342,11 @@ function CheckoutPageContent() {
                     Registramos la orden y te llevamos al chat para coordinar el pago.
                   </p>
                 </label>
+                {!stripeEnabled && (
+                  <div className="rounded-xl border border-lc-border border-dashed bg-lc-darker/60 p-4 text-sm text-lc-gray">
+                    Los pagos con Stripe estan desactivados por ahora en este entorno.
+                  </div>
+                )}
               </div>
             </div>
           </form>

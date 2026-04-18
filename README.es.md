@@ -14,9 +14,12 @@ LilCake es una tienda construida con Next.js que incluye:
 
 - Prisma se migro de SQLite a PostgreSQL con una configuracion lista para Supabase.
 - El repositorio ahora incluye historial de migraciones de Prisma, `prisma.config.ts` y scripts de base de datos para generar cliente, migrar, desplegar migraciones, poblar datos y abrir Studio.
+- Las instalaciones de dependencias ahora regeneran el cliente de Prisma automaticamente mediante `postinstall`, lo que ayuda a evitar builds rotos de `@prisma/client` despues de reinstalar paquetes.
 - Las consultas de productos y categorias del storefront se movieron a helpers cacheados con `unstable_cache`, y las mutaciones de productos ahora disparan `revalidatePath()` de forma selectiva.
 - Varias paginas del storefront y del admin ahora usan consultas Prisma con `select` mas acotado junto con nuevos indices para reducir payloads y mejorar busquedas de listados y detalles.
 - Los headers de seguridad ahora se definen en `next.config.ts`, mientras que `src/proxy.ts` queda enfocado en proteger rutas `/admin` y `/api/admin`.
+- Stripe ahora puede quedar desactivado por entorno: el checkout cae a WhatsApp, las rutas de Stripe inicializan el SDK de forma lazy y los endpoints de pago responden `503` hasta que Stripe se configure.
+- Las solicitudes no autorizadas a `/admin` y `/api/admin` ahora se reescriben como respuestas tipo `not-found`, para que el area administrativa quede menos expuesta a usuarios no administradores.
 - La guia de despliegue ahora refleja la configuracion actual con PostgreSQL/Supabase y documenta la limitacion de almacenamiento no persistente para uploads locales en Vercel.
 
 ## Configuracion local
@@ -26,6 +29,8 @@ LilCake es una tienda construida con Next.js que incluye:
 ```bash
 npm install
 ```
+
+Ahora `npm install` ejecuta `prisma generate` automaticamente. Si el cliente de Prisma vuelve a quedar desactualizado despues de reinstalar dependencias, deten el servidor dev y corre `npm run db:generate` una vez.
 
 2. Copia la plantilla de variables de entorno:
 
@@ -68,6 +73,7 @@ npm run dev
 - `STRIPE_SECRET_KEY`: llave privada de Stripe.
 - `STRIPE_PUBLISHABLE_KEY`: llave publica de Stripe.
 - `STRIPE_WEBHOOK_SECRET`: secreto del webhook de Stripe.
+- `NEXT_PUBLIC_STRIPE_ENABLED`: define `true` solo en los entornos donde quieras mostrar la opcion de checkout con Stripe.
 - `NEXT_PUBLIC_WHATSAPP_NUMBER`: numero de destino de WhatsApp.
 - `NEXT_PUBLIC_APP_URL`: URL publica usada por flujos del cliente.
 - `NEXT_PUBLIC_APP_NAME`: nombre visible de la app.
@@ -108,6 +114,7 @@ Notas importantes de conexion:
 - Para este repo, usa el Supavisor Transaction Pooler (`:6543` con `?pgbouncer=true`) en `DATABASE_URL` y el Session Pooler (`:5432`) en `DIRECT_URL`.
 - Si tu entorno soporta IPv6 o despues compras el add-on IPv4 de Supabase, `DIRECT_URL` puede apuntar al host directo.
 - Para Vercel/serverless mas adelante, manten `DATABASE_URL` en el Transaction Pooler. Opcionalmente puedes agregar `connection_limit=1` si ves presion de conexiones en serverless.
+- Si Stripe todavia no forma parte de ese entorno, manten `NEXT_PUBLIC_STRIPE_ENABLED=false` y deja desactivados los pagos hasta retomar ese rollout.
 - La ruta actual de subida de imagenes escribe archivos en `public/uploads/products`. Eso funciona localmente, pero el almacenamiento serverless de Vercel no es persistente. En produccion deberias mover uploads a Cloudinary, S3, Vercel Blob u otro object storage.
 
 ## Plan de migracion PostgreSQL

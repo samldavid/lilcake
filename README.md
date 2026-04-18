@@ -14,9 +14,12 @@ LilCake is a Next.js storefront with:
 
 - Prisma was migrated from SQLite to PostgreSQL with Supabase-ready connection guidance.
 - The repo now includes Prisma migration history, `prisma.config.ts`, and database scripts for generate, migrate, deploy, seed, and studio workflows.
+- Dependency installs now regenerate the Prisma client automatically through `postinstall`, which helps avoid stale `@prisma/client` builds after reinstalling packages.
 - Storefront product/category queries were extracted into cached data helpers with `unstable_cache`, while product mutations now trigger selective `revalidatePath()` calls.
 - Several storefront and admin pages now use narrower Prisma `select` queries plus new database indexes to reduce payload size and improve list/detail lookups.
 - Security headers now come from `next.config.ts`, while `src/proxy.ts` stays focused on protecting `/admin` and `/api/admin` routes.
+- Stripe can now stay disabled per environment: checkout falls back to WhatsApp, Stripe routes lazily initialize the SDK, and payment endpoints return `503` until Stripe is configured.
+- Unauthorized `/admin` and `/api/admin` requests are now rewritten to not-found style responses so the admin area stays less discoverable to non-admin visitors.
 - The deployment guide now reflects the current PostgreSQL/Supabase setup and documents the non-persistent local upload limitation on Vercel.
 
 ## Local setup
@@ -26,6 +29,8 @@ LilCake is a Next.js storefront with:
 ```bash
 npm install
 ```
+
+`npm install` now runs `prisma generate` automatically. If the Prisma client ever goes stale after reinstalling dependencies, stop the dev server and run `npm run db:generate` once.
 
 2. Copy the environment template:
 
@@ -68,6 +73,7 @@ npm run dev
 - `STRIPE_SECRET_KEY`: Stripe server key.
 - `STRIPE_PUBLISHABLE_KEY`: Stripe public key.
 - `STRIPE_WEBHOOK_SECRET`: Stripe webhook secret.
+- `NEXT_PUBLIC_STRIPE_ENABLED`: set to `true` only in environments where you want the Stripe checkout option to be visible.
 - `NEXT_PUBLIC_WHATSAPP_NUMBER`: WhatsApp destination number.
 - `NEXT_PUBLIC_APP_URL`: public app URL used by client flows.
 - `NEXT_PUBLIC_APP_NAME`: display name.
@@ -108,6 +114,7 @@ Important connection notes:
 - For this repo, use the Supavisor Transaction Pooler (`:6543` with `?pgbouncer=true`) in `DATABASE_URL` and the Session Pooler (`:5432`) in `DIRECT_URL`.
 - If your environment supports IPv6 or you buy the Supabase IPv4 add-on later, `DIRECT_URL` can point to the direct host instead.
 - For Vercel/serverless later, keep `DATABASE_URL` on the Transaction Pooler. You can optionally append `connection_limit=1` if you hit connection pressure in serverless.
+- If Stripe is not part of the current environment yet, keep `NEXT_PUBLIC_STRIPE_ENABLED=false` and leave Stripe payments disabled until the payment rollout resumes.
 - The current image upload route writes files into `public/uploads/products`. That works locally, but Vercel serverless storage is not persistent. For production, move uploads to Cloudinary, S3, Vercel Blob, or another object storage service.
 
 ## PostgreSQL migration plan

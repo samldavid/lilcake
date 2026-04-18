@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { stripe } from "@/lib/stripe"
+import { getStripe, isStripeEnabled } from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
 import {
   checkoutRequestSchema,
@@ -11,6 +11,13 @@ import { getServerSession } from "next-auth"
 
 export async function GET(req: Request) {
   try {
+    if (!isStripeEnabled()) {
+      return NextResponse.json(
+        { error: "Stripe no esta disponible en este entorno todavia." },
+        { status: 503 }
+      )
+    }
+
     const { searchParams } = new URL(req.url)
     const sessionId = searchParams.get("session_id")
 
@@ -21,6 +28,7 @@ export async function GET(req: Request) {
       )
     }
 
+    const stripe = getStripe()
     const checkoutSession = await stripe.checkout.sessions.retrieve(sessionId)
 
     if (!checkoutSession.metadata?.orderId) {
@@ -83,6 +91,13 @@ export async function POST(req: Request) {
   let pendingOrderId: string | undefined
 
   try {
+    if (!isStripeEnabled()) {
+      return NextResponse.json(
+        { error: "Stripe no esta disponible en este entorno todavia." },
+        { status: 503 }
+      )
+    }
+
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
@@ -121,6 +136,7 @@ export async function POST(req: Request) {
 
     const origin = new URL(req.url).origin
 
+    const stripe = getStripe()
     const checkoutSession = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: lineItems,

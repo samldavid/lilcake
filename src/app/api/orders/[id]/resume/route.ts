@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { stripe } from "@/lib/stripe"
+import { getStripe, isStripeEnabled } from "@/lib/stripe"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { buildOrderWhatsAppLink, type PreparedCheckoutItem } from "@/lib/checkout"
@@ -82,6 +82,13 @@ export async function POST(
       )
     }
 
+    if (!isStripeEnabled()) {
+      return NextResponse.json(
+        { error: "Stripe no esta disponible en este entorno todavia." },
+        { status: 503 }
+      )
+    }
+
     const origin = new URL(req.url).origin
     const lineItems = preparedItems.map((item) => ({
       price_data: {
@@ -95,6 +102,7 @@ export async function POST(
       quantity: item.quantity,
     }))
 
+    const stripe = getStripe()
     const checkoutSession = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: lineItems,
