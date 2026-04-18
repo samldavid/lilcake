@@ -25,6 +25,7 @@ model User {
   city          String?
   orders        Order[]
   cartItems     CartItem[]
+  cartVersion   Int       @default(0)
   accounts      Account[]
   sessions      Session[]
   createdAt     DateTime  @default(now())

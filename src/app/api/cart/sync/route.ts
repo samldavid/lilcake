@@ -13,44 +13,60 @@ export async function POST(req: Request) {
     const body = await req.json()
     const localItems = Array.isArray(body.items) ? body.items : []
     const mode = body.mode === "replace" ? "replace" : "merge"
+    const clientVersion =
+      Number.isInteger(body.version) && body.version >= 0 ? body.version : 0
 
     const userId = session.user.id
 
-    const dbItems = await prisma.cartItem.findMany({
-      where: { userId },
-      select: {
-        id: true,
-        variantId: true,
-        quantity: true,
-      },
-    })
-
-    const desiredItems = new Map<string, number>()
-
-    if (mode === "merge") {
-      dbItems.forEach((item) => {
-        desiredItems.set(item.variantId, item.quantity)
+    const serverVersion = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        select: { cartVersion: true },
       })
-    }
 
-    for (const item of localItems) {
-      if (!item?.variantId || typeof item.quantity !== "number" || item.quantity <= 0) {
-        continue
+      const currentVersion = user?.cartVersion ?? 0
+
+      if (clientVersion < currentVersion) {
+        return currentVersion
       }
+
+      const dbItems = await tx.cartItem.findMany({
+        where: { userId },
+        select: {
+          id: true,
+          variantId: true,
+          quantity: true,
+        },
+      })
+
+      const desiredItems = new Map<string, number>()
 
       if (mode === "merge") {
-        desiredItems.set(
-          item.variantId,
-          Math.max(desiredItems.get(item.variantId) ?? 0, item.quantity)
-        )
-      } else {
-        desiredItems.set(item.variantId, item.quantity)
+        dbItems.forEach((item) => {
+          desiredItems.set(item.variantId, item.quantity)
+        })
       }
-    }
 
-    const desiredEntries = [...desiredItems.entries()]
+      for (const item of localItems) {
+        if (
+          !item?.variantId ||
+          typeof item.quantity !== "number" ||
+          item.quantity <= 0
+        ) {
+          continue
+        }
 
-    await prisma.$transaction(async (tx) => {
+        if (mode === "merge") {
+          desiredItems.set(
+            item.variantId,
+            Math.max(desiredItems.get(item.variantId) ?? 0, item.quantity)
+          )
+        } else {
+          desiredItems.set(item.variantId, item.quantity)
+        }
+      }
+
+      const desiredEntries = [...desiredItems.entries()]
       const desiredVariantIds = desiredEntries.map(([variantId]) => variantId)
 
       await tx.cartItem.deleteMany({
@@ -66,8 +82,11 @@ export async function POST(req: Request) {
         const existing = dbItems.find((item) => item.variantId === variantId)
 
         if (existing) {
-          await tx.cartItem.update({
-            where: { id: existing.id },
+          await tx.cartItem.updateMany({
+            where: {
+              id: existing.id,
+              userId,
+            },
             data: { quantity },
           })
         } else {
@@ -80,6 +99,15 @@ export async function POST(req: Request) {
           })
         }
       }
+
+      if (clientVersion > currentVersion) {
+        await tx.user.update({
+          where: { id: userId },
+          data: { cartVersion: clientVersion },
+        })
+      }
+
+      return Math.max(clientVersion, currentVersion)
     })
 
     const freshDbItems = await prisma.cartItem.findMany({
@@ -112,7 +140,7 @@ export async function POST(req: Request) {
       stock: item.variant.stock
     }))
 
-    return NextResponse.json({ cart: mergedCart })
+    return NextResponse.json({ cart: mergedCart, version: serverVersion })
   } catch (error) {
     console.error("Cart sync error:", error)
     return NextResponse.json({ error: "Error de servidor" }, { status: 500 })

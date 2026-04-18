@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { getStripe, isStripeEnabled } from "@/lib/stripe"
+import {
+  getStripe,
+  getStripeProductImages,
+  getStripeUnitAmount,
+  isStripeEnabled,
+} from "@/lib/stripe"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { buildOrderWhatsAppLink, type PreparedCheckoutItem } from "@/lib/checkout"
@@ -90,14 +95,16 @@ export async function POST(
     }
 
     const origin = new URL(req.url).origin
+    const stripeCurrency = "cop"
+
     const lineItems = preparedItems.map((item) => ({
       price_data: {
-        currency: "cop",
+        currency: stripeCurrency,
         product_data: {
           name: `${item.productName}${item.productSize ? ` (Talla: ${item.productSize})` : ""}`,
-          images: item.image ? [item.image] : [],
+          images: getStripeProductImages(item.image, origin),
         },
-        unit_amount: Math.round(item.unitPrice),
+        unit_amount: getStripeUnitAmount(item.unitPrice, stripeCurrency),
       },
       quantity: item.quantity,
     }))

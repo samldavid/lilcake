@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server"
-import { getStripe, isStripeEnabled } from "@/lib/stripe"
+import {
+  getStripe,
+  getStripeProductImages,
+  getStripeUnitAmount,
+  isStripeEnabled,
+} from "@/lib/stripe"
 import { prisma } from "@/lib/prisma"
 import {
   checkoutRequestSchema,
   createPendingOrder,
+  finalizePaidOrder,
   prepareCheckoutItems,
 } from "@/lib/checkout"
 import { authOptions } from "@/lib/auth"
@@ -56,16 +62,7 @@ export async function GET(req: Request) {
     }
 
     if (checkoutSession.payment_status === "paid") {
-      const updatedOrder = await prisma.order.update({
-        where: { id: order.id },
-        data: {
-          paymentStatus: "PAID",
-          status: order.status === "PENDING" ? "CONFIRMED" : undefined,
-        },
-        select: {
-          orderNumber: true,
-        },
-      })
+      const updatedOrder = await finalizePaidOrder(order.id)
 
       return NextResponse.json({
         status: "paid",
@@ -121,20 +118,21 @@ export async function POST(req: Request) {
     const checkoutItems = await prepareCheckoutItems(payload.items)
     const order = await createPendingOrder(session.user.id, payload, checkoutItems)
     pendingOrderId = order.id
+    const origin = new URL(req.url).origin
+
+    const stripeCurrency = "cop"
 
     const lineItems = checkoutItems.map((item) => ({
       price_data: {
-        currency: "cop",
+        currency: stripeCurrency,
         product_data: {
           name: `${item.productName}${item.productSize ? ` (Talla: ${item.productSize})` : ""}`,
-          images: item.image ? [item.image] : [],
+          images: getStripeProductImages(item.image, origin),
         },
-        unit_amount: Math.round(item.unitPrice),
+        unit_amount: getStripeUnitAmount(item.unitPrice, stripeCurrency),
       },
       quantity: item.quantity,
     }))
-
-    const origin = new URL(req.url).origin
 
     const stripe = getStripe()
     const checkoutSession = await stripe.checkout.sessions.create({

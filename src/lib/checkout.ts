@@ -146,6 +146,104 @@ export async function createPendingOrder(
   })
 }
 
+export async function finalizePaidOrder(orderId: string) {
+  return prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUnique({
+      where: { id: orderId },
+      select: {
+        id: true,
+        userId: true,
+        orderNumber: true,
+        paymentStatus: true,
+        status: true,
+        notes: true,
+        items: {
+          select: {
+            variantId: true,
+            quantity: true,
+            productName: true,
+          },
+        },
+      },
+    })
+
+    if (!order) {
+      throw new Error("No encontramos la orden asociada al pago.")
+    }
+
+    if (order.paymentStatus === "PAID") {
+      return {
+        orderNumber: order.orderNumber,
+        paymentStatus: order.paymentStatus,
+        status: order.status,
+      }
+    }
+
+    const stockAlerts: string[] = []
+
+    for (const item of order.items) {
+      const updatedStock = await tx.productVariant.updateMany({
+        where: {
+          id: item.variantId,
+          stock: { gte: item.quantity },
+        },
+        data: {
+          stock: {
+            decrement: item.quantity,
+          },
+        },
+      })
+
+      if (updatedStock.count === 0) {
+        await tx.productVariant.update({
+          where: { id: item.variantId },
+          data: { stock: 0 },
+        })
+
+        stockAlerts.push(item.productName)
+      }
+    }
+
+    await tx.cartItem.deleteMany({
+      where: { userId: order.userId },
+    })
+
+    await tx.user.update({
+      where: { id: order.userId },
+      data: {
+        cartVersion: {
+          increment: 1,
+        },
+      },
+    })
+
+    const nextNotes = stockAlerts.length
+      ? [
+          order.notes?.trim(),
+          `Ajuste automatico de stock aplicado al confirmar pago. Revisar inventario de: ${stockAlerts.join(", ")}.`,
+        ]
+          .filter(Boolean)
+          .join("\n")
+      : order.notes
+
+    const updatedOrder = await tx.order.update({
+      where: { id: order.id },
+      data: {
+        paymentStatus: "PAID",
+        status: order.status === "PENDING" ? "CONFIRMED" : order.status,
+        notes: nextNotes || null,
+      },
+      select: {
+        orderNumber: true,
+        paymentStatus: true,
+        status: true,
+      },
+    })
+
+    return updatedOrder
+  })
+}
+
 export function buildOrderWhatsAppLink(
   order: {
     orderNumber: string
