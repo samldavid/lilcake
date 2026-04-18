@@ -2,52 +2,47 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { getToken } from "next-auth/jwt"
 
+function rewriteToNotFound(request: NextRequest) {
+  const notFoundUrl = new URL("/__admin_not_found__", request.url)
+  return NextResponse.rewrite(notFoundUrl)
+}
+
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const isAdminRoute = pathname.startsWith("/admin")
   const isAdminLoginRoute = pathname === "/admin/login"
+  const isAdminApiRoute = pathname.startsWith("/api/admin")
 
-  // ── Protect /admin routes ─────────────────
-  if (pathname.startsWith("/admin") && !isAdminLoginRoute) {
+  if (isAdminRoute || isAdminApiRoute) {
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
     })
 
-    // Not logged in → redirect to login
-    if (!token) {
-      const loginUrl = new URL("/admin/login", request.url)
-      loginUrl.searchParams.set("callbackUrl", pathname)
-      return NextResponse.redirect(loginUrl)
+    if (isAdminApiRoute) {
+      if (!token || token.role !== "ADMIN") {
+        return NextResponse.json({ error: "Not Found" }, { status: 404 })
+      }
+
+      return NextResponse.next()
     }
 
-    // Not admin → forbidden
-    if (token.role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/", request.url))
-    }
-  }
+    if (isAdminLoginRoute) {
+      if (token?.role === "ADMIN") {
+        return NextResponse.redirect(new URL("/admin", request.url))
+      }
 
-  // ── Protect /admin API routes ─────────────
-  if (pathname.startsWith("/api/admin")) {
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    })
+      return rewriteToNotFound(request)
+    }
 
     if (!token || token.role !== "ADMIN") {
-      return NextResponse.json(
-        { error: "No autorizado" },
-        { status: 403 }
-      )
+      return rewriteToNotFound(request)
     }
   }
 
-  // ── Security Headers ──────────────────────
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: [
-    "/admin/:path*",
-    "/api/admin/:path*",
-  ],
+  matcher: ["/admin/:path*", "/api/admin/:path*"],
 }

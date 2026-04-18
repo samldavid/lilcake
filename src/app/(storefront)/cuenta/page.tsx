@@ -2,6 +2,7 @@ import Link from "next/link"
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { Package, SearchX } from "lucide-react"
+import { Prisma } from "@prisma/client"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { ProfileForm } from "./ProfileForm"
@@ -13,29 +14,6 @@ import {
   getPaymentStatusClasses,
   getPaymentStatusLabel,
 } from "@/lib/order-status"
-
-type AccountOrder = {
-  id: string
-  orderNumber: string
-  createdAt: Date
-  status: string
-  paymentStatus: string
-  total: number
-  _count: {
-    items: number
-  }
-}
-
-type AccountPageUser = {
-  id: string
-  name: string | null
-  email: string | null
-  image: string | null
-  phone: string | null
-  address: string | null
-  city: string | null
-  orders: AccountOrder[]
-}
 
 const accountPageUserSelect = {
   id: true,
@@ -61,7 +39,11 @@ const accountPageUserSelect = {
       },
     },
   },
-}
+} as const satisfies Prisma.UserSelect
+
+type AccountPageUser = Prisma.UserGetPayload<{
+  select: typeof accountPageUserSelect
+}>
 
 export default async function AccountPage() {
   const session = await getServerSession(authOptions)
