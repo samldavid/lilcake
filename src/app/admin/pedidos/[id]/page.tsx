@@ -12,13 +12,50 @@ import {
   getPaymentStatusLabel,
 } from "@/lib/order-status"
 
+type AdminOrderItem = {
+  id: string
+  productName: string
+  productSize: string | null
+  productColor: string | null
+  quantity: number
+  unitPrice: number
+  variant: {
+    product: {
+      images: Array<{
+        url: string
+      }>
+    }
+  }
+}
+
+type AdminOrder = {
+  id: string
+  orderNumber: string
+  status: string
+  paymentStatus: string
+  createdAt: Date
+  total: number
+  shippingName: string
+  shippingAddress: string
+  shippingCity: string
+  shippingPhone: string
+  paymentMethod: string
+  trackingNumber: string | null
+  notes: string | null
+  user: {
+    name: string | null
+    email: string | null
+  }
+  items: AdminOrderItem[]
+}
+
 export default async function AdminOrderDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const order = await prisma.order.findUnique({
+  const order: AdminOrder | null = await prisma.order.findUnique({
     where: { id },
     select: {
       id: true,
