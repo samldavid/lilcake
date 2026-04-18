@@ -15,10 +15,14 @@ LilCake is a Next.js storefront with:
 - Prisma was migrated from SQLite to PostgreSQL with Supabase-ready connection guidance.
 - The repo now includes Prisma migration history, `prisma.config.ts`, and database scripts for generate, migrate, deploy, seed, and studio workflows.
 - Dependency installs now regenerate the Prisma client automatically through `postinstall`, which helps avoid stale `@prisma/client` builds after reinstalling packages.
+- Cart persistence is now versioned per user, which reduces stale local overwrites when the same account moves between guest, authenticated, and return-from-checkout flows.
+- Paid Stripe confirmations now finalize the order in one place: stock is decremented transactionally, paid orders move to confirmed status, and the authenticated user's cart is cleared after successful payment.
+- The latest migration adds `User.cartVersion`, so environments that pull these changes should run the pending Prisma migration before testing cart sync or post-payment flows.
 - Storefront product/category queries were extracted into cached data helpers with `unstable_cache`, while product mutations now trigger selective `revalidatePath()` calls.
 - Several storefront and admin pages now use narrower Prisma `select` queries plus new database indexes to reduce payload size and improve list/detail lookups.
 - Security headers now come from `next.config.ts`, while `src/proxy.ts` stays focused on protecting `/admin` and `/api/admin` routes.
 - Stripe can now stay disabled per environment: checkout falls back to WhatsApp, Stripe routes lazily initialize the SDK, and payment endpoints return `503` until Stripe is configured.
+- When Stripe is enabled, checkout sessions now normalize product image URLs and amount formatting before sending line items to Stripe.
 - Unauthorized `/admin` and `/api/admin` requests are now rewritten to not-found style responses so the admin area stays less discoverable to non-admin visitors.
 - The deployment guide now reflects the current PostgreSQL/Supabase setup and documents the non-persistent local upload limitation on Vercel.
 
@@ -125,9 +129,10 @@ Recommended workflow:
 
 1. Keep `DATABASE_URL` on the Supabase Transaction Pooler.
 2. Keep `DIRECT_URL` on the Supabase Session Pooler for Prisma CLI workflows.
-3. Use `npm run db:migrate` while developing schema changes.
-4. Use `npm run db:seed` to repopulate local/dev data from scratch.
-5. When deploying to Vercel later, keep `DATABASE_URL` on the transaction pooler and run `npm run db:deploy`.
+3. Run `npm run db:migrate` locally after pulling schema changes such as the `User.cartVersion` migration.
+4. Use `npm run db:migrate` while developing new schema changes.
+5. Use `npm run db:seed` to repopulate local/dev data from scratch.
+6. When deploying to Vercel later, keep `DATABASE_URL` on the transaction pooler and run `npm run db:deploy`.
 
 ## Useful commands
 

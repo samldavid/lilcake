@@ -15,10 +15,14 @@ LilCake es una tienda construida con Next.js que incluye:
 - Prisma se migro de SQLite a PostgreSQL con una configuracion lista para Supabase.
 - El repositorio ahora incluye historial de migraciones de Prisma, `prisma.config.ts` y scripts de base de datos para generar cliente, migrar, desplegar migraciones, poblar datos y abrir Studio.
 - Las instalaciones de dependencias ahora regeneran el cliente de Prisma automaticamente mediante `postinstall`, lo que ayuda a evitar builds rotos de `@prisma/client` despues de reinstalar paquetes.
+- La persistencia del carrito ahora usa versionado por usuario, lo que reduce sobrescrituras locales viejas cuando la misma cuenta pasa por flujos de invitado, login y regreso desde checkout.
+- Las confirmaciones de pago con Stripe ahora cierran la orden en un solo punto: el stock se descuenta dentro de una transaccion, las ordenes pagadas pasan a confirmadas y el carrito del usuario autenticado se limpia al completarse el pago.
+- La migracion mas reciente agrega `User.cartVersion`, asi que cualquier entorno que baje estos cambios debe correr la migracion pendiente de Prisma antes de probar sincronizacion del carrito o flujos post-pago.
 - Las consultas de productos y categorias del storefront se movieron a helpers cacheados con `unstable_cache`, y las mutaciones de productos ahora disparan `revalidatePath()` de forma selectiva.
 - Varias paginas del storefront y del admin ahora usan consultas Prisma con `select` mas acotado junto con nuevos indices para reducir payloads y mejorar busquedas de listados y detalles.
 - Los headers de seguridad ahora se definen en `next.config.ts`, mientras que `src/proxy.ts` queda enfocado en proteger rutas `/admin` y `/api/admin`.
 - Stripe ahora puede quedar desactivado por entorno: el checkout cae a WhatsApp, las rutas de Stripe inicializan el SDK de forma lazy y los endpoints de pago responden `503` hasta que Stripe se configure.
+- Cuando Stripe esta habilitado, las sesiones de checkout ahora normalizan las URLs de imagenes del producto y el formato de montos antes de enviar los line items a Stripe.
 - Las solicitudes no autorizadas a `/admin` y `/api/admin` ahora se reescriben como respuestas tipo `not-found`, para que el area administrativa quede menos expuesta a usuarios no administradores.
 - La guia de despliegue ahora refleja la configuracion actual con PostgreSQL/Supabase y documenta la limitacion de almacenamiento no persistente para uploads locales en Vercel.
 
@@ -125,9 +129,10 @@ Flujo recomendado:
 
 1. Mantener `DATABASE_URL` en el Supabase Transaction Pooler.
 2. Mantener `DIRECT_URL` en el Supabase Session Pooler para flujos CLI de Prisma.
-3. Usar `npm run db:migrate` mientras desarrollas cambios de esquema.
-4. Usar `npm run db:seed` para repoblar datos locales/dev desde cero.
-5. Al desplegar luego en Vercel, mantener `DATABASE_URL` en el transaction pooler y ejecutar `npm run db:deploy`.
+3. Ejecutar `npm run db:migrate` localmente despues de bajar cambios de esquema como la migracion de `User.cartVersion`.
+4. Usar `npm run db:migrate` mientras desarrollas nuevos cambios de esquema.
+5. Usar `npm run db:seed` para repoblar datos locales/dev desde cero.
+6. Al desplegar luego en Vercel, mantener `DATABASE_URL` en el transaction pooler y ejecutar `npm run db:deploy`.
 
 ## Comandos utiles
 
