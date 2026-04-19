@@ -23,6 +23,7 @@ LilCake is a Next.js storefront with:
 - Security headers now come from `next.config.ts`, while `src/proxy.ts` stays focused on protecting `/admin` and `/api/admin` routes.
 - Stripe can now stay disabled per environment: checkout falls back to WhatsApp, Stripe routes lazily initialize the SDK, and payment endpoints return `503` until Stripe is configured.
 - When Stripe is enabled, checkout sessions now normalize product image URLs and amount formatting before sending line items to Stripe.
+- Stripe checkout now persists a pending order before redirecting, includes secure metadata in the Checkout Session, and completes the purchase through a verified webhook instead of trusting client-side confirmation alone.
 - Unauthorized `/admin` and `/api/admin` requests are now rewritten to not-found style responses so the admin area stays less discoverable to non-admin visitors.
 - The deployment guide now reflects the current PostgreSQL/Supabase setup and documents the non-persistent local upload limitation on Vercel.
 
@@ -120,6 +121,32 @@ Important connection notes:
 - For Vercel/serverless later, keep `DATABASE_URL` on the Transaction Pooler. You can optionally append `connection_limit=1` if you hit connection pressure in serverless.
 - If Stripe is not part of the current environment yet, keep `NEXT_PUBLIC_STRIPE_ENABLED=false` and leave Stripe payments disabled until the payment rollout resumes.
 - The current image upload route writes files into `public/uploads/products`. That works locally, but Vercel serverless storage is not persistent. For production, move uploads to Cloudinary, S3, Vercel Blob, or another object storage service.
+
+## Orders and Stripe webhook flow
+
+The checkout flow now works like this:
+
+1. The customer submits checkout from the storefront.
+2. The backend reloads product and variant data from Prisma, validates stock and price, and creates a pending `Order` plus `OrderItem` records before redirecting to Stripe.
+3. The Stripe Checkout Session includes secure metadata such as `orderId`, `orderNumber`, and `userId`.
+4. Stripe calls `POST /api/webhooks/stripe`.
+5. The webhook verifies the `stripe-signature` header with `STRIPE_WEBHOOK_SECRET`.
+6. On `checkout.session.completed` or `checkout.session.async_payment_succeeded`, the order is finalized exactly once: payment moves to `PAID`, the order moves to confirmed, stock is decremented transactionally, and the user cart is cleared server-side.
+7. On `checkout.session.async_payment_failed` or `checkout.session.expired`, the order is marked as failed without trusting the frontend.
+
+The webhook endpoint is:
+
+```text
+/api/webhooks/stripe
+```
+
+For local testing with the Stripe CLI:
+
+```bash
+stripe listen --forward-to localhost:3000/api/webhooks/stripe
+```
+
+Use the webhook signing secret printed by the CLI as `STRIPE_WEBHOOK_SECRET` in local development.
 
 ## PostgreSQL migration plan
 

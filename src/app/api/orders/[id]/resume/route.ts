@@ -114,12 +114,14 @@ export async function POST(
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
+      client_reference_id: order.id,
       success_url: `${origin}/checkout?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/cuenta/pedidos/${order.id}?canceled=true`,
       customer_email: session.user.email,
       metadata: {
         orderId: order.id,
         orderNumber: order.orderNumber,
+        userId: session.user.id,
       },
     })
 

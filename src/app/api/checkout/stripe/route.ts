@@ -10,6 +10,7 @@ import {
   checkoutRequestSchema,
   createPendingOrder,
   finalizePaidOrder,
+  markOrderPaymentFailed,
   prepareCheckoutItems,
 } from "@/lib/checkout"
 import { authOptions } from "@/lib/auth"
@@ -139,12 +140,14 @@ export async function POST(req: Request) {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
+      client_reference_id: order.id,
       success_url: `${origin}/checkout?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/checkout?canceled=true`,
       customer_email: payload.customerEmail,
       metadata: {
         orderId: order.id,
         orderNumber: order.orderNumber,
+        userId: session.user.id,
       },
     })
 
@@ -156,13 +159,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ url: checkoutSession.url, orderNumber: order.orderNumber })
   } catch (error) {
     if (pendingOrderId) {
-      await prisma.order.update({
-        where: { id: pendingOrderId },
-        data: {
-          paymentStatus: "FAILED",
-          notes: "No se pudo iniciar la sesion de Stripe.",
-        },
-      })
+      await markOrderPaymentFailed(
+        pendingOrderId,
+        "No se pudo iniciar la sesion de Stripe."
+      )
     }
 
     const message =

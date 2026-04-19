@@ -130,6 +130,7 @@ export async function createPendingOrder(
         notes: payload.notes?.trim() || null,
         items: {
           create: items.map((item) => ({
+            productId: item.productId,
             variantId: item.variantId,
             productName: item.productName,
             productSize: item.productSize,
@@ -141,6 +142,49 @@ export async function createPendingOrder(
       },
       include: {
         items: true,
+      },
+    })
+  })
+}
+
+function mergeOrderNotes(...notes: Array<string | null | undefined>) {
+  const mergedNotes = notes
+    .map((note) => note?.trim())
+    .filter(Boolean)
+
+  return mergedNotes.length > 0 ? mergedNotes.join("\n") : null
+}
+
+export async function markOrderPaymentFailed(
+  orderId: string,
+  reason: string,
+  stripeSessionId?: string | null
+) {
+  return prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUnique({
+      where: { id: orderId },
+      select: {
+        id: true,
+        notes: true,
+      },
+    })
+
+    if (!order) {
+      throw new Error("No encontramos la orden que se debe actualizar.")
+    }
+
+    return tx.order.update({
+      where: { id: order.id },
+      data: {
+        paymentStatus: "FAILED",
+        stripeSessionId: stripeSessionId ?? undefined,
+        notes: mergeOrderNotes(order.notes, reason),
+      },
+      select: {
+        id: true,
+        orderNumber: true,
+        paymentStatus: true,
+        status: true,
       },
     })
   })
