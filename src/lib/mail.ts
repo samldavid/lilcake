@@ -1,5 +1,3 @@
-import { readFile } from "fs/promises"
-import path from "path"
 import nodemailer from "nodemailer"
 
 type SendMailAttachment = {
@@ -32,7 +30,6 @@ type BrandedEmailParams = {
 }
 
 let cachedTransporter: ReturnType<typeof nodemailer.createTransport> | null = null
-let cachedLogoAttachment: SendMailAttachment | null | undefined
 
 function getMailConfig() {
   const host = process.env.SMTP_HOST
@@ -101,32 +98,6 @@ function getTransporter() {
   return cachedTransporter
 }
 
-async function getInlineLogoAttachment() {
-  if (cachedLogoAttachment !== undefined) {
-    return cachedLogoAttachment
-  }
-
-  try {
-    const logoPath = path.join(
-      process.cwd(),
-      "public",
-      "images",
-      "iconolilcake.png"
-    )
-    const content = await readFile(logoPath)
-
-    cachedLogoAttachment = {
-      filename: "iconolilcake.png",
-      content,
-      cid: "lilcake-logo",
-    }
-  } catch {
-    cachedLogoAttachment = null
-  }
-
-  return cachedLogoAttachment
-}
-
 export async function sendMail({
   to,
   subject,
@@ -163,14 +134,9 @@ export async function sendBrandedMail(
     branded: BrandedEmailParams
   }
 ) {
-  const logoAttachment = await getInlineLogoAttachment()
-  const attachments = logoAttachment
-    ? [...params.attachments ?? [], logoAttachment]
-    : params.attachments
-
   return sendMail({
     ...params,
-    attachments,
+    attachments: params.attachments,
   })
 }
 
@@ -216,7 +182,7 @@ export function buildBrandedEmailHtml({
         </a>
       </div>
       <p style="margin: 0 0 8px; font-size: 12px; color: #8f95b2;">
-        Si el boton no funciona, copia y pega este enlace en tu navegador:
+        Si el bot\u00f3n no funciona, copia y pega este enlace en tu navegador:
       </p>
       <p style="margin: 0; word-break: break-word; font-size: 12px; line-height: 1.6; color: #b7bfd8;">
         <a href="${escapeHtml(action.href)}" style="color: #9ddfff; text-decoration: underline;">
@@ -257,42 +223,51 @@ export function buildBrandedEmailHtml({
               "
             >
               <tr>
-                <td style="padding: 32px 32px 8px;">
-                  <div style="display: inline-flex; align-items: center; gap: 14px;">
-                    <div
-                      style="
-                        width: 56px;
-                        height: 56px;
-                        border-radius: 18px;
-                        background: rgba(255, 255, 255, 0.06);
-                        border: 1px solid rgba(255, 255, 255, 0.08);
-                        overflow: hidden;
-                        display: inline-flex;
-                        align-items: center;
-                        justify-content: center;
-                      "
-                    >
-                      <img
-                        src="cid:lilcake-logo"
-                        alt="LilCake"
-                        width="56"
-                        height="56"
-                        style="display: block; width: 56px; height: 56px; object-fit: cover;"
-                      />
-                    </div>
-                    <div>
-                      <p style="margin: 0 0 4px; font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: #9ddfff;">
-                        ${safeEyebrow}
-                      </p>
-                      <p style="margin: 0; font-size: 24px; font-weight: 800; color: #f5f5f7;">
-                        LilCake
-                      </p>
-                    </div>
-                  </div>
+                <td style="padding: 30px 32px 10px;">
+                  <p style="margin: 0 0 12px; font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: #9ddfff;">
+                    ${safeEyebrow}
+                  </p>
+                  <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
+                    <tr>
+                      <td valign="middle" style="padding-right: 14px;">
+                        <div
+                          style="
+                            width: 62px;
+                            height: 62px;
+                            border-radius: 20px;
+                            background: linear-gradient(135deg, #6c3ce1 0%, #e91e8c 100%);
+                            text-align: center;
+                            box-shadow: 0 16px 34px rgba(108, 60, 225, 0.28);
+                          "
+                        >
+                          <div
+                            style="
+                              font-size: 26px;
+                              line-height: 62px;
+                              font-weight: 900;
+                              color: #ffffff;
+                              font-family: 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;
+                              letter-spacing: -0.05em;
+                            "
+                          >
+                            LC
+                          </div>
+                        </div>
+                      </td>
+                      <td valign="middle">
+                        <p style="margin: 0; font-size: 30px; line-height: 1.05; font-weight: 900; color: #f5f5f7; font-family: 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;">
+                          LilCake
+                        </p>
+                        <p style="margin: 8px 0 0; font-size: 13px; line-height: 1.6; color: #9ca3bf;">
+                          Seguridad y acceso para tu cuenta
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
                 </td>
               </tr>
               <tr>
-                <td style="padding: 16px 32px 0;">
+                <td style="padding: 18px 32px 0;">
                   <h1 style="margin: 0 0 14px; font-size: 30px; line-height: 1.15; color: #ffffff; font-weight: 800;">
                     ${safeTitle}
                   </h1>

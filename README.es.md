@@ -10,23 +10,68 @@ LilCake es una tienda construida con Next.js que incluye:
 
 [Read this README in English](./README.md)
 
-## Cambios recientes
+## Historial de cambios
 
-- Prisma se migro de SQLite a PostgreSQL con una configuracion lista para Supabase.
-- El repositorio ahora incluye historial de migraciones de Prisma, `prisma.config.ts` y scripts de base de datos para generar cliente, migrar, desplegar migraciones, poblar datos y abrir Studio.
-- Las instalaciones de dependencias ahora regeneran el cliente de Prisma automaticamente mediante `postinstall`, lo que ayuda a evitar builds rotos de `@prisma/client` despues de reinstalar paquetes.
-- La persistencia del carrito ahora usa versionado por usuario, lo que reduce sobrescrituras locales viejas cuando la misma cuenta pasa por flujos de invitado, login y regreso desde checkout.
-- Las confirmaciones de pago con Stripe ahora cierran la orden en un solo punto: el stock se descuenta dentro de una transaccion, las ordenes pagadas pasan a confirmadas y el carrito del usuario autenticado se limpia al completarse el pago.
-- La migracion mas reciente agrega `User.cartVersion`, asi que cualquier entorno que baje estos cambios debe correr la migracion pendiente de Prisma antes de probar sincronizacion del carrito o flujos post-pago.
-- Las consultas de productos y categorias del storefront se movieron a helpers cacheados con `unstable_cache`, y las mutaciones de productos ahora disparan `revalidatePath()` de forma selectiva.
-- Varias paginas del storefront y del admin ahora usan consultas Prisma con `select` mas acotado junto con nuevos indices para reducir payloads y mejorar busquedas de listados y detalles.
-- Los headers de seguridad ahora se definen en `next.config.ts`, mientras que `src/proxy.ts` queda enfocado en proteger rutas `/admin` y `/api/admin`.
-- Stripe ahora puede quedar desactivado por entorno: el checkout cae a WhatsApp, las rutas de Stripe inicializan el SDK de forma lazy y los endpoints de pago responden `503` hasta que Stripe se configure.
-- Cuando Stripe esta habilitado, las sesiones de checkout ahora normalizan las URLs de imagenes del producto y el formato de montos antes de enviar los line items a Stripe.
-- El checkout con Stripe ahora crea primero una orden pendiente, envia metadata segura en la Checkout Session y termina la compra con un webhook verificado en backend, sin confiar solo en la confirmacion del cliente.
-- La seguridad de cuenta ahora incluye reglas mas fuertes para contrasenas, confirmacion de contrasena, formularios compatibles con gestores de contrasenas, creacion/cambio de contrasena desde la cuenta, verificacion de correo y recuperacion de acceso.
-- Las solicitudes no autorizadas a `/admin` y `/api/admin` ahora se reescriben como respuestas tipo `not-found`, para que el area administrativa quede menos expuesta a usuarios no administradores.
-- La guia de despliegue ahora refleja la configuracion actual con PostgreSQL/Supabase y documenta la limitacion de almacenamiento no persistente para uploads locales en Vercel.
+### 2026-04-20
+
+- Se reforzo la seguridad de cuenta:
+  - la politica de contrasena exige mayuscula, minuscula, numero, simbolo y confirmacion
+  - los usuarios pueden crear o cambiar contrasena desde el area de cuenta
+  - los cambios de contrasena ahora pasan por enlaces verificados y tokens temporales
+- Se anadieron flujos de verificacion de correo y recuperacion de contrasena:
+  - correos de verificacion
+  - flujo de olvide mi contrasena
+  - pagina de restablecimiento con token temporal
+- Se anadio soporte SMTP con correos de marca y guia para Gmail en desarrollo local
+- Se documento en detalle toda la configuracion de seguridad y correo en los README
+- Se anadio una experiencia de busqueda real en el storefront:
+  - el icono de busqueda del navbar ahora abre un panel lateral
+  - la busqueda de productos se activa a partir de 3 letras
+  - la pagina de catalogo ahora refina resultados en vivo mientras escribes
+  - la relevancia compartida de resultados se movio a `src/lib/product-search.ts`
+- Se anadio busqueda dinamica en las tablas del admin para productos, pedidos y clientes:
+  - nuevo input reutilizable de busqueda administrativa
+  - filtrado instantaneo sobre los datos ya cargados en cada tabla
+  - contadores de coincidencias y estados vacios ligados a la consulta actual
+- Se mejoro la experiencia de correos de seguridad:
+  - la cabecera visual del correo ahora usa un monograma HTML/CSS estable en lugar del logo original, que se rompia en algunos clientes de correo de escritorio
+  - se normalizaron y limpiaron los textos del flujo de seguridad
+- Se corrigio el enlace de cuentas con Google:
+  - si el usuario no existe, ahora se crea correctamente al entrar con Google
+  - si ya existe una cuenta con el mismo correo, Google puede vincularse sin el error de Prisma durante el `signIn`
+- Se amplio la documentacion del proyecto con historial fechado para tener mejor control de versiones
+
+### 2026-04-19
+
+- Se implemento el flujo real de finalizacion de ordenes con Stripe:
+  - el checkout crea ordenes pendientes antes de redirigir
+  - la Checkout Session envia metadata segura
+  - `/api/webhooks/stripe` verifica la firma y finaliza el pago del lado del servidor
+  - las ordenes pagadas descuentan stock y limpian el carrito autenticado
+- Se actualizo la documentacion del flujo de ordenes y la configuracion local del webhook de Stripe
+
+### 2026-04-18
+
+- Se migro la base de datos del proyecto de SQLite a PostgreSQL con configuracion orientada a Supabase
+- Se anadieron migraciones de Prisma, `prisma.config.ts` y scripts de base de datos para generate, migrate, deploy, seed y studio
+- La instalacion de dependencias ahora regenera automaticamente el cliente de Prisma mediante `postinstall`
+- Se mejoro la sincronizacion del carrito:
+  - versionado por usuario
+  - transiciones mas seguras entre invitado y autenticado
+  - menor riesgo de sobrescribir datos locales viejos
+- Stripe paso a ser opcional por entorno:
+  - el checkout puede caer a WhatsApp
+  - el SDK de Stripe se inicializa de forma lazy
+  - los endpoints pueden quedar desactivados hasta tener llaves
+- Las consultas del storefront se movieron a helpers cacheados con `unstable_cache`
+- Se redujeron payloads y se mejoraron accesos a datos con `select` mas acotados e indices adicionales
+- Los headers de seguridad pasaron a `next.config.ts` y `src/proxy.ts` quedo enfocado en la proteccion del admin
+
+### 2026-04-17
+
+- Se anadio soporte de inicio de sesion con Google para login y registro
+- Se anadio documentacion de autenticacion y despliegue orientada a variables de entorno
+- Se importo el proyecto inicial a Git y GitHub
 
 ## Configuracion local
 
@@ -161,7 +206,7 @@ Notas:
 
 - Usa una contraseña de aplicacion de Google, no tu contraseña normal de Gmail.
 - En local, los enlaces normalmente apuntan a `http://localhost:3000`, asi que solo funcionan desde la misma maquina donde corre la app.
-- La plantilla visual del correo usa el logo de LilCake ubicado en `public/images/iconolilcake.png`.
+- La cabecera visual del correo ahora usa un monograma HTML/CSS de LilCake en lugar del logo-imagen original, para mejorar la compatibilidad en clientes de correo de escritorio.
 - Mas adelante, esas mismas variables deben quedar configuradas en Vercel si quieres entrega real fuera de local.
 
 ### Rutas importantes

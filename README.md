@@ -10,23 +10,68 @@ LilCake is a Next.js storefront with:
 
 [Leer este README en espanol](./README.es.md)
 
-## Recent updates
+## Changelog
 
-- Prisma was migrated from SQLite to PostgreSQL with Supabase-ready connection guidance.
-- The repo now includes Prisma migration history, `prisma.config.ts`, and database scripts for generate, migrate, deploy, seed, and studio workflows.
-- Dependency installs now regenerate the Prisma client automatically through `postinstall`, which helps avoid stale `@prisma/client` builds after reinstalling packages.
-- Cart persistence is now versioned per user, which reduces stale local overwrites when the same account moves between guest, authenticated, and return-from-checkout flows.
-- Paid Stripe confirmations now finalize the order in one place: stock is decremented transactionally, paid orders move to confirmed status, and the authenticated user's cart is cleared after successful payment.
-- The latest migration adds `User.cartVersion`, so environments that pull these changes should run the pending Prisma migration before testing cart sync or post-payment flows.
-- Storefront product/category queries were extracted into cached data helpers with `unstable_cache`, while product mutations now trigger selective `revalidatePath()` calls.
-- Several storefront and admin pages now use narrower Prisma `select` queries plus new database indexes to reduce payload size and improve list/detail lookups.
-- Security headers now come from `next.config.ts`, while `src/proxy.ts` stays focused on protecting `/admin` and `/api/admin` routes.
-- Stripe can now stay disabled per environment: checkout falls back to WhatsApp, Stripe routes lazily initialize the SDK, and payment endpoints return `503` until Stripe is configured.
-- When Stripe is enabled, checkout sessions now normalize product image URLs and amount formatting before sending line items to Stripe.
-- Stripe checkout now persists a pending order before redirecting, includes secure metadata in the Checkout Session, and completes the purchase through a verified webhook instead of trusting client-side confirmation alone.
-- Account security now includes stronger password rules, password confirmation, password-manager-friendly auth forms, password creation/change from the account page, email verification links, and password reset flows.
-- Unauthorized `/admin` and `/api/admin` requests are now rewritten to not-found style responses so the admin area stays less discoverable to non-admin visitors.
-- The deployment guide now reflects the current PostgreSQL/Supabase setup and documents the non-persistent local upload limitation on Vercel.
+### 2026-04-20
+
+- Added stronger account security flows:
+  - password policy now requires uppercase, lowercase, number, symbol, and confirmation
+  - users can create or change passwords from the account area
+  - password changes now go through verified email links and one-time tokens
+- Added email verification and password reset flows:
+  - verification emails
+  - forgot-password flow
+  - password reset page with expiring token validation
+- Added branded SMTP email support and Gmail local setup guidance
+- Documented the security and email setup in detail in the README files
+- Added a real storefront search experience:
+  - the navbar search icon now opens a lateral search panel
+  - product search becomes live after 3 characters
+  - the catalog page now refines results dynamically while typing
+  - shared search scoring was extracted into `src/lib/product-search.ts`
+- Added live admin table search for products, orders, and customers:
+  - new reusable admin search input and scoring helpers
+  - filtering now works instantly inside the current table data
+  - empty states and result counters now react to the current query
+- Improved account email UX and reliability:
+  - the branded security email header now uses a stable HTML/CSS monogram instead of the original image logo, which rendered badly in some desktop email clients
+  - account security messaging was cleaned up and normalized
+- Fixed Google sign-in account linking:
+  - new users can sign in with Google and get created correctly
+  - existing users with the same email can link Google without the Prisma update error seen during sign-in
+- Expanded project documentation with dated release notes for easier version tracking
+
+### 2026-04-19
+
+- Implemented the real Stripe order finalization flow:
+  - checkout creates pending orders before redirect
+  - Stripe Checkout Session now carries secure metadata
+  - `/api/webhooks/stripe` verifies the signature and finalizes payment server-side
+  - paid orders decrement stock transactionally and clear the authenticated cart
+- Updated the order flow docs to explain webhook setup and local Stripe CLI usage
+
+### 2026-04-18
+
+- Migrated the project database from SQLite to PostgreSQL with Supabase-oriented configuration
+- Added Prisma migration history, `prisma.config.ts`, and database scripts for generate, migrate, deploy, seed, and studio
+- Added automatic Prisma client generation on dependency install through `postinstall`
+- Improved cart sync:
+  - cart persistence is versioned per user
+  - guest/authenticated cart transitions are safer
+  - stale local overwrites are reduced
+- Made Stripe optional per environment:
+  - checkout falls back to WhatsApp
+  - Stripe SDK initialization is lazy
+  - payment endpoints can stay disabled until keys exist
+- Extracted storefront data queries into cached helpers with `unstable_cache`
+- Reduced payload sizes and improved data access with narrower Prisma `select` queries and extra indexes
+- Moved security headers into `next.config.ts` and kept `src/proxy.ts` focused on admin protection
+
+### 2026-04-17
+
+- Added Google sign-in support for login and registration
+- Added deployment-oriented auth documentation and environment variable guidance
+- Imported the initial project into Git and GitHub
 
 ## Local setup
 
@@ -161,7 +206,7 @@ Notes:
 
 - Use a Google app password, not your normal Gmail password.
 - In local development, links usually point to `http://localhost:3000`, so they only work from the same machine running the app.
-- The branded email template uses the LilCake logo from `public/images/iconolilcake.png`.
+- The branded email header now uses a lightweight HTML/CSS LilCake monogram instead of the original image logo for better desktop email compatibility.
 - The same SMTP settings should be added to Vercel later if you want real delivery outside local development.
 
 ### Relevant routes

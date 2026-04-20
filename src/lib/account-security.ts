@@ -132,6 +132,46 @@ async function getValidAccountSecurityToken(
   return tokenRecord
 }
 
+function buildPasswordEmailBranding({
+  recipientName,
+  resetUrl,
+  isAccountChange,
+}: {
+  recipientName: string
+  resetUrl: string
+  isAccountChange: boolean
+}) {
+  return {
+    preheader: isAccountChange
+      ? "Confirma el cambio de tu contraseña en LilCake"
+      : "Restablece tu contraseña de LilCake",
+    eyebrow: "Seguridad de cuenta",
+    title: isAccountChange
+      ? "Cambia tu contraseña"
+      : "Restablece tu contraseña",
+    intro: isAccountChange
+      ? `Hola ${recipientName}, confirma por correo que realmente quieres cambiar la contraseña de tu cuenta.`
+      : `Hola ${recipientName}, tenemos listo tu enlace seguro para recuperar el acceso.`,
+    body: isAccountChange
+      ? [
+          "Por seguridad, te enviamos este enlace temporal al correo verificado de tu cuenta.",
+          "El botón te llevará directamente al formulario para crear tu nueva contraseña y vencerá dentro de la próxima hora.",
+        ]
+      : [
+          "Recibimos una solicitud para restablecer la contraseña de tu cuenta.",
+          "Este enlace solo funcionará durante la próxima hora y luego dejará de ser válido por seguridad.",
+        ],
+    action: {
+      href: resetUrl,
+      label: isAccountChange
+        ? "Confirmar y cambiar contraseña"
+        : "Crear una nueva contraseña",
+    },
+    footerNote:
+      "Si no reconoces esta solicitud, puedes ignorar este correo sin hacer cambios en tu cuenta.",
+  }
+}
+
 async function sendPasswordLinkEmail({
   user,
   mode,
@@ -152,6 +192,11 @@ async function sendPasswordLinkEmail({
   const resetUrl = buildPasswordResetUrl(rawToken, mode)
   const recipientName = user.name?.trim() || "cliente"
   const isAccountChange = mode === "account-change"
+  const branding = buildPasswordEmailBranding({
+    recipientName,
+    resetUrl,
+    isAccountChange,
+  })
 
   const subject = isAccountChange
     ? `${APP_NAME}: confirma el cambio de tu contraseña`
@@ -179,66 +224,8 @@ async function sendPasswordLinkEmail({
       actionUrl: resetUrl,
       footer,
     }),
-    html: buildBrandedEmailHtml({
-      preheader: isAccountChange
-        ? "Confirma el cambio de tu contraseña en LilCake"
-        : "Restablece tu contraseña de LilCake",
-      eyebrow: "Seguridad de cuenta",
-      title: isAccountChange
-        ? "Cambia tu contraseña"
-        : "Restablece tu contraseña",
-      intro: isAccountChange
-        ? `Hola ${recipientName}, confirma por correo que realmente quieres cambiar la contraseña de tu cuenta.`
-        : `Hola ${recipientName}, tenemos listo tu enlace seguro para recuperar el acceso.`,
-      body: isAccountChange
-        ? [
-            "Por seguridad, te enviamos este enlace temporal al correo verificado de tu cuenta.",
-            "El botón te llevará directamente al formulario para crear tu nueva contraseña y vencerá dentro de la próxima hora.",
-          ]
-        : [
-            "Recibimos una solicitud para restablecer la contraseña de tu cuenta.",
-            "Este enlace solo funcionará durante la próxima hora y luego dejará de ser válido por seguridad.",
-          ],
-      action: {
-        href: resetUrl,
-        label: isAccountChange
-          ? "Confirmar y cambiar contraseña"
-          : "Crear una nueva contraseña",
-      },
-      footerNote: isAccountChange
-        ? "Si no reconoces esta solicitud, puedes ignorar este correo sin hacer cambios en tu cuenta."
-        : "Si no reconoces esta solicitud, puedes ignorar este correo sin hacer cambios en tu cuenta.",
-    }),
-    branded: {
-      preheader: isAccountChange
-        ? "Confirma el cambio de tu contraseña en LilCake"
-        : "Restablece tu contraseña de LilCake",
-      eyebrow: "Seguridad de cuenta",
-      title: isAccountChange
-        ? "Cambia tu contraseña"
-        : "Restablece tu contraseña",
-      intro: isAccountChange
-        ? `Hola ${recipientName}, confirma por correo que realmente quieres cambiar la contraseña de tu cuenta.`
-        : `Hola ${recipientName}, tenemos listo tu enlace seguro para recuperar el acceso.`,
-      body: isAccountChange
-        ? [
-            "Por seguridad, te enviamos este enlace temporal al correo verificado de tu cuenta.",
-            "El botón te llevará directamente al formulario para crear tu nueva contraseña y vencerá dentro de la próxima hora.",
-          ]
-        : [
-            "Recibimos una solicitud para restablecer la contraseña de tu cuenta.",
-            "Este enlace solo funcionará durante la próxima hora y luego dejará de ser válido por seguridad.",
-          ],
-      action: {
-        href: resetUrl,
-        label: isAccountChange
-          ? "Confirmar y cambiar contraseña"
-          : "Crear una nueva contraseña",
-      },
-      footerNote: isAccountChange
-        ? "Si no reconoces esta solicitud, puedes ignorar este correo sin hacer cambios en tu cuenta."
-        : "Si no reconoces esta solicitud, puedes ignorar este correo sin hacer cambios en tu cuenta.",
-    },
+    html: buildBrandedEmailHtml(branding),
+    branded: branding,
   })
 }
 
@@ -314,6 +301,31 @@ export async function sendPasswordChangeEmailForUser(userId: string) {
   }
 }
 
+function buildVerificationEmailBranding({
+  recipientName,
+  verifyUrl,
+}: {
+  recipientName: string
+  verifyUrl: string
+}) {
+  return {
+    preheader: "Confirma tu correo en LilCake",
+    eyebrow: "Verificación de correo",
+    title: "Confirma tu correo",
+    intro: `Hola ${recipientName}, queremos dejar tu cuenta bien protegida desde el primer acceso.`,
+    body: [
+      "Confirma tu correo para reforzar la seguridad de tu cuenta y mantener tus accesos al día.",
+      "El botón te llevará directamente a la página de verificación y el enlace vencerá dentro de las próximas 24 horas.",
+    ],
+    action: {
+      href: verifyUrl,
+      label: "Confirmar correo",
+    },
+    footerNote:
+      "Si no reconoces este mensaje, puedes ignorarlo sin problema. No se hará ningún cambio hasta que abras el enlace.",
+  }
+}
+
 export async function sendEmailVerificationEmailForUser(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -338,6 +350,10 @@ export async function sendEmailVerificationEmailForUser(userId: string) {
     `/api/auth/verify-email?token=${encodeURIComponent(rawToken)}`
   )
   const recipientName = user.name?.trim() || "cliente"
+  const branding = buildVerificationEmailBranding({
+    recipientName,
+    verifyUrl,
+  })
 
   await sendBrandedMail({
     to: user.email,
@@ -345,44 +361,14 @@ export async function sendEmailVerificationEmailForUser(userId: string) {
     text: buildEmailText({
       recipientName,
       intro:
-        "Confirma tu correo para reforzar la seguridad de tu cuenta y mantener tus accesos al dia.",
-      actionLabel: "Usa este enlace durante las proximas 24 horas",
+        "Confirma tu correo para reforzar la seguridad de tu cuenta y mantener tus accesos al día.",
+      actionLabel: "Usa este enlace durante las próximas 24 horas",
       actionUrl: verifyUrl,
       footer:
         "Si no reconoces este mensaje, puedes ignorarlo sin problema.",
     }),
-    html: buildBrandedEmailHtml({
-      preheader: "Confirma tu correo en LilCake",
-      eyebrow: "Verificación de correo",
-      title: "Confirma tu correo",
-      intro: `Hola ${recipientName}, queremos dejar tu cuenta bien protegida desde el primer acceso.`,
-      body: [
-        "Confirma tu correo para reforzar la seguridad de tu cuenta y mantener tus accesos al dia.",
-        "El botón te llevará directamente a la página de verificación y el enlace vencerá dentro de las próximas 24 horas.",
-      ],
-      action: {
-        href: verifyUrl,
-        label: "Confirmar correo",
-      },
-      footerNote:
-        "Si no reconoces este mensaje, puedes ignorarlo sin problema. No se hara ningun cambio hasta que abras el enlace.",
-    }),
-    branded: {
-      preheader: "Confirma tu correo en LilCake",
-      eyebrow: "Verificación de correo",
-      title: "Confirma tu correo",
-      intro: `Hola ${recipientName}, queremos dejar tu cuenta bien protegida desde el primer acceso.`,
-      body: [
-        "Confirma tu correo para reforzar la seguridad de tu cuenta y mantener tus accesos al dia.",
-        "El botón te llevará directamente a la página de verificación y el enlace vencerá dentro de las próximas 24 horas.",
-      ],
-      action: {
-        href: verifyUrl,
-        label: "Confirmar correo",
-      },
-      footerNote:
-        "Si no reconoces este mensaje, puedes ignorarlo sin problema. No se hara ningun cambio hasta que abras el enlace.",
-    },
+    html: buildBrandedEmailHtml(branding),
+    branded: branding,
   })
 
   return { success: true }

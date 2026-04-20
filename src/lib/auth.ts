@@ -32,20 +32,7 @@ export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [],
   callbacks: {
-    async signIn({ user, account }) {
-      if (
-        account?.provider === "google" &&
-        typeof user.id === "string" &&
-        user.email
-      ) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: {
-            emailVerified: new Date(),
-          },
-        })
-      }
-
+    async signIn() {
       return true
     },
     async jwt({ token, user }) {
@@ -73,6 +60,20 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
   },
   secret: process.env.NEXTAUTH_SECRET,
+  events: {
+    async linkAccount({ user, account }) {
+      if (account.provider !== "google") {
+        return
+      }
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          emailVerified: new Date(),
+        },
+      })
+    },
+  },
 }
 
 const googleClientId = process.env.GOOGLE_CLIENT_ID
@@ -85,6 +86,7 @@ if (googleAuthEnabled) {
     GoogleProvider({
       clientId: googleClientId!,
       clientSecret: googleClientSecret!,
+      allowDangerousEmailAccountLinking: true,
       profile(profile) {
         return {
           id: profile.sub,

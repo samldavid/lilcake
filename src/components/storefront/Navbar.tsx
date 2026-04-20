@@ -7,12 +7,14 @@ import { ShoppingCart, User, Search, Menu, X } from "lucide-react"
 import { useCart } from "@/components/CartProvider"
 import { useSession } from "next-auth/react"
 import { cn } from "@/lib/utils"
+import { StorefrontSearchPanel } from "@/components/storefront/StorefrontSearchPanel"
 
 export function Navbar() {
   const { itemCount } = useCart()
   const { data: session } = useSession()
   const pathname = usePathname()
   const [isMenuOpen, setIsMenuOpen] = React.useState(false)
+  const [isSearchOpen, setIsSearchOpen] = React.useState(false)
 
   const navLinks = [
     { href: "/productos?categoria=ropa", label: "Ropa" },
@@ -23,6 +25,7 @@ export function Navbar() {
   // Close mobile menu on route change
   React.useEffect(() => {
     setIsMenuOpen(false)
+    setIsSearchOpen(false)
   }, [pathname])
 
   return (
@@ -71,7 +74,12 @@ export function Navbar() {
 
           {/* Right Icons */}
           <div className="flex items-center gap-4 md:gap-6">
-            <button className="text-lc-gray hover:text-lc-white transition-colors hidden sm:block">
+            <button
+              type="button"
+              onClick={() => setIsSearchOpen(true)}
+              aria-label="Abrir búsqueda"
+              className="text-lc-gray hover:text-lc-white transition-colors"
+            >
               <Search size={22} />
             </button>
             
@@ -117,6 +125,11 @@ export function Navbar() {
           </div>
         </div>
       )}
+
+      <StorefrontSearchPanel
+        open={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+      />
     </nav>
   )
 }

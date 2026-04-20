@@ -1,40 +1,53 @@
-import { Prisma } from "@prisma/client"
 import { NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import {
+  getCatalogProductsForSearch,
+  getFeaturedSearchProducts,
+  searchStorefrontProducts,
+} from "@/lib/product-search"
+
+function parseLimit(value: string | null, fallback: number) {
+  const parsed = Number.parseInt(value ?? "", 10)
+
+  if (Number.isNaN(parsed)) {
+    return fallback
+  }
+
+  return Math.min(Math.max(parsed, 1), 24)
+}
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url)
-    const category = searchParams.get("category")
-    const q = searchParams.get("q")
+    const categorySlug = searchParams.get("category") ?? undefined
+    const rawQuery = searchParams.get("q")?.trim() ?? ""
     const featured = searchParams.get("featured")
+    const limit = parseLimit(searchParams.get("limit"), featured ? 6 : 24)
 
-    const query: Prisma.ProductWhereInput = { isActive: true }
-
-    if (category) {
-      query.category = { slug: category }
+    if (featured === "true") {
+      const products = await getFeaturedSearchProducts(limit)
+      return NextResponse.json(products)
     }
 
-    if (q) {
-      query.name = { contains: q } // Assuming SQLite here
+    if (rawQuery.length >= 3) {
+      const products = await searchStorefrontProducts(rawQuery, {
+        categorySlug,
+        limit,
+      })
+
+      return NextResponse.json(products)
     }
 
-    if (featured) {
-      query.isFeatured = true
-    }
-
-    const products = await prisma.product.findMany({
-      where: query,
-      include: {
-        images: { orderBy: { sortOrder: 'asc' }, take: 1 },
-        category: { select: { name: true, slug: true } }
-      },
-      orderBy: { createdAt: 'desc' }
+    const products = await getCatalogProductsForSearch({
+      categorySlug,
+      limit,
     })
 
     return NextResponse.json(products)
   } catch (error) {
     console.error("Error fetching products:", error)
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    )
   }
 }

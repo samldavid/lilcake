@@ -1,5 +1,8 @@
-import { Prisma } from "@prisma/client"
 import { unstable_cache } from "next/cache"
+import {
+  getCatalogProductsForSearch,
+  searchStorefrontProducts,
+} from "@/lib/product-search"
 import { prisma } from "@/lib/prisma"
 
 export const getStorefrontCategories = unstable_cache(
@@ -52,36 +55,18 @@ export const getFeaturedProducts = unstable_cache(
 
 export const getCatalogProducts = unstable_cache(
   async (categorySlug?: string, searchQuery?: string) => {
-    const query: Prisma.ProductWhereInput = { isActive: true }
+    const normalizedSearchQuery = searchQuery?.trim()
 
-    if (categorySlug) {
-      query.category = { slug: categorySlug }
+    if (normalizedSearchQuery && normalizedSearchQuery.length >= 3) {
+      return searchStorefrontProducts(normalizedSearchQuery, {
+        categorySlug,
+        limit: 24,
+      })
     }
 
-    if (searchQuery) {
-      query.name = { contains: searchQuery }
-    }
-
-    return prisma.product.findMany({
-      where: query,
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        price: true,
-        compareAtPrice: true,
-        isFeatured: true,
-        images: {
-          select: {
-            url: true,
-            altText: true,
-          },
-          orderBy: { sortOrder: "asc" },
-          take: 1,
-        },
-        category: { select: { name: true } },
-      },
-      orderBy: { createdAt: "desc" },
+    return getCatalogProductsForSearch({
+      categorySlug,
+      limit: 24,
     })
   },
   ["storefront-product-catalog"],
