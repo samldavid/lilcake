@@ -4,6 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton"
+import { PasswordRequirements } from "@/components/auth/PasswordRequirements"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 
@@ -18,6 +19,7 @@ export function RegisterForm({ googleEnabled }: RegisterFormProps) {
     name: "",
     email: "",
     password: "",
+    confirmPassword: "",
     phone: "",
   })
 
@@ -43,7 +45,7 @@ export function RegisterForm({ googleEnabled }: RegisterFormProps) {
         return
       }
 
-      router.push("/login?registered=true")
+      router.push("/login?registered=true&verificationEmailSent=true")
     } catch {
       setError("Error inesperado en la red")
     } finally {
@@ -70,6 +72,8 @@ export function RegisterForm({ googleEnabled }: RegisterFormProps) {
         <Input
           label="Nombre completo"
           type="text"
+          name="name"
+          autoComplete="name"
           required
           placeholder="Juan Perez"
           value={formData.name}
@@ -78,6 +82,10 @@ export function RegisterForm({ googleEnabled }: RegisterFormProps) {
         <Input
           label="Email"
           type="email"
+          name="email"
+          autoComplete="email"
+          autoCapitalize="none"
+          spellCheck={false}
           required
           placeholder="tu@email.com"
           value={formData.email}
@@ -86,17 +94,37 @@ export function RegisterForm({ googleEnabled }: RegisterFormProps) {
         <Input
           label="Telefono (Opcional)"
           type="tel"
+          name="tel"
+          autoComplete="tel"
           placeholder="+57 300 000 0000"
           value={formData.phone}
           onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
         />
         <Input
-          label="Contrasena"
+          label="Contraseña"
           type="password"
+          name="password"
+          autoComplete="new-password"
           required
-          placeholder="Minimo 6 caracteres"
+          placeholder="Crea una contraseña segura"
           value={formData.password}
           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+        />
+        <PasswordRequirements
+          password={formData.password}
+          identityValues={[formData.name, formData.email]}
+        />
+        <Input
+          label="Confirmar contraseña"
+          type="password"
+          name="confirmPassword"
+          autoComplete="new-password"
+          required
+          placeholder="Repite tu contraseña"
+          value={formData.confirmPassword}
+          onChange={(e) =>
+            setFormData({ ...formData, confirmPassword: e.target.value })
+          }
         />
 
         {error ? (

@@ -24,6 +24,7 @@ LilCake is a Next.js storefront with:
 - Stripe can now stay disabled per environment: checkout falls back to WhatsApp, Stripe routes lazily initialize the SDK, and payment endpoints return `503` until Stripe is configured.
 - When Stripe is enabled, checkout sessions now normalize product image URLs and amount formatting before sending line items to Stripe.
 - Stripe checkout now persists a pending order before redirecting, includes secure metadata in the Checkout Session, and completes the purchase through a verified webhook instead of trusting client-side confirmation alone.
+- Account security now includes stronger password rules, password confirmation, password-manager-friendly auth forms, password creation/change from the account page, email verification links, and password reset flows.
 - Unauthorized `/admin` and `/api/admin` requests are now rewritten to not-found style responses so the admin area stays less discoverable to non-admin visitors.
 - The deployment guide now reflects the current PostgreSQL/Supabase setup and documents the non-persistent local upload limitation on Vercel.
 
@@ -75,6 +76,12 @@ npm run dev
 - `NEXTAUTH_SECRET`: secret used by NextAuth sessions.
 - `GOOGLE_CLIENT_ID`: Google OAuth client id.
 - `GOOGLE_CLIENT_SECRET`: Google OAuth client secret.
+- `SMTP_HOST`: SMTP host used to send verification and password reset emails.
+- `SMTP_PORT`: SMTP port.
+- `SMTP_SECURE`: `true` for implicit TLS transports such as port 465, otherwise `false`.
+- `SMTP_USER`: SMTP username if your provider requires authentication.
+- `SMTP_PASS`: SMTP password if your provider requires authentication.
+- `SMTP_FROM`: sender shown in verification and password reset emails.
 - `STRIPE_SECRET_KEY`: Stripe server key.
 - `STRIPE_PUBLISHABLE_KEY`: Stripe public key.
 - `STRIPE_WEBHOOK_SECRET`: Stripe webhook secret.
@@ -103,7 +110,18 @@ The project already supports Google in `next-auth`, but it only turns on when bo
 Notes:
 
 - The register screen includes a Google button too. On first login, NextAuth creates the customer account automatically.
+- Google sign-in now marks the account email as verified automatically.
 - Google requires exact redirect URIs. Because of that, changing preview URLs are inconvenient for OAuth. Production should use a stable domain.
+
+## Account security and email flows
+
+- Credential sign-up now enforces a minimum of 6 characters plus uppercase, lowercase, number, and symbol requirements.
+- Sign-up and password reset both require password confirmation.
+- Signed-in users can create or change their password from `/cuenta`.
+- Registration now sends an email verification link, and authenticated users can resend that link from the account page if needed.
+- Password reset is available from `/recuperar-contrasena`, with a one-time token that expires after one hour.
+- If SMTP variables are missing, the app keeps working in local development and prints the verification/reset link in the server console instead of sending a real email.
+- Before production, configure a real SMTP provider in Vercel so verification and recovery emails are actually delivered.
 
 ## Deploying to Vercel
 

@@ -24,6 +24,7 @@ LilCake es una tienda construida con Next.js que incluye:
 - Stripe ahora puede quedar desactivado por entorno: el checkout cae a WhatsApp, las rutas de Stripe inicializan el SDK de forma lazy y los endpoints de pago responden `503` hasta que Stripe se configure.
 - Cuando Stripe esta habilitado, las sesiones de checkout ahora normalizan las URLs de imagenes del producto y el formato de montos antes de enviar los line items a Stripe.
 - El checkout con Stripe ahora crea primero una orden pendiente, envia metadata segura en la Checkout Session y termina la compra con un webhook verificado en backend, sin confiar solo en la confirmacion del cliente.
+- La seguridad de cuenta ahora incluye reglas mas fuertes para contrasenas, confirmacion de contrasena, formularios compatibles con gestores de contrasenas, creacion/cambio de contrasena desde la cuenta, verificacion de correo y recuperacion de acceso.
 - Las solicitudes no autorizadas a `/admin` y `/api/admin` ahora se reescriben como respuestas tipo `not-found`, para que el area administrativa quede menos expuesta a usuarios no administradores.
 - La guia de despliegue ahora refleja la configuracion actual con PostgreSQL/Supabase y documenta la limitacion de almacenamiento no persistente para uploads locales en Vercel.
 
@@ -75,6 +76,12 @@ npm run dev
 - `NEXTAUTH_SECRET`: secreto usado por las sesiones de NextAuth.
 - `GOOGLE_CLIENT_ID`: client id de Google OAuth.
 - `GOOGLE_CLIENT_SECRET`: client secret de Google OAuth.
+- `SMTP_HOST`: host SMTP usado para enviar correos de verificacion y recuperacion.
+- `SMTP_PORT`: puerto SMTP.
+- `SMTP_SECURE`: usa `true` para transportes TLS implicitos como el puerto 465; en otros casos `false`.
+- `SMTP_USER`: usuario SMTP si tu proveedor exige autenticacion.
+- `SMTP_PASS`: clave SMTP si tu proveedor exige autenticacion.
+- `SMTP_FROM`: remitente visible de los correos de verificacion y restablecimiento.
 - `STRIPE_SECRET_KEY`: llave privada de Stripe.
 - `STRIPE_PUBLISHABLE_KEY`: llave publica de Stripe.
 - `STRIPE_WEBHOOK_SECRET`: secreto del webhook de Stripe.
@@ -103,7 +110,18 @@ El proyecto ya soporta Google en `next-auth`, pero solo se activa cuando existen
 Notas:
 
 - La pantalla de registro tambien incluye un boton de Google. En el primer inicio de sesion, NextAuth crea la cuenta del cliente automaticamente.
+- El acceso con Google ahora marca el correo como verificado automaticamente.
 - Google exige redirect URIs exactas. Por eso, las preview URLs cambiantes son incomodas para OAuth. Produccion deberia usar un dominio estable.
+
+## Seguridad de cuenta y correos
+
+- El registro con correo ahora exige minimo 6 caracteres y al menos una mayuscula, una minuscula, un numero y un simbolo.
+- Tanto el registro como el restablecimiento de contrasena ahora piden confirmar la clave.
+- Los usuarios autenticados pueden crear o cambiar su contrasena desde `/cuenta`.
+- El registro envia un enlace de verificacion de correo, y desde la cuenta se puede reenviar si hace falta.
+- La recuperacion de contrasena esta disponible en `/recuperar-contrasena` con un token de un solo uso que vence en una hora.
+- Si faltan las variables SMTP, la app sigue funcionando en local y deja el enlace de verificacion o recuperacion en la consola del servidor en vez de enviar un correo real.
+- Antes de produccion, configura un proveedor SMTP real en Vercel para que esos correos se entreguen de verdad.
 
 ## Despliegue en Vercel
 

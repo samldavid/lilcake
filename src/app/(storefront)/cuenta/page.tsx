@@ -19,10 +19,17 @@ const accountPageUserSelect = {
   id: true,
   name: true,
   email: true,
+  emailVerified: true,
   image: true,
+  password: true,
   phone: true,
   address: true,
   city: true,
+  accounts: {
+    select: {
+      provider: true,
+    },
+  },
   orders: {
     orderBy: { createdAt: "desc" },
     select: {
@@ -62,6 +69,10 @@ export default async function AccountPage() {
   }
 
   const { orders } = dbUser
+  const hasPassword = Boolean(dbUser.password)
+  const hasGoogleAccount = dbUser.accounts.some(
+    (account) => account.provider === "google"
+  )
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 flex flex-col md:flex-row gap-12 animate-fade-in">
@@ -94,9 +105,13 @@ export default async function AccountPage() {
           <ProfileForm
             user={{
               name: dbUser.name || "",
+              email: dbUser.email || "",
+              emailVerified: Boolean(dbUser.emailVerified),
               phone: dbUser.phone,
               address: dbUser.address,
               city: dbUser.city,
+              hasPassword,
+              hasGoogleAccount,
             }}
           />
         </section>

@@ -27,6 +27,7 @@ model User {
   cartItems     CartItem[]
   cartVersion   Int       @default(0)
   accounts      Account[]
+  securityTokens AccountSecurityToken[]
   sessions      Session[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -67,6 +68,19 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model AccountSecurityToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // PASSWORD_RESET | EMAIL_VERIFICATION
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId, type, expiresAt])
 }
 
 // ──────────────────────────────────────────────

@@ -15,13 +15,13 @@ type LoginFormProps = {
 function getAuthErrorMessage(errorCode: string) {
   switch (errorCode) {
     case "OAuthAccountNotLinked":
-      return "Ya existe una cuenta con este correo usando otro metodo de acceso."
+      return "Ya existe una cuenta con este correo usando otro método de acceso."
     case "AccessDenied":
-      return "Google no autorizo el acceso a la aplicacion."
+      return "Google no autorizó el acceso a la aplicación."
     case "Configuration":
-      return "Google Login todavia no esta configurado en este entorno."
+      return "Google Login todavía no está configurado en este entorno."
     default:
-      return "No se pudo iniciar sesion con Google. Intentalo de nuevo."
+      return "Credenciales inválidas o acceso no disponible."
   }
 }
 
@@ -31,6 +31,10 @@ export function LoginForm({ googleEnabled }: LoginFormProps) {
   const callbackUrl = searchParams.get("callbackUrl") || "/"
   const googleError = searchParams.get("error")
   const registered = searchParams.get("registered") === "true"
+  const verificationEmailSent =
+    searchParams.get("verificationEmailSent") === "true"
+  const verified = searchParams.get("verified") === "true"
+  const passwordReset = searchParams.get("reset") === "true"
 
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
@@ -55,13 +59,13 @@ export function LoginForm({ googleEnabled }: LoginFormProps) {
       })
 
       if (res?.error) {
-        setError(res.error)
+        setError("Credenciales inválidas o acceso no disponible.")
       } else {
         router.push(callbackUrl)
         router.refresh()
       }
     } catch {
-      setError("Error inesperado al iniciar sesion")
+      setError("No pudimos iniciar sesión. Inténtalo de nuevo.")
     } finally {
       setLoading(false)
     }
@@ -71,7 +75,24 @@ export function LoginForm({ googleEnabled }: LoginFormProps) {
     <div>
       {registered ? (
         <div className="mb-5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-300">
-          Tu cuenta fue creada. Ya puedes entrar con tu correo o con Google.
+          <p>Tu cuenta fue creada. Ya puedes entrar con tu correo o con Google.</p>
+          {verificationEmailSent ? (
+            <p className="mt-2 text-xs text-emerald-200/80">
+              Te enviamos un enlace para verificar tu correo. Si estás en local sin SMTP, revisa la consola del servidor.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
+      {verified ? (
+        <div className="mb-5 rounded-lg border border-cyan-500/40 bg-cyan-500/10 p-3 text-sm text-cyan-200">
+          Tu correo ya fue verificado correctamente.
+        </div>
+      ) : null}
+
+      {passwordReset ? (
+        <div className="mb-5 rounded-lg border border-cyan-500/40 bg-cyan-500/10 p-3 text-sm text-cyan-200">
+          Tu contraseña fue actualizada. Ya puedes entrar con la nueva clave.
         </div>
       ) : null}
 
@@ -79,19 +100,34 @@ export function LoginForm({ googleEnabled }: LoginFormProps) {
         <Input
           label="Email"
           type="email"
+          name="email"
+          autoComplete="email"
+          autoCapitalize="none"
+          spellCheck={false}
           required
           placeholder="tu@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
         <Input
-          label="Contrasena"
+          label="Contraseña"
           type="password"
+          name="password"
+          autoComplete="current-password"
           required
-          placeholder="********"
+          placeholder="Ingresa tu contraseña"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+
+        <div className="-mt-2 text-right text-sm">
+          <Link
+            href="/recuperar-contrasena"
+            className="text-lc-cyan transition-colors hover:text-white"
+          >
+            Olvidé mi contraseña
+          </Link>
+        </div>
 
         {error ? (
           <div className="animate-slide-up rounded-lg border border-lc-error border-opacity-30 bg-lc-error/10 p-3 text-sm text-lc-error">

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { sendEmailVerificationEmailForUser } from "@/lib/account-security"
 import { registerSchema } from "@/lib/validations"
 
 export async function POST(req: Request) {
@@ -44,9 +45,16 @@ export async function POST(req: Request) {
       },
     })
 
+    try {
+      await sendEmailVerificationEmailForUser(user.id)
+    } catch (mailError) {
+      console.error("Registration verification email error:", mailError)
+    }
+
     return NextResponse.json(
       {
         message: "Cuenta creada exitosamente",
+        verificationEmailSent: true,
         user: { id: user.id, name: user.name, email: user.email },
       },
       { status: 201 }
