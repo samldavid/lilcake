@@ -123,6 +123,56 @@ Notas:
 - Si faltan las variables SMTP, la app sigue funcionando en local y deja el enlace de verificacion o recuperacion en la consola del servidor en vez de enviar un correo real.
 - Antes de produccion, configura un proveedor SMTP real en Vercel para que esos correos se entreguen de verdad.
 
+### Flujo actual de seguridad de cuenta
+
+1. El cliente puede registrarse con correo/contraseña o con Google.
+2. En el registro con correo, el backend valida la politica de contraseña y exige confirmacion.
+3. Despues del registro, el sistema envia un correo de verificacion.
+4. Si el usuario entra con Google, el correo queda marcado como verificado automaticamente.
+5. Desde `/cuenta`, el usuario solo puede cambiar o crear su contraseña mediante su correo verificado.
+6. La pantalla de cuenta ya no deja el formulario de contraseña abierto todo el tiempo. En su lugar muestra un boton `Cambiar contraseña` o `Crear contraseña`.
+7. Al pulsar ese boton, el sistema envia un enlace temporal de un solo uso al correo verificado.
+8. Ese enlace abre `/restablecer-contrasena` con un token seguro y ahi se define la nueva contraseña.
+
+### Detalles de seguridad
+
+- Los tokens de verificacion de correo y de restablecimiento/cambio de contraseña se guardan hasheados en la base de datos.
+- Los tokens son de un solo uso y se invalidan al consumirse.
+- Los enlaces de cambio o restablecimiento vencen en una hora.
+- Los enlaces de verificacion de correo vencen en 24 horas.
+- El cambio de contraseña desde la cuenta se bloquea hasta que el correo este verificado.
+- El formulario de restablecimiento/cambio sigue validando confirmacion de contraseña y toda la politica de seguridad.
+- El flujo de cambio desde la cuenta reutiliza el mismo sistema de tokens temporales del flujo de "olvide mi contraseña", pero solo puede iniciarlo un usuario autenticado.
+
+### Ejemplo de Gmail SMTP en local
+
+Para desarrollo local puedes usar Gmail SMTP con una contraseña de aplicacion:
+
+```env
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="465"
+SMTP_SECURE="true"
+SMTP_USER="tu-gmail@gmail.com"
+SMTP_PASS="tu-app-password-de-google"
+SMTP_FROM="LilCake <tu-gmail@gmail.com>"
+```
+
+Notas:
+
+- Usa una contraseña de aplicacion de Google, no tu contraseña normal de Gmail.
+- En local, los enlaces normalmente apuntan a `http://localhost:3000`, asi que solo funcionan desde la misma maquina donde corre la app.
+- La plantilla visual del correo usa el logo de LilCake ubicado en `public/images/iconolilcake.png`.
+- Mas adelante, esas mismas variables deben quedar configuradas en Vercel si quieres entrega real fuera de local.
+
+### Rutas importantes
+
+- `POST /api/auth/register`: crea la cuenta y dispara el correo de verificacion
+- `POST /api/auth/resend-verification`: reenvia la verificacion al usuario autenticado
+- `POST /api/auth/forgot-password`: inicia la recuperacion desde login
+- `POST /api/auth/request-password-change`: inicia el cambio de contraseña desde `/cuenta`
+- `POST /api/auth/reset-password`: guarda la nueva contraseña usando el token temporal
+- `GET /api/auth/verify-email`: consume el token de verificacion y marca el correo como verificado
+
 ## Despliegue en Vercel
 
 1. Sube el repositorio a GitHub.

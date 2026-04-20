@@ -123,6 +123,56 @@ Notes:
 - If SMTP variables are missing, the app keeps working in local development and prints the verification/reset link in the server console instead of sending a real email.
 - Before production, configure a real SMTP provider in Vercel so verification and recovery emails are actually delivered.
 
+### Current account security flow
+
+1. A customer signs up with email/password or with Google.
+2. Email/password sign-up validates the password policy and requires password confirmation.
+3. After registration, the backend sends a verification email.
+4. Google sign-in marks the email as verified automatically.
+5. From `/cuenta`, the user can request a password change only through their verified email.
+6. The account page does not expose the password form permanently anymore. Instead, it shows a `Change password` or `Create password` button.
+7. Clicking that button sends a temporary one-time email link to the verified address.
+8. That link opens `/restablecer-contrasena` with a secure token and lets the user define the new password there.
+
+### Security details
+
+- Email verification tokens and password reset/change tokens are stored hashed in the database.
+- Tokens are single-use and become invalid after use.
+- Password reset/change links expire after one hour.
+- Email verification links expire after 24 hours.
+- Password changes from the account page are blocked until the email is verified.
+- The reset/change form still validates password confirmation plus the full password policy.
+- The account change flow reuses the same temporary token system as forgot-password, but it can only be initiated by an authenticated user.
+
+### Local Gmail SMTP example
+
+For local development you can use Gmail SMTP with an app password:
+
+```env
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="465"
+SMTP_SECURE="true"
+SMTP_USER="your-gmail@gmail.com"
+SMTP_PASS="your-google-app-password"
+SMTP_FROM="LilCake <your-gmail@gmail.com>"
+```
+
+Notes:
+
+- Use a Google app password, not your normal Gmail password.
+- In local development, links usually point to `http://localhost:3000`, so they only work from the same machine running the app.
+- The branded email template uses the LilCake logo from `public/images/iconolilcake.png`.
+- The same SMTP settings should be added to Vercel later if you want real delivery outside local development.
+
+### Relevant routes
+
+- `POST /api/auth/register`: create account and trigger verification email
+- `POST /api/auth/resend-verification`: resend verification for the signed-in user
+- `POST /api/auth/forgot-password`: start recovery flow from login
+- `POST /api/auth/request-password-change`: start password change flow from `/cuenta`
+- `POST /api/auth/reset-password`: submit the new password with the temporary token
+- `GET /api/auth/verify-email`: consume the verification token and mark the email as verified
+
 ## Deploying to Vercel
 
 1. Push the repository to GitHub.
