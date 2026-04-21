@@ -9,6 +9,54 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 
 const stripeEnabled = process.env.NEXT_PUBLIC_STRIPE_ENABLED === "true"
+const CHECKOUT_DETAILS_STORAGE_KEY = "lilcake-checkout-details"
+
+type AppliedCoupon = {
+  code: string
+  type: "PERCENTAGE" | "FIXED"
+  value: number
+  subtotal: number
+  discount: number
+  total: number
+  minPurchase: number | null
+  expiresAt: string | null
+}
+
+type SavedCheckoutDetails = {
+  shippingName: string
+  email: string
+  shippingAddress: string
+  shippingCity: string
+  shippingPhone: string
+}
+
+function parseSavedCheckoutDetails(rawValue: string | null): SavedCheckoutDetails | null {
+  if (!rawValue) {
+    return null
+  }
+
+  try {
+    const parsed = JSON.parse(rawValue)
+
+    if (!parsed || typeof parsed !== "object") {
+      return null
+    }
+
+    return {
+      shippingName:
+        typeof parsed.shippingName === "string" ? parsed.shippingName : "",
+      email: typeof parsed.email === "string" ? parsed.email : "",
+      shippingAddress:
+        typeof parsed.shippingAddress === "string" ? parsed.shippingAddress : "",
+      shippingCity:
+        typeof parsed.shippingCity === "string" ? parsed.shippingCity : "",
+      shippingPhone:
+        typeof parsed.shippingPhone === "string" ? parsed.shippingPhone : "",
+    }
+  } catch {
+    return null
+  }
+}
 
 function CheckoutPageContent() {
   const { items, total, clearCart } = useCart()
@@ -21,6 +69,15 @@ function CheckoutPageContent() {
   const [isFinalizing, setIsFinalizing] = React.useState(false)
   const [error, setError] = React.useState("")
   const [orderNumber, setOrderNumber] = React.useState("")
+  const [couponCode, setCouponCode] = React.useState("")
+  const [appliedCoupon, setAppliedCoupon] = React.useState<AppliedCoupon | null>(null)
+  const [couponFeedback, setCouponFeedback] = React.useState<{
+    type: "success" | "error"
+    message: string
+  } | null>(null)
+  const [isValidatingCoupon, setIsValidatingCoupon] = React.useState(false)
+  const [rememberDetails, setRememberDetails] = React.useState(true)
+  const [detailsLoaded, setDetailsLoaded] = React.useState(false)
   const [formData, setFormData] = React.useState({
     shippingName: "",
     email: "",
@@ -30,15 +87,72 @@ function CheckoutPageContent() {
     paymentMethod: stripeEnabled ? "STRIPE" : "WHATSAPP",
   })
 
+  React.useEffect(() => {
+    if (typeof window === "undefined") {
+      return
+    }
+
+    const savedDetails = parseSavedCheckoutDetails(
+      window.localStorage.getItem(CHECKOUT_DETAILS_STORAGE_KEY)
+    )
+
+    if (savedDetails) {
+      setFormData((current) => ({
+        ...current,
+        ...savedDetails,
+      }))
+      setRememberDetails(true)
+    }
+
+    setDetailsLoaded(true)
+  }, [])
+
   const successParam = searchParams.get("success") === "true"
   const canceledParam = searchParams.get("canceled") === "true"
   const sessionId = searchParams.get("session_id")
 
   React.useEffect(() => {
-    if (session?.user?.email && !formData.email) {
-      setFormData((current) => ({ ...current, email: session.user.email }))
+    if (!detailsLoaded) {
+      return
     }
-  }, [formData.email, session?.user?.email])
+
+    const sessionName = session?.user?.name || ""
+    const sessionEmail = session?.user?.email || ""
+    const shouldHydrateName = !formData.shippingName && Boolean(sessionName)
+    const shouldHydrateEmail = !formData.email && Boolean(sessionEmail)
+
+    if (!shouldHydrateName && !shouldHydrateEmail) {
+      return
+    }
+
+    setFormData((current) => ({
+      ...current,
+      shippingName: shouldHydrateName ? sessionName : current.shippingName,
+      email: shouldHydrateEmail ? sessionEmail : current.email,
+    }))
+  }, [detailsLoaded, formData.email, formData.shippingName, session?.user?.email, session?.user?.name])
+
+  React.useEffect(() => {
+    if (!detailsLoaded || typeof window === "undefined") {
+      return
+    }
+
+    if (!rememberDetails) {
+      window.localStorage.removeItem(CHECKOUT_DETAILS_STORAGE_KEY)
+      return
+    }
+
+    window.localStorage.setItem(
+      CHECKOUT_DETAILS_STORAGE_KEY,
+      JSON.stringify({
+        shippingName: formData.shippingName,
+        email: formData.email,
+        shippingAddress: formData.shippingAddress,
+        shippingCity: formData.shippingCity,
+        shippingPhone: formData.shippingPhone,
+      } satisfies SavedCheckoutDetails)
+    )
+  }, [detailsLoaded, formData, rememberDetails])
 
   React.useEffect(() => {
     if (status === "loading" || !successParam || !sessionId || success) {
@@ -108,6 +222,68 @@ function CheckoutPageContent() {
     }
   }, [isFinalizing, items.length, router, status, success, successParam])
 
+  const validateCoupon = React.useCallback(
+    async (codeOverride?: string) => {
+      const rawCode = codeOverride ?? couponCode
+      const nextCode = rawCode.trim().toUpperCase()
+
+      if (!nextCode) {
+        setAppliedCoupon(null)
+        setCouponFeedback(null)
+        return true
+      }
+
+      if (!session?.user?.id) {
+        router.push(`/login?callbackUrl=${encodeURIComponent("/checkout")}`)
+        return false
+      }
+
+      try {
+        setIsValidatingCoupon(true)
+        setCouponFeedback(null)
+
+        const response = await fetch("/api/checkout/coupon", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            couponCode: nextCode,
+            items: items.map((item) => ({
+              variantId: item.variantId,
+              quantity: item.quantity,
+            })),
+          }),
+        })
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || "No pudimos validar el cupon.")
+        }
+
+        setCouponCode(data.code)
+        setAppliedCoupon(data)
+        setCouponFeedback({
+          type: "success",
+          message: `Se aplico el cupon ${data.code}.`,
+        })
+
+        return true
+      } catch (couponError) {
+        setAppliedCoupon(null)
+        setCouponFeedback({
+          type: "error",
+          message:
+            couponError instanceof Error
+              ? couponError.message
+              : "No pudimos validar el cupon.",
+        })
+        return false
+      } finally {
+        setIsValidatingCoupon(false)
+      }
+    },
+    [couponCode, items, router, session?.user?.id]
+  )
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -120,6 +296,20 @@ function CheckoutPageContent() {
       setLoading(true)
       setError("")
 
+      const normalizedCouponCode = couponCode.trim().toUpperCase()
+
+      if (
+        normalizedCouponCode &&
+        (!appliedCoupon || appliedCoupon.code !== normalizedCouponCode)
+      ) {
+        const couponIsValid = await validateCoupon(normalizedCouponCode)
+
+        if (!couponIsValid) {
+          setLoading(false)
+          return
+        }
+      }
+
       const payload = {
         items: items.map((item) => ({
           variantId: item.variantId,
@@ -131,6 +321,7 @@ function CheckoutPageContent() {
         shippingCity: formData.shippingCity,
         shippingPhone: formData.shippingPhone,
         paymentMethod: formData.paymentMethod,
+        couponCode: normalizedCouponCode || undefined,
       }
 
       const endpoint =
@@ -212,6 +403,14 @@ function CheckoutPageContent() {
     return null
   }
 
+  const normalizedCouponCode = couponCode.trim().toUpperCase()
+  const activeAppliedCoupon =
+    appliedCoupon && appliedCoupon.code === normalizedCouponCode
+      ? appliedCoupon
+      : null
+  const displayDiscount = activeAppliedCoupon?.discount ?? 0
+  const displayTotal = activeAppliedCoupon?.total ?? total
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in">
       <h1 className="text-3xl font-heading font-bold text-lc-white mb-8">Checkout</h1>
@@ -241,8 +440,23 @@ function CheckoutPageContent() {
               <h2 className="text-xl font-heading font-bold text-lc-white mb-6">
                 1. Datos de envio
               </h2>
+              <div className="mb-6 rounded-2xl border border-lc-border bg-lc-darker/60 p-4">
+                <label className="flex items-start gap-3 text-sm text-lc-gray-light">
+                  <input
+                    type="checkbox"
+                    checked={rememberDetails}
+                    onChange={(event) => setRememberDetails(event.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-lc-border bg-lc-black text-lc-purple focus:ring-lc-purple"
+                  />
+                  <span>
+                    Guardar estos datos en este navegador para autocompletar futuras compras.
+                  </span>
+                </label>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <Input
+                  name="shippingName"
+                  autoComplete="shipping name"
                   label="Nombre Completo"
                   required
                   value={formData.shippingName}
@@ -251,6 +465,8 @@ function CheckoutPageContent() {
                   }
                 />
                 <Input
+                  name="customerEmail"
+                  autoComplete="email"
                   label="Email"
                   type="email"
                   required
@@ -261,6 +477,8 @@ function CheckoutPageContent() {
                 />
                 <div className="sm:col-span-2">
                   <Input
+                    name="shippingAddress"
+                    autoComplete="shipping street-address"
                     label="Direccion"
                     required
                     placeholder="Calle, numero, apartamento..."
@@ -271,6 +489,8 @@ function CheckoutPageContent() {
                   />
                 </div>
                 <Input
+                  name="shippingCity"
+                  autoComplete="shipping address-level2"
                   label="Ciudad"
                   required
                   value={formData.shippingCity}
@@ -279,6 +499,8 @@ function CheckoutPageContent() {
                   }
                 />
                 <Input
+                  name="shippingPhone"
+                  autoComplete="tel"
                   label="Telefono"
                   type="tel"
                   required
@@ -374,10 +596,74 @@ function CheckoutPageContent() {
             </div>
 
             <div className="space-y-4 pt-6 border-t border-lc-border mb-6 text-sm">
+              <div className="rounded-2xl border border-lc-border bg-lc-dark/70 p-4">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <div>
+                    <p className="text-sm font-semibold text-lc-white">
+                      Codigo de descuento
+                    </p>
+                    <p className="text-xs text-lc-gray mt-1">
+                      Aplicalo antes de pagar para recalcular el total.
+                    </p>
+                  </div>
+                  {activeAppliedCoupon ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCouponCode("")
+                        setAppliedCoupon(null)
+                        setCouponFeedback(null)
+                      }}
+                      className="text-xs font-semibold text-lc-gray hover:text-lc-white transition-colors"
+                    >
+                      Quitar
+                    </button>
+                  ) : null}
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(event) => setCouponCode(event.target.value.toUpperCase())}
+                    placeholder="Ej: BIENVENIDA10"
+                    autoComplete="off"
+                    spellCheck={false}
+                    className="input-field h-12 flex-1"
+                  />
+                  <Button
+                    type="button"
+                    className="sm:min-w-[132px]"
+                    disabled={isValidatingCoupon || !couponCode.trim()}
+                    onClick={() => void validateCoupon()}
+                  >
+                    {isValidatingCoupon ? "Validando..." : "Aplicar"}
+                  </Button>
+                </div>
+
+                {couponFeedback ? (
+                  <div
+                    className={`mt-3 rounded-xl border px-3 py-2 text-xs ${
+                      couponFeedback.type === "success"
+                        ? "border-lc-success/30 bg-lc-success/10 text-lc-success"
+                        : "border-lc-error/30 bg-lc-error/10 text-lc-error"
+                    }`}
+                  >
+                    {couponFeedback.message}
+                  </div>
+                ) : null}
+              </div>
+
               <div className="flex justify-between text-lc-gray-light">
                 <span>Subtotal</span>
                 <span>{formatCOP(total)}</span>
               </div>
+              {displayDiscount > 0 ? (
+                <div className="flex justify-between text-lc-success">
+                  <span>Descuento</span>
+                  <span>- {formatCOP(displayDiscount)}</span>
+                </div>
+              ) : null}
               <div className="flex justify-between text-lc-gray-light">
                 <span>Envio</span>
                 <span className="text-lc-success">Gratis</span>
@@ -387,7 +673,7 @@ function CheckoutPageContent() {
             <div className="flex justify-between items-end mb-8 pt-6 border-t border-lc-border">
               <span className="text-lc-white font-bold text-lg">Total</span>
               <span className="text-3xl font-heading font-bold text-transparent bg-clip-text bg-gradient-to-r from-lc-purple to-lc-pink">
-                {formatCOP(total)}
+                {formatCOP(displayTotal)}
               </span>
             </div>
 
@@ -395,7 +681,12 @@ function CheckoutPageContent() {
               type="submit"
               form="checkout-form"
               className="w-full h-14 text-lg"
-              disabled={loading || isFinalizing || status === "loading"}
+              disabled={
+                loading ||
+                isFinalizing ||
+                status === "loading" ||
+                isValidatingCoupon
+              }
             >
               {loading
                 ? "Procesando..."

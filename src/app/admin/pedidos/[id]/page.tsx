@@ -34,6 +34,8 @@ type AdminOrder = {
   status: string
   paymentStatus: string
   createdAt: Date
+  subtotal: number
+  discount: number
   total: number
   shippingName: string
   shippingAddress: string
@@ -42,6 +44,9 @@ type AdminOrder = {
   paymentMethod: string
   trackingNumber: string | null
   notes: string | null
+  coupon: {
+    code: string
+  } | null
   user: {
     name: string | null
     email: string | null
@@ -63,6 +68,8 @@ export default async function AdminOrderDetailPage({
       status: true,
       paymentStatus: true,
       createdAt: true,
+      subtotal: true,
+      discount: true,
       total: true,
       shippingName: true,
       shippingAddress: true,
@@ -71,6 +78,11 @@ export default async function AdminOrderDetailPage({
       paymentMethod: true,
       trackingNumber: true,
       notes: true,
+      coupon: {
+        select: {
+          code: true,
+        },
+      },
       user: {
         select: {
           name: true,
@@ -215,6 +227,25 @@ export default async function AdminOrderDetailPage({
               Resumen
             </h2>
             <div className="space-y-4 text-sm">
+              <div>
+                <p className="text-lc-gray mb-1">Subtotal</p>
+                <p className="text-lg font-bold text-lc-white">
+                  {formatCOP(order.subtotal)}
+                </p>
+              </div>
+              {order.discount > 0 ? (
+                <div>
+                  <p className="text-lc-gray mb-1">Descuento</p>
+                  <p className="text-lg font-bold text-lc-success">
+                    - {formatCOP(order.discount)}
+                  </p>
+                  {order.coupon ? (
+                    <p className="text-xs text-lc-gray mt-1">
+                      Cupon aplicado: {order.coupon.code}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
               <div>
                 <p className="text-lc-gray mb-1">Total</p>
                 <p className="text-2xl font-heading font-bold text-lc-white">

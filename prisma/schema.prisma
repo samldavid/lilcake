@@ -26,6 +26,7 @@ model User {
   orders        Order[]
   cartItems     CartItem[]
   cartVersion   Int       @default(0)
+  couponUsages  CouponCustomerUsage[]
   accounts      Account[]
   securityTokens AccountSecurityToken[]
   sessions      Session[]
@@ -223,9 +224,25 @@ model Coupon {
   value       Float     // e.g. 15 (%) or 10000 (COP)
   minPurchase Float?    // Minimum order amount
   maxUses     Int?      // null = unlimited
+  maxUsesPerUser Int?   // null = unlimited per customer
   usedCount   Int       @default(0)
   isActive    Boolean   @default(true)
   expiresAt   DateTime?
   orders      Order[]
+  customerUsages CouponCustomerUsage[]
   createdAt   DateTime  @default(now())
+}
+
+model CouponCustomerUsage {
+  id        String   @id @default(cuid())
+  couponId  String
+  coupon    Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  usedCount Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([couponId, userId])
+  @@index([userId, couponId])
 }

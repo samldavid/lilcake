@@ -14,6 +14,25 @@ LilCake is a Next.js storefront with:
 
 ### 2026-04-20
 
+- Added a real coupon system connected to checkout and admin:
+  - coupons can now be created, edited, activated, deactivated, and deleted from the admin panel
+  - the checkout only sends the coupon code; all validation and discount calculation happen server-side
+  - orders now persist subtotal, discount, total, and the coupon reference
+  - coupon usage is reserved transactionally when a pending order is created and released if that order fails or is cancelled before payment
+  - Stripe checkout now receives the approved discount from the backend, so the charged amount matches the order total
+- Added dual coupon limits:
+  - global usage limit across all customers
+  - per-customer usage limit for the same coupon
+  - a dedicated `CouponCustomerUsage` table now tracks per-user usage safely
+  - the admin panel now surfaces remaining global uses and the per-customer rule separately
+- Improved the admin coupon UX:
+  - coupon creation/editing now opens in a dedicated modal instead of a compressed side panel
+  - the form explains global vs per-customer limits more clearly
+  - exhausted coupons are now marked as `Agotado`
+- Improved checkout convenience:
+  - shipping fields now use browser autocomplete metadata
+  - customers can choose to remember shipping details in the local browser for future purchases
+  - checkout pre-fills saved details and authenticated profile data when available
 - Added stronger account security flows:
   - password policy now requires uppercase, lowercase, number, symbol, and confirmation
   - users can create or change passwords from the account area
@@ -260,6 +279,60 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 ```
 
 Use the webhook signing secret printed by the CLI as `STRIPE_WEBHOOK_SECRET` in local development.
+
+## Coupons and discount security
+
+Coupons are now part of the real order flow rather than a frontend-only preview.
+
+### How coupon validation works
+
+1. The storefront sends only `couponCode`.
+2. The backend reloads trusted prices from Prisma and recalculates the order subtotal.
+3. Coupon validation checks:
+   - active/inactive status
+   - expiration date
+   - minimum purchase amount
+   - global usage limit (`maxUses`)
+   - per-customer usage limit (`maxUsesPerUser`)
+4. If valid, the backend stores the approved `discount`, `total`, and `couponId` on the pending order.
+5. Stripe checkout receives a server-generated discount coupon so the Stripe total matches the approved backend total.
+6. If the payment flow fails or the order is cancelled before being paid, the reserved coupon usage is released again.
+
+### Global limit vs per-customer limit
+
+- Global limit: the total number of times a coupon can be used across the entire store.
+- Per-customer limit: the number of times the same authenticated user can use that coupon.
+
+Example:
+
+- `maxUses = 100`
+- `maxUsesPerUser = 1`
+
+This means up to 100 paid/pending reservations in total are allowed, but each signed-in customer can only consume that coupon once.
+
+### Relevant coupon files
+
+- `src/lib/coupons.ts`: secure coupon validation, usage reservation, release, and Stripe discount helper
+- `src/lib/admin-coupons.ts`: admin payload validation and serialization
+- `src/app/api/checkout/coupon/route.ts`: checkout-side coupon preview endpoint
+- `src/app/api/admin/coupons/route.ts`
+- `src/app/api/admin/coupons/[id]/route.ts`
+- `src/components/admin/AdminCouponsManager.tsx`
+
+## Checkout autofill and remembered shipping details
+
+The checkout now supports both browser-native autocomplete and local remembering of shipping details.
+
+- Inputs expose autocomplete hints such as:
+  - `shipping name`
+  - `email`
+  - `shipping street-address`
+  - `shipping address-level2`
+  - `tel`
+- Customers can opt in to saving their shipping details in the current browser.
+- Saved values are stored locally and reused on future visits to `/checkout`.
+- If the customer is authenticated, checkout also pre-fills available account name/email values.
+- This is local-browser convenience only; the discount logic and order totals still remain fully server-controlled.
 
 ## PostgreSQL migration plan
 

@@ -36,6 +36,8 @@ type CustomerOrder = {
   createdAt: Date
   status: string
   paymentStatus: string
+  subtotal: number
+  discount: number
   total: number
   paymentMethod: string
   shippingName: string
@@ -44,6 +46,9 @@ type CustomerOrder = {
   shippingPhone: string
   trackingNumber: string | null
   notes: string | null
+  coupon: {
+    code: string
+  } | null
   items: CustomerOrderItem[]
 }
 
@@ -67,7 +72,27 @@ export default async function CustomerOrderDetailPage({
       id,
       userId: session.user.id,
     },
-    include: {
+    select: {
+      id: true,
+      orderNumber: true,
+      createdAt: true,
+      status: true,
+      paymentStatus: true,
+      subtotal: true,
+      discount: true,
+      total: true,
+      paymentMethod: true,
+      shippingName: true,
+      shippingAddress: true,
+      shippingCity: true,
+      shippingPhone: true,
+      trackingNumber: true,
+      notes: true,
+      coupon: {
+        select: {
+          code: true,
+        },
+      },
       items: {
         include: {
           variant: {
@@ -223,6 +248,27 @@ export default async function CustomerOrderDetailPage({
               Envio y pago
             </h2>
             <div className="space-y-4 text-sm">
+              <div>
+                <p className="text-lc-gray mb-1">Subtotal</p>
+                <p className="text-lc-white font-medium">{formatCOP(order.subtotal)}</p>
+              </div>
+              {order.discount > 0 ? (
+                <div>
+                  <p className="text-lc-gray mb-1">Descuento</p>
+                  <p className="text-lc-success font-medium">
+                    - {formatCOP(order.discount)}
+                  </p>
+                  {order.coupon ? (
+                    <p className="text-xs text-lc-gray mt-1">
+                      Cupon aplicado: {order.coupon.code}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+              <div>
+                <p className="text-lc-gray mb-1">Total</p>
+                <p className="text-lc-white font-medium">{formatCOP(order.total)}</p>
+              </div>
               <div>
                 <p className="text-lc-gray mb-1">Recibe</p>
                 <p className="text-lc-white font-medium">{order.shippingName}</p>

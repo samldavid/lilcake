@@ -10,6 +10,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { buildOrderWhatsAppLink, type PreparedCheckoutItem } from "@/lib/checkout"
 import { canCustomerResumeOrder } from "@/lib/order-status"
+import { createStripeDiscountCoupon } from "@/lib/coupons"
 
 export async function POST(
   req: Request,
@@ -29,6 +30,11 @@ export async function POST(
         userId: session.user.id,
       },
       include: {
+        coupon: {
+          select: {
+            code: true,
+          },
+        },
         items: {
           include: {
             variant: {
@@ -96,6 +102,15 @@ export async function POST(
 
     const origin = new URL(req.url).origin
     const stripeCurrency = "cop"
+    const stripeDiscountCoupon =
+      order.discount > 0
+        ? await createStripeDiscountCoupon({
+            currency: stripeCurrency,
+            couponCode: order.coupon?.code || "DESCUENTO",
+            discountAmount: order.discount,
+            orderNumber: order.orderNumber,
+          })
+        : null
 
     const lineItems = preparedItems.map((item) => ({
       price_data: {
@@ -118,10 +133,17 @@ export async function POST(
       success_url: `${origin}/checkout?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/cuenta/pedidos/${order.id}?canceled=true`,
       customer_email: session.user.email,
+      ...(stripeDiscountCoupon
+        ? {
+            discounts: [{ coupon: stripeDiscountCoupon.id }],
+          }
+        : {}),
       metadata: {
         orderId: order.id,
         orderNumber: order.orderNumber,
         userId: session.user.id,
+        couponCode: order.coupon?.code || "",
+        discountAmount: `${order.discount}`,
       },
     })
 

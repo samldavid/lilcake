@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { canCustomerCancelOrder } from "@/lib/order-status"
+import { releaseCouponUsage } from "@/lib/coupons"
 
 export async function POST(
   _req: Request,
@@ -25,6 +26,8 @@ export async function POST(
         id: true,
         status: true,
         paymentStatus: true,
+        couponId: true,
+        userId: true,
       },
     })
 
@@ -42,18 +45,24 @@ export async function POST(
       )
     }
 
-    const updatedOrder = await prisma.order.update({
-      where: { id: order.id },
-      data: {
-        status: "CANCELLED",
-        paymentStatus: order.paymentStatus === "PAID" ? "PAID" : "FAILED",
-      },
-      select: {
-        id: true,
-        orderNumber: true,
-        status: true,
-        paymentStatus: true,
-      },
+    const updatedOrder = await prisma.$transaction(async (tx) => {
+      if (order.couponId && order.paymentStatus !== "PAID") {
+        await releaseCouponUsage(tx, order.couponId, order.userId)
+      }
+
+      return tx.order.update({
+        where: { id: order.id },
+        data: {
+          status: "CANCELLED",
+          paymentStatus: order.paymentStatus === "PAID" ? "PAID" : "FAILED",
+        },
+        select: {
+          id: true,
+          orderNumber: true,
+          status: true,
+          paymentStatus: true,
+        },
+      })
     })
 
     return NextResponse.json(updatedOrder)

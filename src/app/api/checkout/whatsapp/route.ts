@@ -7,6 +7,7 @@ import {
   createPendingOrder,
   prepareCheckoutItems,
 } from "@/lib/checkout"
+import { CouponValidationError } from "@/lib/coupons"
 
 export async function POST(req: Request) {
   try {
@@ -44,6 +45,9 @@ export async function POST(req: Request) {
 
     console.error("WhatsApp Checkout Error:", error)
 
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json(
+      { error: message },
+      { status: error instanceof CouponValidationError ? 400 : 500 }
+    )
   }
 }

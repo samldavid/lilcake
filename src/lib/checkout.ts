@@ -1,6 +1,11 @@
 import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { buildWhatsAppLink, formatCOP, generateOrderNumber } from "@/lib/utils"
+import {
+  releaseCouponUsage,
+  reserveCouponUsage,
+  resolveCouponForSubtotal,
+} from "@/lib/coupons"
 import { z } from "zod"
 
 const checkoutItemSchema = z.object({
@@ -16,6 +21,7 @@ export const checkoutRequestSchema = z.object({
   shippingCity: z.string().min(2, "Ciudad requerida"),
   shippingPhone: z.string().min(7, "Telefono requerido"),
   paymentMethod: z.enum(["STRIPE", "WHATSAPP"]),
+  couponCode: z.string().trim().min(3, "Ingresa un codigo valido").optional(),
   notes: z.string().trim().optional(),
 })
 
@@ -102,31 +108,44 @@ async function createUniqueOrderNumber(tx: Prisma.TransactionClient) {
   throw new Error("No pudimos generar un numero unico para la orden.")
 }
 
+function roundCurrency(amount: number) {
+  return Math.round((amount + Number.EPSILON) * 100) / 100
+}
+
 export async function createPendingOrder(
   userId: string,
   payload: CheckoutRequest,
   items: PreparedCheckoutItem[]
 ) {
-  const subtotal = items.reduce(
+  const subtotal = roundCurrency(items.reduce(
     (total, item) => total + item.unitPrice * item.quantity,
     0
-  )
+  ))
 
   return prisma.$transaction(async (tx) => {
     const orderNumber = await createUniqueOrderNumber(tx)
+    const couponBreakdown = payload.couponCode?.trim()
+      ? await resolveCouponForSubtotal(tx, payload.couponCode, subtotal, userId)
+      : null
+
+    if (couponBreakdown) {
+      await reserveCouponUsage(tx, couponBreakdown.coupon, userId)
+    }
 
     return tx.order.create({
       data: {
         orderNumber,
         userId,
         subtotal,
-        total: subtotal,
+        discount: couponBreakdown?.discount ?? 0,
+        total: couponBreakdown?.total ?? subtotal,
         shippingName: payload.shippingName.trim(),
         shippingAddress: payload.shippingAddress.trim(),
         shippingCity: payload.shippingCity.trim(),
         shippingPhone: payload.shippingPhone.trim(),
         paymentMethod: payload.paymentMethod,
         paymentStatus: "PENDING",
+        couponId: couponBreakdown?.coupon.id ?? null,
         notes: payload.notes?.trim() || null,
         items: {
           create: items.map((item) => ({
@@ -155,6 +174,31 @@ function mergeOrderNotes(...notes: Array<string | null | undefined>) {
   return mergedNotes.length > 0 ? mergedNotes.join("\n") : null
 }
 
+export async function releaseOrderCouponReservation(orderId: string) {
+  return prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUnique({
+      where: { id: orderId },
+      select: {
+        id: true,
+        couponId: true,
+        userId: true,
+        status: true,
+        paymentStatus: true,
+      },
+    })
+
+    if (!order) {
+      throw new Error("No encontramos la orden para actualizar el cupon.")
+    }
+
+    if (order.couponId && order.status !== "CANCELLED" && order.paymentStatus !== "PAID") {
+      await releaseCouponUsage(tx, order.couponId, order.userId)
+    }
+
+    return order
+  })
+}
+
 export async function markOrderPaymentFailed(
   orderId: string,
   reason: string,
@@ -166,11 +210,18 @@ export async function markOrderPaymentFailed(
       select: {
         id: true,
         notes: true,
+        couponId: true,
+        userId: true,
+        paymentStatus: true,
       },
     })
 
     if (!order) {
       throw new Error("No encontramos la orden que se debe actualizar.")
+    }
+
+    if (order.paymentStatus !== "PAID" && order.paymentStatus !== "FAILED") {
+      await releaseCouponUsage(tx, order.couponId, order.userId)
     }
 
     return tx.order.update({
@@ -291,6 +342,7 @@ export async function finalizePaidOrder(orderId: string) {
 export function buildOrderWhatsAppLink(
   order: {
     orderNumber: string
+    discount?: number | null
     total: number
     shippingName: string
     shippingCity: string
@@ -309,6 +361,9 @@ export function buildOrderWhatsAppLink(
     `Hola, quiero confirmar el pedido ${order.orderNumber}.`,
     `Nombre: ${order.shippingName}`,
     `Ciudad: ${order.shippingCity}`,
+    ...(order.discount && order.discount > 0
+      ? [`Descuento aplicado: ${formatCOP(order.discount)}`]
+      : []),
     `Total: ${formatCOP(order.total)}`,
     "Productos:",
     ...itemLines,

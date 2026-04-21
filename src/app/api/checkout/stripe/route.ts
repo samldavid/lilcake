@@ -15,6 +15,11 @@ import {
 } from "@/lib/checkout"
 import { authOptions } from "@/lib/auth"
 import { getServerSession } from "next-auth"
+import {
+  CouponValidationError,
+  createStripeDiscountCoupon,
+  normalizeCouponCode,
+} from "@/lib/coupons"
 
 export async function GET(req: Request) {
   try {
@@ -122,6 +127,15 @@ export async function POST(req: Request) {
     const origin = new URL(req.url).origin
 
     const stripeCurrency = "cop"
+    const stripeDiscountCoupon =
+      order.discount > 0
+        ? await createStripeDiscountCoupon({
+            currency: stripeCurrency,
+            couponCode: normalizeCouponCode(payload.couponCode || "DESCUENTO"),
+            discountAmount: order.discount,
+            orderNumber: order.orderNumber,
+          })
+        : null
 
     const lineItems = checkoutItems.map((item) => ({
       price_data: {
@@ -144,10 +158,19 @@ export async function POST(req: Request) {
       success_url: `${origin}/checkout?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/checkout?canceled=true`,
       customer_email: payload.customerEmail,
+      ...(stripeDiscountCoupon
+        ? {
+            discounts: [{ coupon: stripeDiscountCoupon.id }],
+          }
+        : {}),
       metadata: {
         orderId: order.id,
         orderNumber: order.orderNumber,
         userId: session.user.id,
+        couponCode: payload.couponCode
+          ? normalizeCouponCode(payload.couponCode)
+          : "",
+        discountAmount: `${order.discount}`,
       },
     })
 
@@ -170,6 +193,9 @@ export async function POST(req: Request) {
 
     console.error("Stripe Checkout Error:", error)
 
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json(
+      { error: message },
+      { status: error instanceof CouponValidationError ? 400 : 500 }
+    )
   }
 }

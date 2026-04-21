@@ -14,6 +14,25 @@ LilCake es una tienda construida con Next.js que incluye:
 
 ### 2026-04-20
 
+- Se anadio un sistema real de cupones conectado al checkout y al admin:
+  - los cupones ahora se pueden crear, editar, activar, desactivar y eliminar desde el panel
+  - el checkout solo envia el `couponCode`; toda la validacion y el calculo del descuento viven en backend
+  - las ordenes ahora guardan subtotal, descuento, total y referencia del cupon
+  - el uso del cupon se reserva dentro de una transaccion al crear la orden pendiente y se libera si esa orden falla o se cancela antes de pagarse
+  - Stripe ahora recibe el descuento aprobado por backend para que el monto cobrado coincida con el total real de la orden
+- Se anadieron limites duales para cupones:
+  - limite global de uso entre todos los clientes
+  - limite por cliente para un mismo cupon
+  - una tabla `CouponCustomerUsage` ahora registra de forma segura el uso por usuario
+  - el panel admin ya muestra por separado el restante global y la regla por cliente
+- Se mejoro la experiencia del admin para cupones:
+  - crear o editar cupon ya no ocurre en un panel apretado, sino en una ventana modal dedicada
+  - el formulario explica mejor la diferencia entre limite global y limite por cliente
+  - los cupones agotados ahora se marcan como `Agotado`
+- Se mejoro la comodidad del checkout:
+  - los campos de envio usan metadatos reales de autocompletado del navegador
+  - el cliente puede elegir recordar sus datos de envio en este navegador para futuras compras
+  - el checkout vuelve a cargar datos guardados localmente y datos basicos del perfil autenticado si existen
 - Se reforzo la seguridad de cuenta:
   - la politica de contrasena exige mayuscula, minuscula, numero, simbolo y confirmacion
   - los usuarios pueden crear o cambiar contrasena desde el area de cuenta
@@ -260,6 +279,60 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 ```
 
 Usa como `STRIPE_WEBHOOK_SECRET` el secreto de firma que imprime la CLI en local.
+
+## Cupones y seguridad de descuentos
+
+Los cupones ahora forman parte del flujo real de ordenes, no de una previsualizacion aislada del frontend.
+
+### Como se valida un cupon
+
+1. El storefront solo envia `couponCode`.
+2. El backend vuelve a cargar precios confiables desde Prisma y recalcula el subtotal real.
+3. La validacion del cupon revisa:
+   - estado activo o inactivo
+   - fecha de expiracion
+   - compra minima
+   - limite global de uso (`maxUses`)
+   - limite de uso por cliente (`maxUsesPerUser`)
+4. Si el cupon es valido, el backend guarda `discount`, `total` y `couponId` en la orden pendiente.
+5. Stripe recibe un descuento generado desde servidor para que el total de Stripe coincida con el total aprobado por backend.
+6. Si el flujo de pago falla o la orden se cancela antes de quedar pagada, el uso reservado del cupon se libera.
+
+### Limite global vs limite por cliente
+
+- Limite global: cuantas veces se puede usar el cupon entre toda la tienda.
+- Limite por cliente: cuantas veces puede usarlo la misma cuenta autenticada.
+
+Ejemplo:
+
+- `maxUses = 100`
+- `maxUsesPerUser = 1`
+
+Eso significa que el cupon puede llegar a 100 usos totales, pero cada cliente autenticado solo puede consumirlo una vez.
+
+### Archivos clave de cupones
+
+- `src/lib/coupons.ts`: validacion segura, reserva/liberacion de uso y helper de Stripe
+- `src/lib/admin-coupons.ts`: validacion y serializacion del lado admin
+- `src/app/api/checkout/coupon/route.ts`: endpoint de previsualizacion en checkout
+- `src/app/api/admin/coupons/route.ts`
+- `src/app/api/admin/coupons/[id]/route.ts`
+- `src/components/admin/AdminCouponsManager.tsx`
+
+## Autocompletado y datos recordados en checkout
+
+El checkout ahora combina autocompletado nativo del navegador con recordatorio local de datos de envio.
+
+- Los inputs exponen pistas reales de autocomplete como:
+  - `shipping name`
+  - `email`
+  - `shipping street-address`
+  - `shipping address-level2`
+  - `tel`
+- El cliente puede elegir guardar los datos de envio en el navegador actual.
+- Los valores guardados se reutilizan en futuras visitas a `/checkout`.
+- Si el usuario esta autenticado, el checkout tambien completa nombre y email disponibles del perfil.
+- Esto solo mejora comodidad local; la logica de cupones y totales sigue estando completamente protegida en backend.
 
 ## Plan de migracion PostgreSQL
 

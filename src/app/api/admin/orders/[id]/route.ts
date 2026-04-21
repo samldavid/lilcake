@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { updateOrderSchema } from "@/lib/validations"
+import { releaseCouponUsage } from "@/lib/coupons"
 
 export async function PATCH(
   req: Request,
@@ -24,6 +25,8 @@ export async function PATCH(
         id: true,
         status: true,
         paymentStatus: true,
+        couponId: true,
+        userId: true,
       },
     })
 
@@ -70,16 +73,27 @@ export async function PATCH(
       nextData.paymentStatus = "FAILED"
     }
 
-    const updatedOrder = await prisma.order.update({
-      where: { id },
-      data: nextData,
-      select: {
-        id: true,
-        status: true,
-        paymentStatus: true,
-        trackingNumber: true,
-        notes: true,
-      },
+    const updatedOrder = await prisma.$transaction(async (tx) => {
+      if (
+        nextData.status === "CANCELLED" &&
+        currentOrder.status !== "CANCELLED" &&
+        currentOrder.paymentStatus !== "PAID" &&
+        currentOrder.couponId
+      ) {
+        await releaseCouponUsage(tx, currentOrder.couponId, currentOrder.userId)
+      }
+
+      return tx.order.update({
+        where: { id },
+        data: nextData,
+        select: {
+          id: true,
+          status: true,
+          paymentStatus: true,
+          trackingNumber: true,
+          notes: true,
+        },
+      })
     })
 
     return NextResponse.json(updatedOrder)
