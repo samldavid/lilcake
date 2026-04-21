@@ -175,49 +175,29 @@ export async function reserveCouponUsage(
     return
   }
 
-  const incrementExistingUsage = async () =>
-    tx.couponCustomerUsage.updateMany({
-      where: {
+  const usage = await tx.couponCustomerUsage.upsert({
+    where: {
+      couponId_userId: {
         couponId: coupon.id,
         userId,
-        usedCount: {
-          lt: coupon.maxUsesPerUser!,
-        },
       },
-      data: {
-        usedCount: {
-          increment: 1,
-        },
+    },
+    create: {
+      couponId: coupon.id,
+      userId,
+      usedCount: 1,
+    },
+    update: {
+      usedCount: {
+        increment: 1,
       },
-    })
+    },
+    select: {
+      usedCount: true,
+    },
+  })
 
-  let updatedUsage = await incrementExistingUsage()
-
-  if (updatedUsage.count > 0) {
-    return
-  }
-
-  try {
-    await tx.couponCustomerUsage.create({
-      data: {
-        couponId: coupon.id,
-        userId,
-        usedCount: 1,
-      },
-    })
-    return
-  } catch (error) {
-    const prismaError =
-      error instanceof Prisma.PrismaClientKnownRequestError ? error : null
-
-    if (prismaError?.code !== "P2002") {
-      throw error
-    }
-  }
-
-  updatedUsage = await incrementExistingUsage()
-
-  if (updatedUsage.count === 0) {
+  if (usage.usedCount > coupon.maxUsesPerUser) {
     throw new CouponValidationError(
       "Ya alcanzaste el limite de uso permitido para este cupon."
     )

@@ -5,6 +5,37 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google"
 import { prisma } from "./prisma"
 import { loginSchema } from "@/lib/validations"
+import {
+  buildRateLimitKey,
+  consumeRateLimit,
+  resetRateLimit,
+} from "@/lib/rate-limit"
+
+const DEFAULT_INSECURE_NEXTAUTH_SECRET =
+  "lilcake-dev-secret-change-in-production-2026"
+
+function assertSecureNextAuthSecret() {
+  if (process.env.NODE_ENV !== "production") {
+    return
+  }
+
+  const secret = process.env.NEXTAUTH_SECRET
+
+  if (!secret) {
+    throw new Error("Falta NEXTAUTH_SECRET en produccion.")
+  }
+
+  if (
+    secret === DEFAULT_INSECURE_NEXTAUTH_SECRET ||
+    secret.trim().length < 32
+  ) {
+    throw new Error(
+      "NEXTAUTH_SECRET debe ser robusto y distinto al valor de ejemplo en produccion."
+    )
+  }
+}
+
+assertSecureNextAuthSecret()
 
 declare module "next-auth" {
   interface Session {
@@ -32,7 +63,18 @@ export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [],
   callbacks: {
-    async signIn() {
+    async signIn({ account, profile }) {
+      if (account?.provider === "google") {
+        const googleProfile =
+          profile && typeof profile === "object"
+            ? (profile as { email_verified?: boolean })
+            : null
+
+        if (googleProfile?.email_verified !== true) {
+          return false
+        }
+      }
+
       return true
     },
     async jwt({ token, user }) {
@@ -88,6 +130,10 @@ if (googleAuthEnabled) {
       clientSecret: googleClientSecret!,
       allowDangerousEmailAccountLinking: true,
       profile(profile) {
+        if (profile.email_verified !== true || !profile.email) {
+          throw new Error("El correo de Google debe estar verificado.")
+        }
+
         return {
           id: profile.sub,
           name: profile.name,
@@ -103,23 +149,37 @@ if (googleAuthEnabled) {
 authOptions.providers.push(
   CredentialsProvider({
     name: "credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Contraseña", type: "password" },
-      },
+    credentials: {
+      email: { label: "Email", type: "email" },
+      password: { label: "Contrasena", type: "password" },
+    },
     async authorize(credentials) {
       const parse = loginSchema.safeParse(credentials)
 
       if (!parse.success) {
-        throw new Error("Credenciales inválidas")
+        throw new Error("Credenciales invalidas")
+      }
+
+      const normalizedEmail = parse.data.email.toLowerCase().trim()
+      const loginRateLimitKey = buildRateLimitKey("auth-login", [
+        normalizedEmail,
+      ])
+      const loginRateLimit = consumeRateLimit({
+        key: loginRateLimitKey,
+        limit: 5,
+        windowMs: 15 * 60 * 1000,
+      })
+
+      if (!loginRateLimit.allowed) {
+        throw new Error("Demasiados intentos. Intenta de nuevo en unos minutos.")
       }
 
       const user = await prisma.user.findUnique({
-        where: { email: parse.data.email.toLowerCase().trim() },
+        where: { email: normalizedEmail },
       })
 
       if (!user?.password) {
-        throw new Error("Credenciales inválidas")
+        throw new Error("Credenciales invalidas")
       }
 
       const passwordMatch = await bcrypt.compare(
@@ -128,13 +188,15 @@ authOptions.providers.push(
       )
 
       if (!passwordMatch) {
-        throw new Error("Credenciales inválidas")
+        throw new Error("Credenciales invalidas")
       }
+
+      resetRateLimit(loginRateLimitKey)
 
       return {
         id: user.id,
         name: user.name || "",
-        email: user.email || "",
+        email: user.email || normalizedEmail,
         role: user.role,
       }
     },

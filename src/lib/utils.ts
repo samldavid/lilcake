@@ -1,3 +1,5 @@
+import { randomBytes } from "crypto"
+
 /**
  * Format a number as Colombian Pesos (COP)
  */
@@ -16,7 +18,7 @@ export function formatCOP(amount: number): string {
 export function generateOrderNumber(): string {
   const date = new Date()
   const dateStr = date.toISOString().slice(0, 10).replace(/-/g, "")
-  const rand = Math.floor(Math.random() * 900 + 100) // 100-999
+  const rand = randomBytes(3).toString("hex").toUpperCase()
   return `LC-${dateStr}-${rand}`
 }
 
