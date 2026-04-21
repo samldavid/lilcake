@@ -20,6 +20,9 @@ export type AdminOrderRow = {
   orderNumber: string
   createdAt: string
   shippingName: string | null
+  customerEmail: string | null
+  shippingCarrier: string | null
+  trackingNumber: string | null
   paymentMethod: string
   paymentStatus: string
   status: string
@@ -48,6 +51,9 @@ export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
           const score = scoreAdminSearchMatch(activeQuery, [
             order.orderNumber,
             order.shippingName,
+            order.customerEmail,
+            order.shippingCarrier,
+            order.trackingNumber,
             order.user.name,
             order.user.email,
             order.paymentMethod,
@@ -80,7 +86,7 @@ export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
           <AdminSearchInput
             value={query}
             onChange={setQuery}
-            placeholder="Buscar por ID, cliente, correo o estado..."
+            placeholder="Buscar por pedido, cliente, correo, guia o transportadora..."
           />
         </div>
         <p className="text-xs text-lc-gray">
@@ -133,12 +139,21 @@ export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
                     <div className="text-xs text-lc-gray mt-0.5">
                       {new Date(order.createdAt).toLocaleDateString("es-CO")}
                     </div>
+                    {order.trackingNumber ? (
+                      <div className="text-xs text-lc-cyan mt-1">
+                        {order.shippingCarrier
+                          ? `${order.shippingCarrier} • Guia ${order.trackingNumber}`
+                          : `Guia ${order.trackingNumber}`}
+                      </div>
+                    ) : null}
                   </td>
                   <td className="px-6 py-4">
                     <div className="font-bold text-lc-white text-sm">
                       {order.shippingName || order.user.name || "Cliente"}
                     </div>
-                    <div className="text-xs text-lc-gray mt-0.5">{order.user.email}</div>
+                    <div className="text-xs text-lc-gray mt-0.5">
+                      {order.customerEmail || order.user.email}
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col gap-1 items-start">

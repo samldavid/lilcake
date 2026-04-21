@@ -39,6 +39,8 @@ const accountPageUserSelect = {
       status: true,
       paymentStatus: true,
       total: true,
+      shippingCarrier: true,
+      trackingNumber: true,
       _count: {
         select: {
           items: true,
@@ -155,6 +157,13 @@ export default async function AccountPage() {
                     <p className="text-sm text-lc-gray">
                       {order._count.items} {order._count.items === 1 ? "articulo" : "articulos"}
                     </p>
+                    {order.trackingNumber ? (
+                      <p className="text-xs text-lc-cyan mt-2">
+                        {order.shippingCarrier
+                          ? `${order.shippingCarrier} • Guia ${order.trackingNumber}`
+                          : `Guia ${order.trackingNumber}`}
+                      </p>
+                    ) : null}
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3">

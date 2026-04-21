@@ -10,9 +10,13 @@ import { Input } from "@/components/ui/Input"
 
 type RegisterFormProps = {
   googleEnabled: boolean
+  termsError?: boolean
 }
 
-export function RegisterForm({ googleEnabled }: RegisterFormProps) {
+export function RegisterForm({
+  googleEnabled,
+  termsError = false,
+}: RegisterFormProps) {
   const router = useRouter()
 
   const [formData, setFormData] = React.useState({
@@ -21,6 +25,7 @@ export function RegisterForm({ googleEnabled }: RegisterFormProps) {
     password: "",
     confirmPassword: "",
     phone: "",
+    acceptedTerms: false,
   })
 
   const [error, setError] = React.useState("")
@@ -60,11 +65,25 @@ export function RegisterForm({ googleEnabled }: RegisterFormProps) {
         label="Registrarme con Google"
         googleEnabled={googleEnabled}
         helperText="Si es tu primera vez, tu cuenta se crea automaticamente con tu perfil de Google."
+        requiresTermsAcceptance
+        hasAcceptedTerms={formData.acceptedTerms}
+        termsErrorMessage={
+          termsError
+            ? "Para crear una cuenta con Google debes aceptar primero los terminos y condiciones."
+            : undefined
+        }
+        onTermsRequired={() =>
+          setError(
+            "Debes aceptar los terminos y condiciones antes de crear tu cuenta."
+          )
+        }
       />
 
       <div className="flex items-center justify-center">
         <div className="h-px flex-1 bg-lc-border" />
-        <span className="px-4 text-xs uppercase tracking-widest text-lc-gray">O crea tu cuenta con correo</span>
+        <span className="px-4 text-xs uppercase tracking-widest text-lc-gray">
+          O crea tu cuenta con correo
+        </span>
         <div className="h-px flex-1 bg-lc-border" />
       </div>
 
@@ -101,31 +120,63 @@ export function RegisterForm({ googleEnabled }: RegisterFormProps) {
           onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
         />
         <Input
-          label="Contraseña"
+          label="ContraseÃ±a"
           type="password"
           name="password"
           autoComplete="new-password"
           required
-          placeholder="Crea una contraseña segura"
+          placeholder="Crea una contraseÃ±a segura"
           value={formData.password}
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, password: e.target.value })
+          }
         />
         <PasswordRequirements
           password={formData.password}
           identityValues={[formData.name, formData.email]}
         />
         <Input
-          label="Confirmar contraseña"
+          label="Confirmar contraseÃ±a"
           type="password"
           name="confirmPassword"
           autoComplete="new-password"
           required
-          placeholder="Repite tu contraseña"
+          placeholder="Repite tu contraseÃ±a"
           value={formData.confirmPassword}
           onChange={(e) =>
             setFormData({ ...formData, confirmPassword: e.target.value })
           }
         />
+
+        <label className="flex items-start gap-3 rounded-2xl border border-lc-border bg-lc-darker/60 p-4 text-sm text-lc-gray-light">
+          <input
+            type="checkbox"
+            checked={formData.acceptedTerms}
+            onChange={(e) =>
+              setFormData({ ...formData, acceptedTerms: e.target.checked })
+            }
+            className="mt-1 h-4 w-4 rounded border-lc-border bg-lc-black text-lc-purple focus:ring-lc-purple"
+          />
+          <span className="leading-6">
+            He leido y acepto los{" "}
+            <Link
+              href="/terminos"
+              target="_blank"
+              className="font-semibold text-lc-cyan transition-colors hover:text-white"
+            >
+              terminos y condiciones
+            </Link>{" "}
+            y la{" "}
+            <Link
+              href="/privacidad"
+              target="_blank"
+              className="font-semibold text-lc-cyan transition-colors hover:text-white"
+            >
+              politica de privacidad
+            </Link>
+            .
+          </span>
+        </label>
 
         {error ? (
           <div className="animate-slide-up rounded-lg border border-lc-error border-opacity-30 bg-lc-error/10 p-3 text-sm text-lc-error">
@@ -133,13 +184,19 @@ export function RegisterForm({ googleEnabled }: RegisterFormProps) {
           </div>
         ) : null}
 
-        <Button type="submit" className="group mt-4 w-full" disabled={loading}>
+        <Button
+          type="submit"
+          className="group mt-4 w-full"
+          disabled={loading || !formData.acceptedTerms}
+        >
           {loading ? (
             "Creando cuenta..."
           ) : (
             <>
               <span className="flex-1 text-center">Registrarme</span>
-              <span className="transition-transform group-hover:translate-x-1">{"->"}</span>
+              <span className="transition-transform group-hover:translate-x-1">
+                {"->"}
+              </span>
             </>
           )}
         </Button>

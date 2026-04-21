@@ -10,6 +10,7 @@ import { prisma } from "@/lib/prisma"
 import {
   checkoutRequestSchema,
   createPendingOrder,
+  finalizePaidOrder,
   markOrderPaymentFailed,
   prepareCheckoutItems,
 } from "@/lib/checkout"
@@ -20,6 +21,7 @@ import {
   normalizeCouponCode,
 } from "@/lib/coupons"
 import { getPublicErrorMessage } from "@/lib/errors"
+import { sendOrderConfirmationEmail } from "@/lib/order-notifications"
 
 function getCheckoutStatus(orderPaymentStatus: string, stripePaymentStatus: string | null) {
   if (orderPaymentStatus === "PAID") {
@@ -109,6 +111,27 @@ export async function GET(req: Request) {
         { error: "No encontramos la orden asociada a esa sesion." },
         { status: 404 }
       )
+    }
+
+    if (
+      checkoutSession.payment_status === "paid" &&
+      order.paymentStatus !== "PAID"
+    ) {
+      const finalizedOrder = await finalizePaidOrder(order.id)
+      await sendOrderConfirmationEmail(order.id).catch((error) => {
+        console.error("Stripe return confirmation email error:", error)
+      })
+
+      return NextResponse.json({
+        status: "paid",
+        orderNumber: finalizedOrder.orderNumber,
+      })
+    }
+
+    if (order.paymentStatus === "PAID") {
+      await sendOrderConfirmationEmail(order.id).catch((error) => {
+        console.error("Stripe paid order confirmation email retry error:", error)
+      })
     }
 
     return NextResponse.json({

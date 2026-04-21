@@ -8,6 +8,10 @@ import {
   requireAdminApiSession,
 } from "@/lib/auth-guards"
 import { getPublicErrorMessage } from "@/lib/errors"
+import {
+  sendOrderConfirmationEmail,
+  sendOrderShippedEmail,
+} from "@/lib/order-notifications"
 
 export async function PATCH(
   req: Request,
@@ -39,6 +43,10 @@ export async function PATCH(
         paymentStatus: true,
         couponId: true,
         userId: true,
+        trackingNumber: true,
+        shippingCarrier: true,
+        confirmedAt: true,
+        shippedAt: true,
       },
     })
 
@@ -53,7 +61,10 @@ export async function PATCH(
     const nextData: {
       status?: OrderStatus
       paymentStatus?: PaymentStatus
+      shippingCarrier?: string | null
       trackingNumber?: string | null
+      confirmedAt?: Date | null
+      shippedAt?: Date | null
       notes?: string | null
     } = {}
 
@@ -69,12 +80,61 @@ export async function PATCH(
       nextData.trackingNumber = data.trackingNumber?.trim() || null
     }
 
+    if (Object.prototype.hasOwnProperty.call(body, "shippingCarrier")) {
+      nextData.shippingCarrier = data.shippingCarrier?.trim() || null
+    }
+
     if (Object.prototype.hasOwnProperty.call(body, "notes")) {
       nextData.notes = data.notes?.trim() || null
     }
 
     if (nextData.paymentStatus === "PAID" && !nextData.status && currentOrder.status === "PENDING") {
       nextData.status = "CONFIRMED"
+    }
+
+    const effectiveStatus = nextData.status ?? currentOrder.status
+    const effectivePaymentStatus =
+      nextData.paymentStatus ?? currentOrder.paymentStatus
+    const effectiveTrackingNumber =
+      Object.prototype.hasOwnProperty.call(nextData, "trackingNumber")
+        ? nextData.trackingNumber ?? null
+        : currentOrder.trackingNumber
+    const effectiveShippingCarrier =
+      Object.prototype.hasOwnProperty.call(nextData, "shippingCarrier")
+        ? nextData.shippingCarrier ?? null
+        : currentOrder.shippingCarrier
+
+    const effectiveIsConfirmedState = ["CONFIRMED", "SHIPPED", "DELIVERED"].includes(
+      effectiveStatus
+    )
+    const currentIsConfirmedState = ["CONFIRMED", "SHIPPED", "DELIVERED"].includes(
+      currentOrder.status
+    )
+    const orderJustConfirmed =
+      (!currentIsConfirmedState && effectiveIsConfirmedState) ||
+      (currentOrder.paymentStatus !== "PAID" && effectivePaymentStatus === "PAID")
+    const orderJustShipped =
+      currentOrder.status !== "SHIPPED" && effectiveStatus === "SHIPPED"
+
+    if (
+      effectiveStatus === "SHIPPED" &&
+      (!effectiveTrackingNumber || !effectiveShippingCarrier)
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Agrega la transportadora y el numero de guia antes de marcar el pedido como enviado.",
+        },
+        { status: 400 }
+      )
+    }
+
+    if (orderJustConfirmed && !currentOrder.confirmedAt) {
+      nextData.confirmedAt = new Date()
+    }
+
+    if (orderJustShipped && !currentOrder.shippedAt) {
+      nextData.shippedAt = new Date()
     }
 
     if (
@@ -102,11 +162,26 @@ export async function PATCH(
           id: true,
           status: true,
           paymentStatus: true,
+          shippingCarrier: true,
           trackingNumber: true,
+          confirmedAt: true,
+          shippedAt: true,
           notes: true,
         },
       })
     })
+
+    if (orderJustConfirmed) {
+      await sendOrderConfirmationEmail(id).catch((error) => {
+        console.error("Admin order confirmation email error:", error)
+      })
+    }
+
+    if (orderJustShipped) {
+      await sendOrderShippedEmail(id).catch((error) => {
+        console.error("Admin order shipping email error:", error)
+      })
+    }
 
     return NextResponse.json(updatedOrder)
   } catch (error) {

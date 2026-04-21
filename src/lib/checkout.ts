@@ -23,6 +23,12 @@ export const checkoutRequestSchema = z.object({
   paymentMethod: z.enum(["STRIPE", "WHATSAPP"]),
   couponCode: z.string().trim().min(3, "Ingresa un codigo valido").optional(),
   notes: z.string().trim().optional(),
+  acceptedTerms: z
+    .boolean()
+    .refine(
+      (value) => value,
+      "Debes aceptar los terminos y condiciones antes de confirmar la compra"
+    ),
 })
 
 export type CheckoutRequest = z.infer<typeof checkoutRequestSchema>
@@ -136,6 +142,7 @@ export async function createPendingOrder(
       data: {
         orderNumber,
         userId,
+        customerEmail: payload.customerEmail.trim().toLowerCase(),
         subtotal,
         discount: couponBreakdown?.discount ?? 0,
         total: couponBreakdown?.total ?? subtotal,
@@ -243,6 +250,15 @@ export async function markOrderPaymentFailed(
 
 export async function finalizePaidOrder(orderId: string) {
   return prisma.$transaction(async (tx) => {
+    // Prevent duplicate stock adjustments if the webhook and the return flow
+    // try to finalize the same order at the same time.
+    await tx.$queryRaw`
+      SELECT "id"
+      FROM "Order"
+      WHERE "id" = ${orderId}
+      FOR UPDATE
+    `
+
     const order = await tx.order.findUnique({
       where: { id: orderId },
       select: {
@@ -251,6 +267,7 @@ export async function finalizePaidOrder(orderId: string) {
         orderNumber: true,
         paymentStatus: true,
         status: true,
+        confirmedAt: true,
         notes: true,
         items: {
           select: {
@@ -326,6 +343,7 @@ export async function finalizePaidOrder(orderId: string) {
       data: {
         paymentStatus: "PAID",
         status: order.status === "PENDING" ? "CONFIRMED" : order.status,
+        confirmedAt: order.confirmedAt ?? new Date(),
         notes: nextNotes || null,
       },
       select: {

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { finalizePaidOrder, markOrderPaymentFailed } from "@/lib/checkout"
 import { getStripe, isStripeEnabled } from "@/lib/stripe"
 import { getPublicErrorMessage } from "@/lib/errors"
+import { sendOrderConfirmationEmail } from "@/lib/order-notifications"
 
 export const runtime = "nodejs"
 
@@ -67,7 +68,12 @@ async function completeStripeOrder(session: Stripe.Checkout.Session) {
     await syncStripeSessionOnOrder(order.id, session.id)
   }
 
-  return finalizePaidOrder(order.id)
+  const finalizedOrder = await finalizePaidOrder(order.id)
+  await sendOrderConfirmationEmail(order.id).catch((error) => {
+    console.error("Stripe webhook confirmation email error:", error)
+  })
+
+  return finalizedOrder
 }
 
 async function failStripeOrder(session: Stripe.Checkout.Session, reason: string) {

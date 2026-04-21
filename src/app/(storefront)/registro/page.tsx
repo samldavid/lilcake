@@ -2,7 +2,13 @@ import { RegisterForm } from "./RegisterForm"
 import { googleAuthEnabled } from "@/lib/auth"
 import { Card, CardBody, CardHeader } from "@/components/ui/Card"
 
-export default function RegisterPage() {
+export default async function RegisterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>
+}) {
+  const params = await searchParams
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-lc-black px-4 py-12 sm:px-6 lg:px-8">
       <div className="relative mt-8 mb-8 w-full max-w-md animate-fade-in">
@@ -17,7 +23,10 @@ export default function RegisterPage() {
             </p>
           </CardHeader>
           <CardBody className="p-8">
-            <RegisterForm googleEnabled={googleAuthEnabled} />
+            <RegisterForm
+              googleEnabled={googleAuthEnabled}
+              termsError={params.error === "terms"}
+            />
           </CardBody>
         </Card>
       </div>

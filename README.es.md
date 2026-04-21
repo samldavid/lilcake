@@ -12,6 +12,32 @@ LilCake es una tienda construida con Next.js que incluye:
 
 ## Historial de cambios
 
+### 2026-04-21
+
+- Se anadio consentimiento legal obligatorio para registro y checkout:
+  - el registro con correo y contrasena ahora exige aceptar terminos y politica de privacidad
+  - la creacion de cuenta con Google tambien queda protegida del lado del servidor si no hubo consentimiento previo
+  - el checkout ahora obliga a aceptar los documentos legales antes de crear cualquier orden con Stripe o WhatsApp
+  - el backend rechaza intentos de saltarse ese checkbox manipulando el frontend
+- Se mejoro la confiabilidad del cierre de pago con Stripe:
+  - el endpoint de regreso desde Stripe ahora puede finalizar la orden de forma segura si Stripe ya marco la sesion como pagada pero el webhook local todavia no entro
+  - la finalizacion de la orden ahora usa un lock de fila en base de datos para evitar descuentos dobles de stock si el webhook y el retorno compiten al mismo tiempo
+- Se ampliaron los datos logistico-comerciales de las ordenes:
+  - las ordenes ahora guardan `customerEmail`, `shippingCarrier`, `trackingNumber`, `confirmedAt`, `shippedAt` y marcas de tiempo de correos enviados
+  - el detalle de pedido en admin ahora muestra un bloque dedicado a envio/seguimiento y constancia de correos enviados al cliente
+  - el detalle del pedido en cuenta de cliente ahora muestra mejor la informacion de transportadora, guia y tiempos de confirmacion/envio
+  - la lista de pedidos del cliente ahora puede mostrar la guia de envio directamente cuando exista
+- Se anadieron reglas operativas reales para envios desde admin:
+  - el formulario administrativo del pedido ahora captura `shippingCarrier` y `trackingNumber`
+  - un pedido no puede marcarse como enviado si no tiene transportadora y numero de guia
+  - la busqueda de pedidos en admin ahora encuentra resultados por guia y transportadora
+- Se anadieron correos transaccionales de pedidos:
+  - los pedidos por WhatsApp envian un correo de “pedido recibido” al crearse
+  - los pedidos confirmados o pagados envian un correo de “pedido confirmado”
+  - los pedidos enviados mandan automaticamente un correo de “pedido enviado” con transportadora y guia
+  - la orden guarda la fecha exacta de cada correo enviado para auditoria y soporte
+  - el mismo sistema visual de correos de marca ahora cubre seguridad de cuenta y notificaciones de pedidos
+
 ### 2026-04-20
 
 - Se anadio un sistema real de cupones conectado al checkout y al admin:
@@ -294,7 +320,8 @@ El flujo de checkout ahora funciona asi:
 5. El webhook verifica la cabecera `stripe-signature` con `STRIPE_WEBHOOK_SECRET`.
 6. Cuando llega `checkout.session.completed` o `checkout.session.async_payment_succeeded`, la orden se finaliza una sola vez: el pago pasa a `PAID`, la orden pasa a confirmada, el stock se descuenta dentro de una transaccion y el carrito del usuario se limpia del lado del servidor.
 7. Cuando llega `checkout.session.async_payment_failed` o `checkout.session.expired`, la orden se marca como fallida sin confiar en el frontend.
-8. Despues de volver a `/checkout?success=true`, el storefront consulta el backend durante unos segundos hasta que esa finalizacion por webhook quede en `paid` o `failed`.
+8. Despues de volver a `/checkout?success=true`, el storefront consulta el backend durante unos segundos hasta que la finalizacion quede en `paid` o `failed`.
+9. Si Stripe ya marco la Checkout Session como pagada pero el webhook todavia no llego, el endpoint de regreso del usuario ahora puede finalizar la orden de forma segura como respaldo. Eso evita que la pantalla de confirmacion se quede congelada en local o cuando el webhook se retrasa.
 
 El endpoint del webhook es:
 
@@ -317,6 +344,43 @@ El endpoint de estado usado por la pagina de regreso es:
 ```
 
 Ahora exige al propietario autenticado de la orden y puede devolver `pending`, `processing`, `paid` o `failed` mientras el webhook termina de ponerse al dia.
+
+## Seguimiento de envios y correos de pedidos
+
+La logistica del pedido ahora forma parte del flujo real tanto en admin como en la cuenta del cliente.
+
+- Cada orden puede guardar:
+  - `shippingCarrier`
+  - `trackingNumber`
+  - `confirmedAt`
+  - `shippedAt`
+  - `receiptEmailSentAt`
+  - `confirmationEmailSentAt`
+  - `shippingEmailSentAt`
+- El detalle del pedido en admin ahora incluye:
+  - campos visibles de transportadora y guia
+  - marcas de tiempo de confirmacion y despacho
+  - constancia de correos enviados relacionados con el pedido
+- El detalle del pedido del cliente ahora muestra:
+  - datos del destinatario
+  - transportadora y guia
+  - tiempos de confirmacion y envio cuando existan
+- La busqueda de pedidos del admin ahora soporta coincidencias por guia y transportadora.
+
+### Comportamiento de los correos de pedidos
+
+- Los pedidos `WHATSAPP` envian un correo de recibido al crearse.
+- Los pedidos confirmados por pago o por cambio de estado envian un correo de confirmacion.
+- Los pedidos marcados como `SHIPPED` envian un correo de envio con transportadora y guia.
+- El correo de envio solo sale cuando existen tanto `shippingCarrier` como `trackingNumber`.
+- Las fechas de envio de correos quedan guardadas en la orden para trazabilidad posterior.
+
+## Consentimiento legal en registro y checkout
+
+- El registro ahora exige aceptar terminos y condiciones y politica de privacidad.
+- El alta con Google tambien queda protegida en backend, no solo en la interfaz.
+- El checkout bloquea la creacion de ordenes hasta que el cliente acepte los documentos legales.
+- Esa validacion se repite en backend, asi que no basta con manipular peticiones del frontend para evitarla.
 
 ## Cupones y seguridad de descuentos
 

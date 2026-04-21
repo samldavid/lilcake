@@ -10,6 +10,7 @@ export const registerSchema = z
     password: z.string().min(1, "La contraseña es obligatoria"),
     confirmPassword: z.string().min(1, "Confirma tu contraseña"),
     phone: z.string().optional(),
+    acceptedTerms: z.boolean(),
   })
   .superRefine((data, ctx) => {
     const passwordErrors = getPasswordValidationErrors(data.password, [
@@ -30,6 +31,14 @@ export const registerSchema = z
         code: z.ZodIssueCode.custom,
         path: ["confirmPassword"],
         message: "Las contraseñas no coinciden",
+      })
+    }
+
+    if (!data.acceptedTerms) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["acceptedTerms"],
+        message: "Debes aceptar los terminos y condiciones para crear tu cuenta",
       })
     }
   })
@@ -135,6 +144,7 @@ export const createOrderSchema = z.object({
     )
     .min(1, "Debes agregar al menos un producto"),
   shippingName: z.string().min(2, "Nombre de envio requerido"),
+  customerEmail: z.string().email("Email invalido").optional(),
   shippingAddress: z.string().min(5, "Direccion requerida"),
   shippingCity: z.string().min(2, "Ciudad requerida"),
   shippingPhone: z.string().min(7, "Telefono requerido"),
@@ -148,6 +158,7 @@ export const updateOrderSchema = z.object({
     .enum(["PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED"])
     .optional(),
   paymentStatus: z.enum(["PENDING", "PAID", "FAILED"]).optional(),
+  shippingCarrier: z.string().max(120, "La transportadora es demasiado larga").optional(),
   trackingNumber: z.string().optional(),
   notes: z.string().optional(),
 })

@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs"
+import { cookies } from "next/headers"
 import { NextAuthOptions } from "next-auth"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import CredentialsProvider from "next-auth/providers/credentials"
@@ -10,6 +11,10 @@ import {
   consumeRateLimit,
   resetRateLimit,
 } from "@/lib/rate-limit"
+import {
+  hasAcceptedTermsCookie,
+  TERMS_CONSENT_COOKIE_NAME,
+} from "@/lib/legal-consent"
 
 const DEFAULT_INSECURE_NEXTAUTH_SECRET =
   "lilcake-dev-secret-change-in-production-2026"
@@ -62,11 +67,31 @@ declare module "next-auth/jwt" {
   }
 }
 
+async function hasTermsConsentForGoogleSignup(email?: string | null) {
+  if (!email) {
+    return false
+  }
+
+  const existingUser = await prisma.user.findUnique({
+    where: { email: email.toLowerCase().trim() },
+    select: { id: true },
+  })
+
+  if (existingUser) {
+    return true
+  }
+
+  const cookieStore = await cookies()
+  return hasAcceptedTermsCookie(
+    cookieStore.get(TERMS_CONSENT_COOKIE_NAME)?.value
+  )
+}
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [],
   callbacks: {
-    async signIn({ account, profile }) {
+    async signIn({ account, profile, user }) {
       if (account?.provider === "google") {
         const googleProfile =
           profile && typeof profile === "object"
@@ -75,6 +100,12 @@ export const authOptions: NextAuthOptions = {
 
         if (googleProfile?.email_verified !== true) {
           return false
+        }
+
+        const acceptedTerms = await hasTermsConsentForGoogleSignup(user.email)
+
+        if (!acceptedTerms) {
+          return "/registro?error=terms"
         }
       }
 

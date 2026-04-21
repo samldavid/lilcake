@@ -192,6 +192,7 @@ model Order {
   userId          String
   user            User        @relation(fields: [userId], references: [id])
   items           OrderItem[]
+  customerEmail   String?
   subtotal        Float
   discount        Float       @default(0)
   total           Float
@@ -200,18 +201,27 @@ model Order {
   shippingAddress String
   shippingCity    String
   shippingPhone   String
+  shippingCarrier String?
   trackingNumber  String?     // Manual tracking
   paymentMethod   String      // STRIPE | TRANSFER | ADDI | WHATSAPP
   paymentStatus   PaymentStatus @default(PENDING)
   stripeSessionId String?
   couponId        String?
   coupon          Coupon?     @relation(fields: [couponId], references: [id])
+  confirmedAt     DateTime?
+  shippedAt       DateTime?
+  receiptEmailSentAt DateTime?
+  confirmationEmailSentAt DateTime?
+  shippingEmailSentAt DateTime?
   notes           String?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
   @@index([createdAt])
   @@index([userId, createdAt])
+  @@index([customerEmail])
+  @@index([shippingCarrier])
+  @@index([trackingNumber])
   @@index([stripeSessionId])
 }
 

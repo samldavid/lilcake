@@ -12,6 +12,32 @@ LilCake is a Next.js storefront with:
 
 ## Changelog
 
+### 2026-04-21
+
+- Added mandatory legal consent for account creation and checkout:
+  - email/password registration now requires accepting terms and privacy policy
+  - Google account creation is blocked server-side unless consent was captured first
+  - checkout now requires legal acceptance before any Stripe or WhatsApp order can be created
+  - backend validation now rejects attempts to bypass that checkbox from the frontend
+- Improved Stripe checkout confirmation reliability:
+  - the return endpoint now safely finalizes the paid order if Stripe already marked the session as paid but the webhook has not reached the local environment yet
+  - order finalization now uses a database row lock to avoid duplicate stock changes if the webhook and the return flow race each other
+- Expanded order shipping data and customer visibility:
+  - orders now persist `customerEmail`, `shippingCarrier`, `trackingNumber`, `confirmedAt`, `shippedAt`, and email delivery timestamps
+  - the admin order detail now includes a dedicated shipping/tracking block and a record of sent customer emails
+  - the customer order detail now includes a clearer shipping section with carrier, guide number, and confirmation/shipping timestamps
+  - the customer account list now surfaces shipping guide data directly when available
+- Added operational shipping rules in admin:
+  - the admin order form now collects `shippingCarrier` and `trackingNumber`
+  - an order cannot be marked as shipped until both carrier and guide number exist
+  - admin order search now also matches carrier and tracking guide values
+- Added transactional order notification emails:
+  - WhatsApp/manual orders now send a “pedido recibido” email when the order is created
+  - paid or confirmed orders now send a “pedido confirmado” email
+  - shipped orders now send a “pedido enviado” email with carrier and guide details
+  - notification timestamps are stored on the order so there is an auditable record of what was sent
+  - the same branded email system is reused for account-security and order emails
+
 ### 2026-04-20
 
 - Added a real coupon system connected to checkout and admin:
@@ -293,7 +319,8 @@ The checkout flow now works like this:
 5. The webhook verifies the `stripe-signature` header with `STRIPE_WEBHOOK_SECRET`.
 6. On `checkout.session.completed` or `checkout.session.async_payment_succeeded`, the order is finalized exactly once: payment moves to `PAID`, the order moves to confirmed, stock is decremented transactionally, and the user cart is cleared server-side.
 7. On `checkout.session.async_payment_failed` or `checkout.session.expired`, the order is marked as failed without trusting the frontend.
-8. After the customer returns to `/checkout?success=true`, the storefront polls the backend until that webhook-driven finalization resolves to `paid` or `failed`.
+8. After the customer returns to `/checkout?success=true`, the storefront polls the backend until finalization resolves to `paid` or `failed`.
+9. If Stripe already marks the Checkout Session as paid but the webhook has not arrived yet, the signed-in return endpoint can now finalize the order safely as a fallback. This keeps local development and intermittent webhook delivery from freezing the confirmation screen.
 
 The webhook endpoint is:
 
@@ -316,6 +343,43 @@ The checkout status endpoint used by the return page is:
 ```
 
 It now requires the signed-in order owner and may return `pending`, `processing`, `paid`, or `failed` while the webhook catches up.
+
+## Shipping tracking and order emails
+
+Order logistics are now part of the real admin and customer experience.
+
+- Each order can store:
+  - `shippingCarrier`
+  - `trackingNumber`
+  - `confirmedAt`
+  - `shippedAt`
+  - `receiptEmailSentAt`
+  - `confirmationEmailSentAt`
+  - `shippingEmailSentAt`
+- The admin order detail page now includes:
+  - shipping carrier and tracking guide fields
+  - timestamps for confirmation and shipment
+  - a visible record of order-related emails already sent to the customer
+- The customer order detail now shows:
+  - delivery recipient data
+  - shipping carrier and guide
+  - confirmation and shipment timestamps when available
+- Admin order search now supports tracking-guide and carrier lookups.
+
+### Order email behavior
+
+- `WHATSAPP` orders send a receipt email when the order is created.
+- Orders confirmed by payment or by admin state transitions send a confirmation email.
+- Orders marked as `SHIPPED` send a shipment email with carrier and tracking details.
+- Shipment emails only go out once both `shippingCarrier` and `trackingNumber` are present.
+- Email send timestamps are stored on the order so support/admin can audit what happened later.
+
+## Legal consent at registration and checkout
+
+- Registration now requires accepting the terms and conditions plus the privacy policy.
+- Google sign-up is also protected server-side, not just by the browser UI.
+- Checkout blocks order creation until the customer explicitly accepts the legal documents.
+- Those checks are validated again in the backend, so editing frontend requests is not enough to bypass them.
 
 ## Coupons and discount security
 

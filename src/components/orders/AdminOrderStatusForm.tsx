@@ -9,6 +9,7 @@ type AdminOrderStatusFormProps = {
   orderId: string
   status: string
   paymentStatus: string
+  shippingCarrier: string | null
   trackingNumber: string | null
   notes: string | null
 }
@@ -17,6 +18,7 @@ export function AdminOrderStatusForm({
   orderId,
   status,
   paymentStatus,
+  shippingCarrier,
   trackingNumber,
   notes,
 }: AdminOrderStatusFormProps) {
@@ -24,6 +26,7 @@ export function AdminOrderStatusForm({
   const [formData, setFormData] = React.useState({
     status,
     paymentStatus,
+    shippingCarrier: shippingCarrier || "",
     trackingNumber: trackingNumber || "",
     notes: notes || "",
   })
@@ -53,6 +56,7 @@ export function AdminOrderStatusForm({
       setFormData({
         status: data.status,
         paymentStatus: data.paymentStatus,
+        shippingCarrier: data.shippingCarrier || "",
         trackingNumber: data.trackingNumber || "",
         notes: data.notes || "",
       })
@@ -114,23 +118,47 @@ export function AdminOrderStatusForm({
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-lc-gray-light mb-1.5 ml-1">
-          Numero de guia
-        </label>
-        <input
-          type="text"
-          className="input-field"
-          placeholder="Opcional"
-          value={formData.trackingNumber}
-          onChange={(e) =>
-            setFormData((current) => ({
-              ...current,
-              trackingNumber: e.target.value,
-            }))
-          }
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-lc-gray-light mb-1.5 ml-1">
+            Transportadora
+          </label>
+          <input
+            type="text"
+            className="input-field"
+            placeholder="Ej: Interrapidisimo"
+            value={formData.shippingCarrier}
+            onChange={(e) =>
+              setFormData((current) => ({
+                ...current,
+                shippingCarrier: e.target.value,
+              }))
+            }
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-lc-gray-light mb-1.5 ml-1">
+            Numero de guia
+          </label>
+          <input
+            type="text"
+            className="input-field"
+            placeholder="Ej: 123456789"
+            value={formData.trackingNumber}
+            onChange={(e) =>
+              setFormData((current) => ({
+                ...current,
+                trackingNumber: e.target.value,
+              }))
+            }
+          />
+        </div>
       </div>
+
+      <p className="text-xs text-lc-gray -mt-2">
+        Si marcas el pedido como enviado, debes registrar la transportadora y la guia.
+      </p>
 
       <div>
         <label className="block text-sm font-medium text-lc-gray-light mb-1.5 ml-1">

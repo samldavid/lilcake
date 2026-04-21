@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { getServerSession } from "next-auth"
 import { notFound, redirect } from "next/navigation"
-import { ArrowLeft, MessageCircle, Package } from "lucide-react"
+import { ArrowLeft, MessageCircle, Package, Truck } from "lucide-react"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { formatCOP } from "@/lib/utils"
@@ -41,10 +41,14 @@ type CustomerOrder = {
   total: number
   paymentMethod: string
   shippingName: string
+  customerEmail: string | null
   shippingAddress: string
   shippingCity: string
   shippingPhone: string
+  shippingCarrier: string | null
   trackingNumber: string | null
+  confirmedAt: Date | null
+  shippedAt: Date | null
   notes: string | null
   coupon: {
     code: string
@@ -83,10 +87,14 @@ export default async function CustomerOrderDetailPage({
       total: true,
       paymentMethod: true,
       shippingName: true,
+      customerEmail: true,
       shippingAddress: true,
       shippingCity: true,
       shippingPhone: true,
+      shippingCarrier: true,
       trackingNumber: true,
+      confirmedAt: true,
+      shippedAt: true,
       notes: true,
       coupon: {
         select: {
@@ -227,6 +235,46 @@ export default async function CustomerOrderDetailPage({
           </div>
 
           <div className="bg-lc-dark border border-lc-border rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <Truck className="text-lc-cyan" />
+              <h2 className="text-xl font-heading font-bold text-lc-white">
+                Seguimiento del envio
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div className="rounded-2xl border border-lc-border bg-lc-darker/60 p-4">
+                <p className="text-lc-gray mb-1">Transportadora</p>
+                <p className="text-lc-white font-medium">
+                  {order.shippingCarrier || "Te la compartiremos cuando el pedido sea enviado"}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-lc-border bg-lc-darker/60 p-4">
+                <p className="text-lc-gray mb-1">Numero de guia</p>
+                <p className="text-lc-white font-medium">
+                  {order.trackingNumber || "Aun no disponible"}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-lc-border bg-lc-darker/60 p-4">
+                <p className="text-lc-gray mb-1">Pedido confirmado</p>
+                <p className="text-lc-white font-medium">
+                  {order.confirmedAt
+                    ? order.confirmedAt.toLocaleString("es-CO")
+                    : "Pendiente"}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-lc-border bg-lc-darker/60 p-4">
+                <p className="text-lc-gray mb-1">Pedido enviado</p>
+                <p className="text-lc-white font-medium">
+                  {order.shippedAt
+                    ? order.shippedAt.toLocaleString("es-CO")
+                    : "Pendiente"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-lc-dark border border-lc-border rounded-2xl p-6">
             <h2 className="text-xl font-heading font-bold text-lc-white mb-4">
               Acciones del pedido
             </h2>
@@ -274,6 +322,12 @@ export default async function CustomerOrderDetailPage({
                 <p className="text-lc-white font-medium">{order.shippingName}</p>
               </div>
               <div>
+                <p className="text-lc-gray mb-1">Email</p>
+                <p className="text-lc-white font-medium">
+                  {order.customerEmail || session.user.email || "Sin email"}
+                </p>
+              </div>
+              <div>
                 <p className="text-lc-gray mb-1">Direccion</p>
                 <p className="text-lc-white font-medium">{order.shippingAddress}</p>
                 <p className="text-lc-gray">{order.shippingCity}</p>
@@ -285,6 +339,12 @@ export default async function CustomerOrderDetailPage({
               <div>
                 <p className="text-lc-gray mb-1">Metodo de pago</p>
                 <p className="text-lc-white font-medium">{order.paymentMethod}</p>
+              </div>
+              <div>
+                <p className="text-lc-gray mb-1">Transportadora</p>
+                <p className="text-lc-white font-medium">
+                  {order.shippingCarrier || "Pendiente"}
+                </p>
               </div>
               {order.trackingNumber && (
                 <div>

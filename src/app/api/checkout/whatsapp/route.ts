@@ -9,6 +9,7 @@ import {
 } from "@/lib/checkout"
 import { CouponValidationError } from "@/lib/coupons"
 import { getPublicErrorMessage } from "@/lib/errors"
+import { sendOrderReceivedEmail } from "@/lib/order-notifications"
 
 export async function POST(req: Request) {
   try {
@@ -34,6 +35,9 @@ export async function POST(req: Request) {
     const payload = result.data
     const checkoutItems = await prepareCheckoutItems(payload.items)
     const order = await createPendingOrder(session.user.id, payload, checkoutItems)
+    await sendOrderReceivedEmail(order.id).catch((error) => {
+      console.error("WhatsApp order receipt email error:", error)
+    })
     const whatsappUrl = buildOrderWhatsAppLink(order, checkoutItems)
 
     return NextResponse.json({

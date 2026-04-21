@@ -27,6 +27,7 @@ type BrandedEmailParams = {
   body: string[]
   action?: EmailAction
   footerNote?: string
+  brandDescription?: string
 }
 
 let cachedTransporter: ReturnType<typeof nodemailer.createTransport> | null = null
@@ -148,11 +149,15 @@ export function buildBrandedEmailHtml({
   body,
   action,
   footerNote,
+  brandDescription,
 }: BrandedEmailParams) {
   const safeTitle = escapeHtml(title)
   const safeIntro = escapeHtml(intro)
   const safeEyebrow = escapeHtml(eyebrow)
   const safePreheader = escapeHtml(preheader)
+  const safeBrandDescription = escapeHtml(
+    brandDescription || "Seguridad y acceso para tu cuenta"
+  )
   const paragraphs = body
     .map(
       (paragraph) =>
@@ -259,7 +264,7 @@ export function buildBrandedEmailHtml({
                           LilCake
                         </p>
                         <p style="margin: 8px 0 0; font-size: 13px; line-height: 1.6; color: #9ca3bf;">
-                          Seguridad y acceso para tu cuenta
+                          ${safeBrandDescription}
                         </p>
                       </td>
                     </tr>

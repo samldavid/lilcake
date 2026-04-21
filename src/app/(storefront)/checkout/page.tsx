@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { useCart } from "@/components/CartProvider"
@@ -78,6 +79,7 @@ function CheckoutPageContent() {
   const [isValidatingCoupon, setIsValidatingCoupon] = React.useState(false)
   const [rememberDetails, setRememberDetails] = React.useState(true)
   const [detailsLoaded, setDetailsLoaded] = React.useState(false)
+  const [acceptedTerms, setAcceptedTerms] = React.useState(false)
   const [formData, setFormData] = React.useState({
     shippingName: "",
     email: "",
@@ -342,6 +344,7 @@ function CheckoutPageContent() {
         shippingPhone: formData.shippingPhone,
         paymentMethod: formData.paymentMethod,
         couponCode: normalizedCouponCode || undefined,
+        acceptedTerms,
       }
 
       const endpoint =
@@ -591,6 +594,39 @@ function CheckoutPageContent() {
                 )}
               </div>
             </div>
+
+            <div className="bg-lc-dark rounded-2xl p-6 sm:p-8 border border-lc-border">
+              <h2 className="text-xl font-heading font-bold text-lc-white mb-4">
+                3. Confirmacion legal
+              </h2>
+              <label className="flex items-start gap-3 rounded-2xl border border-lc-border bg-lc-darker/60 p-4 text-sm text-lc-gray-light">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(event) => setAcceptedTerms(event.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-lc-border bg-lc-black text-lc-purple focus:ring-lc-purple"
+                />
+                <span className="leading-6">
+                  He leido y acepto los{" "}
+                  <Link
+                    href="/terminos"
+                    target="_blank"
+                    className="font-semibold text-lc-cyan transition-colors hover:text-white"
+                  >
+                    terminos y condiciones
+                  </Link>{" "}
+                  y la{" "}
+                  <Link
+                    href="/privacidad"
+                    target="_blank"
+                    className="font-semibold text-lc-cyan transition-colors hover:text-white"
+                  >
+                    politica de privacidad
+                  </Link>{" "}
+                  antes de confirmar esta compra.
+                </span>
+              </label>
+            </div>
           </form>
         </div>
 
@@ -705,7 +741,8 @@ function CheckoutPageContent() {
                 loading ||
                 isFinalizing ||
                 status === "loading" ||
-                isValidatingCoupon
+                isValidatingCoupon ||
+                !acceptedTerms
               }
             >
               {loading
