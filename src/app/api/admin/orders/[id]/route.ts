@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { OrderStatus, PaymentStatus } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { updateOrderSchema } from "@/lib/validations"
 import { releaseCouponUsage } from "@/lib/coupons"
@@ -50,8 +51,8 @@ export async function PATCH(
 
     const data = result.data
     const nextData: {
-      status?: string
-      paymentStatus?: string
+      status?: OrderStatus
+      paymentStatus?: PaymentStatus
       trackingNumber?: string | null
       notes?: string | null
     } = {}

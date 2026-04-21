@@ -71,6 +71,11 @@ LilCake is a Next.js storefront with:
   - `next.config.ts` now sends a Content Security Policy that explicitly allows Stripe, Google Fonts, and local development websocket traffic
   - Prisma now uses real enums for `User.role`, `Order.status`, and `Order.paymentStatus` instead of free-form strings
   - the latest schema migration also adds an index on `Order.stripeSessionId` for faster webhook and checkout-status lookups
+- Added real legal pages for the storefront:
+  - `/privacidad` now renders the full data-processing and privacy policy with the current LilCake visual style
+  - `/terminos` now renders the terms and conditions with structured sections and quick navigation
+  - footer legal links now resolve to live pages instead of dead routes
+  - both pages can surface a configured support email from `NEXT_PUBLIC_SUPPORT_EMAIL`, `SMTP_FROM`, or `SMTP_USER`
 - Expanded project documentation with dated release notes for easier version tracking
 
 ### 2026-04-19
@@ -166,6 +171,7 @@ npm run dev
 - `NEXT_PUBLIC_WHATSAPP_NUMBER`: WhatsApp destination number.
 - `NEXT_PUBLIC_APP_URL`: public app URL used by client flows.
 - `NEXT_PUBLIC_APP_NAME`: display name.
+- `NEXT_PUBLIC_SUPPORT_EMAIL`: public support/legal contact email shown in storefront legal pages.
 
 ## Google sign-in setup
 

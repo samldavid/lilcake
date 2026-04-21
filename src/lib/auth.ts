@@ -15,7 +15,10 @@ const DEFAULT_INSECURE_NEXTAUTH_SECRET =
   "lilcake-dev-secret-change-in-production-2026"
 
 function assertSecureNextAuthSecret() {
-  if (process.env.NODE_ENV !== "production") {
+  if (
+    process.env.NODE_ENV !== "production" ||
+    (!process.env.VERCEL && process.env.ENFORCE_STRICT_ENV !== "true")
+  ) {
     return
   }
 
