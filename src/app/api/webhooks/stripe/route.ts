@@ -3,6 +3,7 @@ import Stripe from "stripe"
 import { prisma } from "@/lib/prisma"
 import { finalizePaidOrder, markOrderPaymentFailed } from "@/lib/checkout"
 import { getStripe, isStripeEnabled } from "@/lib/stripe"
+import { getPublicErrorMessage } from "@/lib/errors"
 
 export const runtime = "nodejs"
 
@@ -121,11 +122,11 @@ export async function POST(req: Request) {
       signature,
       process.env.STRIPE_WEBHOOK_SECRET
     )
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "No pudimos verificar la firma."
-
-    return NextResponse.json({ error: message }, { status: 400 })
+  } catch {
+    return NextResponse.json(
+      { error: "La firma del webhook no es valida." },
+      { status: 400 }
+    )
   }
 
   try {
@@ -169,11 +170,15 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ received: true })
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "No pudimos procesar el webhook."
-
     console.error("Stripe webhook processing error:", error)
 
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: getPublicErrorMessage(error, {
+          fallbackMessage: "No pudimos procesar el webhook.",
+        }),
+      },
+      { status: 500 }
+    )
   }
 }

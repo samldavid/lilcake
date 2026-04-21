@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma"
 import { buildOrderWhatsAppLink, type PreparedCheckoutItem } from "@/lib/checkout"
 import { canCustomerResumeOrder } from "@/lib/order-status"
 import { createStripeDiscountCoupon } from "@/lib/coupons"
+import { getPublicErrorMessage } from "@/lib/errors"
 
 export async function POST(
   req: Request,
@@ -160,11 +161,15 @@ export async function POST(
       orderNumber: order.orderNumber,
     })
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "No pudimos continuar el pedido."
-
     console.error("Resume order error:", error)
 
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: getPublicErrorMessage(error, {
+          fallbackMessage: "No pudimos continuar el pedido.",
+        }),
+      },
+      { status: 500 }
+    )
   }
 }

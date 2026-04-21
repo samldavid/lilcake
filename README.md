@@ -58,6 +58,19 @@ LilCake is a Next.js storefront with:
 - Fixed Google sign-in account linking:
   - new users can sign in with Google and get created correctly
   - existing users with the same email can link Google without the Prisma update error seen during sign-in
+- Hardened admin, auth, and checkout/server flows:
+  - admin pages and admin APIs now share centralized server-side ADMIN guards instead of repeating role checks inline
+  - admin image uploads now validate real file signatures for supported formats instead of trusting only the browser MIME type
+  - registration, forgot-password, reset-password, resend-verification, password-change requests, email verification, and checkout coupon previews now use rate limits to reduce brute-force and spam traffic
+  - public API responses now sanitize Prisma/internal errors before sending them back to the browser, while server logs still keep the debugging detail
+- Improved Stripe reliability and post-payment behavior:
+  - the checkout success screen now polls the backend for a short period while the Stripe webhook finishes finalizing the order
+  - the Stripe status endpoint is now tied to the signed-in order owner and can recover the order by saved `stripeSessionId` even if metadata is missing
+  - webhook signature failures now return a generic invalid-signature response instead of echoing raw parser errors
+- Tightened platform configuration and schema safety:
+  - `next.config.ts` now sends a Content Security Policy that explicitly allows Stripe, Google Fonts, and local development websocket traffic
+  - Prisma now uses real enums for `User.role`, `Order.status`, and `Order.paymentStatus` instead of free-form strings
+  - the latest schema migration also adds an index on `Order.stripeSessionId` for faster webhook and checkout-status lookups
 - Expanded project documentation with dated release notes for easier version tracking
 
 ### 2026-04-19
@@ -137,7 +150,7 @@ npm run dev
 - `DATABASE_URL`: PostgreSQL connection string used by the app runtime.
 - `DIRECT_URL`: direct PostgreSQL connection string used by Prisma CLI commands.
 - `NEXTAUTH_URL`: the public URL of the app.
-- `NEXTAUTH_SECRET`: secret used by NextAuth sessions.
+- `NEXTAUTH_SECRET`: secret used by NextAuth sessions. Use a long random value with at least 32 characters.
 - `GOOGLE_CLIENT_ID`: Google OAuth client id.
 - `GOOGLE_CLIENT_SECRET`: Google OAuth client secret.
 - `SMTP_HOST`: SMTP host used to send verification and password reset emails.
@@ -148,7 +161,7 @@ npm run dev
 - `SMTP_FROM`: sender shown in verification and password reset emails.
 - `STRIPE_SECRET_KEY`: Stripe server key.
 - `STRIPE_PUBLISHABLE_KEY`: Stripe public key.
-- `STRIPE_WEBHOOK_SECRET`: Stripe webhook secret.
+- `STRIPE_WEBHOOK_SECRET`: Stripe webhook secret. Required once your Stripe webhook endpoint is registered.
 - `NEXT_PUBLIC_STRIPE_ENABLED`: set to `true` only in environments where you want the Stripe checkout option to be visible.
 - `NEXT_PUBLIC_WHATSAPP_NUMBER`: WhatsApp destination number.
 - `NEXT_PUBLIC_APP_URL`: public app URL used by client flows.
@@ -207,6 +220,15 @@ Notes:
 - Password changes from the account page are blocked until the email is verified.
 - The reset/change form still validates password confirmation plus the full password policy.
 - The account change flow reuses the same temporary token system as forgot-password, but it can only be initiated by an authenticated user.
+- Auth-facing endpoints now have lightweight in-process rate limits to slow down repeated register, reset, verification, and password-change abuse attempts.
+
+## Admin and API hardening
+
+- Admin pages now enforce `ADMIN` access server-side from the admin layout, and admin API routes reuse centralized guards before touching business logic.
+- Admin upload endpoints now validate file signatures for supported image formats instead of relying only on file extensions or browser-provided MIME types.
+- Checkout, auth, order, and webhook routes now sanitize unexpected internal errors through a shared public-error helper so production responses leak less implementation detail.
+- The checkout coupon preview endpoint is rate-limited per user and IP to make coupon probing harder.
+- `next.config.ts` now sends a Content Security Policy that allows Stripe checkout resources while still blocking unapproved frames, objects, and third-party scripts by default.
 
 ### Local Gmail SMTP example
 
@@ -265,6 +287,7 @@ The checkout flow now works like this:
 5. The webhook verifies the `stripe-signature` header with `STRIPE_WEBHOOK_SECRET`.
 6. On `checkout.session.completed` or `checkout.session.async_payment_succeeded`, the order is finalized exactly once: payment moves to `PAID`, the order moves to confirmed, stock is decremented transactionally, and the user cart is cleared server-side.
 7. On `checkout.session.async_payment_failed` or `checkout.session.expired`, the order is marked as failed without trusting the frontend.
+8. After the customer returns to `/checkout?success=true`, the storefront polls the backend until that webhook-driven finalization resolves to `paid` or `failed`.
 
 The webhook endpoint is:
 
@@ -279,6 +302,14 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 ```
 
 Use the webhook signing secret printed by the CLI as `STRIPE_WEBHOOK_SECRET` in local development.
+
+The checkout status endpoint used by the return page is:
+
+```text
+/api/checkout/stripe?session_id=cs_test_...
+```
+
+It now requires the signed-in order owner and may return `pending`, `processing`, `paid`, or `failed` while the webhook catches up.
 
 ## Coupons and discount security
 
@@ -342,7 +373,7 @@ Recommended workflow:
 
 1. Keep `DATABASE_URL` on the Supabase Transaction Pooler.
 2. Keep `DIRECT_URL` on the Supabase Session Pooler for Prisma CLI workflows.
-3. Run `npm run db:migrate` locally after pulling schema changes such as the `User.cartVersion` migration.
+3. Run `npm run db:migrate` locally after pulling schema changes such as the `User.cartVersion` migration and the order/user enum migration.
 4. Use `npm run db:migrate` while developing new schema changes.
 5. Use `npm run db:seed` to repopulate local/dev data from scratch.
 6. When deploying to Vercel later, keep `DATABASE_URL` on the transaction pooler and run `npm run db:deploy`.

@@ -58,6 +58,19 @@ LilCake es una tienda construida con Next.js que incluye:
 - Se corrigio el enlace de cuentas con Google:
   - si el usuario no existe, ahora se crea correctamente al entrar con Google
   - si ya existe una cuenta con el mismo correo, Google puede vincularse sin el error de Prisma durante el `signIn`
+- Se reforzaron las rutas administrativas, de autenticacion y de checkout:
+  - las paginas admin y los endpoints admin ahora comparten guards centralizados de rol `ADMIN` en servidor en vez de repetir validaciones manuales
+  - la subida de imagenes del admin ahora valida firmas reales de archivo para los formatos soportados, y no solo el MIME reportado por el navegador
+  - registro, olvide-mi-contrasena, reset, reenvio de verificacion, solicitud de cambio de contrasena, verificacion de correo y preview de cupones ahora usan rate limits para frenar abuso y spam
+  - las respuestas publicas de la API ahora sanitizan errores internos o de Prisma antes de devolverlos al navegador, mientras los logs del servidor conservan el detalle tecnico
+- Se mejoro la confiabilidad de Stripe y del flujo post-pago:
+  - la pantalla de exito del checkout ahora consulta el backend durante unos segundos mientras el webhook termina de confirmar la orden
+  - el endpoint de estado de Stripe ahora exige al propietario autenticado de la orden y puede recuperar la orden por `stripeSessionId` guardado aunque falte metadata
+  - los errores de firma del webhook ahora responden con un mensaje generico de firma invalida en vez de exponer mensajes crudos del parser
+- Se ajusto la configuracion de plataforma y el esquema:
+  - `next.config.ts` ahora envia una Content Security Policy que habilita Stripe, Google Fonts y websockets de desarrollo local de forma explicita
+  - Prisma ahora usa enums reales para `User.role`, `Order.status` y `Order.paymentStatus` en vez de strings libres
+  - la migracion mas reciente tambien agrega un indice sobre `Order.stripeSessionId` para acelerar busquedas del webhook y del estado del checkout
 - Se amplio la documentacion del proyecto con historial fechado para tener mejor control de versiones
 
 ### 2026-04-19
@@ -137,7 +150,7 @@ npm run dev
 - `DATABASE_URL`: cadena de conexion PostgreSQL usada por la aplicacion en runtime.
 - `DIRECT_URL`: cadena de conexion PostgreSQL directa usada por los comandos CLI de Prisma.
 - `NEXTAUTH_URL`: URL publica de la aplicacion.
-- `NEXTAUTH_SECRET`: secreto usado por las sesiones de NextAuth.
+- `NEXTAUTH_SECRET`: secreto usado por las sesiones de NextAuth. Debe ser un valor aleatorio largo de al menos 32 caracteres.
 - `GOOGLE_CLIENT_ID`: client id de Google OAuth.
 - `GOOGLE_CLIENT_SECRET`: client secret de Google OAuth.
 - `SMTP_HOST`: host SMTP usado para enviar correos de verificacion y recuperacion.
@@ -148,7 +161,7 @@ npm run dev
 - `SMTP_FROM`: remitente visible de los correos de verificacion y restablecimiento.
 - `STRIPE_SECRET_KEY`: llave privada de Stripe.
 - `STRIPE_PUBLISHABLE_KEY`: llave publica de Stripe.
-- `STRIPE_WEBHOOK_SECRET`: secreto del webhook de Stripe.
+- `STRIPE_WEBHOOK_SECRET`: secreto del webhook de Stripe. Se vuelve obligatorio cuando registres el endpoint real del webhook en Stripe.
 - `NEXT_PUBLIC_STRIPE_ENABLED`: define `true` solo en los entornos donde quieras mostrar la opcion de checkout con Stripe.
 - `NEXT_PUBLIC_WHATSAPP_NUMBER`: numero de destino de WhatsApp.
 - `NEXT_PUBLIC_APP_URL`: URL publica usada por flujos del cliente.
@@ -208,6 +221,16 @@ Notas:
 - El formulario de restablecimiento/cambio sigue validando confirmacion de contraseña y toda la politica de seguridad.
 - El flujo de cambio desde la cuenta reutiliza el mismo sistema de tokens temporales del flujo de "olvide mi contraseña", pero solo puede iniciarlo un usuario autenticado.
 
+- Los endpoints de autenticacion ahora tienen rate limits livianos en memoria para frenar repeticiones agresivas de registro, verificacion, recuperacion y cambio de contrasena.
+
+## Endurecimiento del admin y de la API
+
+- Las paginas admin ahora exigen acceso `ADMIN` desde el layout del area administrativa, y los endpoints admin reutilizan guards centralizados antes de tocar la logica de negocio.
+- Las rutas de upload del admin validan firmas reales de archivo para imagenes soportadas en lugar de confiar solo en extensiones o MIME enviados por el navegador.
+- Checkout, autenticacion, pedidos y webhooks ahora sanitizan errores inesperados mediante un helper compartido para que las respuestas de produccion revelen menos detalles internos.
+- El endpoint de preview de cupon en checkout tiene rate limit por usuario e IP para dificultar pruebas automatizadas de codigos.
+- `next.config.ts` ahora envia una Content Security Policy que permite los recursos necesarios de Stripe, pero sigue bloqueando por defecto frames, objetos y scripts no aprobados.
+
 ### Ejemplo de Gmail SMTP en local
 
 Para desarrollo local puedes usar Gmail SMTP con una contraseña de aplicacion:
@@ -265,6 +288,7 @@ El flujo de checkout ahora funciona asi:
 5. El webhook verifica la cabecera `stripe-signature` con `STRIPE_WEBHOOK_SECRET`.
 6. Cuando llega `checkout.session.completed` o `checkout.session.async_payment_succeeded`, la orden se finaliza una sola vez: el pago pasa a `PAID`, la orden pasa a confirmada, el stock se descuenta dentro de una transaccion y el carrito del usuario se limpia del lado del servidor.
 7. Cuando llega `checkout.session.async_payment_failed` o `checkout.session.expired`, la orden se marca como fallida sin confiar en el frontend.
+8. Despues de volver a `/checkout?success=true`, el storefront consulta el backend durante unos segundos hasta que esa finalizacion por webhook quede en `paid` o `failed`.
 
 El endpoint del webhook es:
 
@@ -279,6 +303,14 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 ```
 
 Usa como `STRIPE_WEBHOOK_SECRET` el secreto de firma que imprime la CLI en local.
+
+El endpoint de estado usado por la pagina de regreso es:
+
+```text
+/api/checkout/stripe?session_id=cs_test_...
+```
+
+Ahora exige al propietario autenticado de la orden y puede devolver `pending`, `processing`, `paid` o `failed` mientras el webhook termina de ponerse al dia.
 
 ## Cupones y seguridad de descuentos
 
@@ -342,7 +374,7 @@ Flujo recomendado:
 
 1. Mantener `DATABASE_URL` en el Supabase Transaction Pooler.
 2. Mantener `DIRECT_URL` en el Supabase Session Pooler para flujos CLI de Prisma.
-3. Ejecutar `npm run db:migrate` localmente despues de bajar cambios de esquema como la migracion de `User.cartVersion`.
+3. Ejecutar `npm run db:migrate` localmente despues de bajar cambios de esquema como la migracion de `User.cartVersion` y la migracion de enums de usuario/orden.
 4. Usar `npm run db:migrate` mientras desarrollas nuevos cambios de esquema.
 5. Usar `npm run db:seed` para repoblar datos locales/dev desde cero.
 6. Al desplegar luego en Vercel, mantener `DATABASE_URL` en el transaction pooler y ejecutar `npm run db:deploy`.

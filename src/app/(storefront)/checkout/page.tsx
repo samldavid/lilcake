@@ -160,32 +160,52 @@ function CheckoutPageContent() {
     }
 
     let isActive = true
+    const wait = (ms: number) =>
+      new Promise((resolve) => {
+        window.setTimeout(resolve, ms)
+      })
 
     const finalizeCheckout = async () => {
       try {
         setIsFinalizing(true)
         setError("")
 
-        const response = await fetch(
-          `/api/checkout/stripe?session_id=${encodeURIComponent(sessionId)}`
+        for (let attempt = 0; attempt < 10; attempt += 1) {
+          const response = await fetch(
+            `/api/checkout/stripe?session_id=${encodeURIComponent(sessionId)}`,
+            {
+              cache: "no-store",
+            }
+          )
+          const data = await response.json()
+
+          if (!response.ok) {
+            throw new Error(data.error || "No pudimos confirmar el pago.")
+          }
+
+          if (data.status === "paid") {
+            if (!isActive) {
+              return
+            }
+
+            clearCart()
+            setOrderNumber(data.orderNumber || "")
+            setSuccess(true)
+            return
+          }
+
+          if (data.status === "failed") {
+            throw new Error("El pago no pudo confirmarse para este pedido.")
+          }
+
+          if (attempt < 9) {
+            await wait(1500)
+          }
+        }
+
+        throw new Error(
+          "Stripe ya recibio el pago, pero aun estamos terminando de confirmarlo. Recarga esta pagina en unos segundos."
         )
-        const data = await response.json()
-
-        if (!response.ok) {
-          throw new Error(data.error || "No pudimos confirmar el pago.")
-        }
-
-        if (data.status !== "paid") {
-          throw new Error("El pago aun no aparece como aprobado.")
-        }
-
-        if (!isActive) {
-          return
-        }
-
-        clearCart()
-        setOrderNumber(data.orderNumber || "")
-        setSuccess(true)
       } catch (checkoutError) {
         if (!isActive) {
           return

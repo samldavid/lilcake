@@ -8,6 +8,7 @@ import {
   prepareCheckoutItems,
 } from "@/lib/checkout"
 import { CouponValidationError } from "@/lib/coupons"
+import { getPublicErrorMessage } from "@/lib/errors"
 
 export async function POST(req: Request) {
   try {
@@ -40,14 +41,19 @@ export async function POST(req: Request) {
       orderNumber: order.orderNumber,
     })
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "No pudimos crear la orden"
-
     console.error("WhatsApp Checkout Error:", error)
 
+    if (error instanceof CouponValidationError) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+
     return NextResponse.json(
-      { error: message },
-      { status: error instanceof CouponValidationError ? 400 : 500 }
+      {
+        error: getPublicErrorMessage(error, {
+          fallbackMessage: "No pudimos crear la orden.",
+        }),
+      },
+      { status: 500 }
     )
   }
 }

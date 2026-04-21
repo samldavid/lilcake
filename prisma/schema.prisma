@@ -8,13 +8,32 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum UserRole {
+  ADMIN
+  CUSTOMER
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
 // ──────────────────────────────────────────────
 // USERS & AUTH
 // ──────────────────────────────────────────────
 
 model User {
   id            String    @id @default(cuid())
-  role          String    @default("CUSTOMER") // ADMIN | CUSTOMER
+  role          UserRole  @default(CUSTOMER)
   name          String?
   email         String?   @unique
   emailVerified DateTime?
@@ -176,14 +195,14 @@ model Order {
   subtotal        Float
   discount        Float       @default(0)
   total           Float
-  status          String      @default("PENDING") // PENDING | CONFIRMED | SHIPPED | DELIVERED | CANCELLED
+  status          OrderStatus @default(PENDING)
   shippingName    String
   shippingAddress String
   shippingCity    String
   shippingPhone   String
   trackingNumber  String?     // Manual tracking
   paymentMethod   String      // STRIPE | TRANSFER | ADDI | WHATSAPP
-  paymentStatus   String      @default("PENDING") // PENDING | PAID | FAILED
+  paymentStatus   PaymentStatus @default(PENDING)
   stripeSessionId String?
   couponId        String?
   coupon          Coupon?     @relation(fields: [couponId], references: [id])
@@ -193,6 +212,7 @@ model Order {
 
   @@index([createdAt])
   @@index([userId, createdAt])
+  @@index([stripeSessionId])
 }
 
 model OrderItem {

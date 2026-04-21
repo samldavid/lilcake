@@ -5,6 +5,13 @@ import { authOptions } from "@/lib/auth"
 import { prepareCheckoutItems } from "@/lib/checkout"
 import { CouponValidationError, resolveCouponForSubtotal } from "@/lib/coupons"
 import { prisma } from "@/lib/prisma"
+import {
+  buildRateLimitKey,
+  consumeRateLimit,
+  createRateLimitResponse,
+  getRequestIp,
+} from "@/lib/rate-limit"
+import { getPublicErrorMessage } from "@/lib/errors"
 
 const previewCouponSchema = z.object({
   couponCode: z.string().trim().min(3, "Ingresa un codigo valido."),
@@ -24,6 +31,22 @@ export async function POST(req: Request) {
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Debes iniciar sesion." }, { status: 401 })
+    }
+
+    const rateLimit = consumeRateLimit({
+      key: buildRateLimitKey("checkout-coupon", [
+        session.user.id,
+        getRequestIp(req),
+      ]),
+      limit: 15,
+      windowMs: 10 * 60 * 1000,
+    })
+
+    if (!rateLimit.allowed) {
+      return createRateLimitResponse(
+        rateLimit.retryAfterSeconds,
+        "Hiciste demasiadas validaciones de cupon. Intenta de nuevo en unos minutos."
+      )
     }
 
     const body = await req.json()
@@ -60,14 +83,19 @@ export async function POST(req: Request) {
       expiresAt: couponBreakdown.coupon.expiresAt?.toISOString() ?? null,
     })
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "No pudimos validar el cupon."
-
     console.error("Coupon preview error:", error)
 
+    if (error instanceof CouponValidationError) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+
     return NextResponse.json(
-      { error: message },
-      { status: error instanceof CouponValidationError ? 400 : 500 }
+      {
+        error: getPublicErrorMessage(error, {
+          fallbackMessage: "No pudimos validar el cupon.",
+        }),
+      },
+      { status: 500 }
     )
   }
 }

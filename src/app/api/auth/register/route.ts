@@ -1,15 +1,41 @@
 import { NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { prisma } from "@/lib/prisma"
 import { sendEmailVerificationEmailForUser } from "@/lib/account-security"
 import { registerSchema } from "@/lib/validations"
+import {
+  buildRateLimitKey,
+  consumeRateLimit,
+  createRateLimitResponse,
+  getRequestIp,
+} from "@/lib/rate-limit"
+import { getPublicErrorMessage } from "@/lib/errors"
 
 export async function POST(req: Request) {
   try {
     const body = await req.json()
+    const emailForRateLimit =
+      body && typeof body === "object" && typeof body.email === "string"
+        ? body.email.toLowerCase().trim()
+        : ""
+    const rateLimit = consumeRateLimit({
+      key: buildRateLimitKey("auth-register", [
+        getRequestIp(req),
+        emailForRateLimit,
+      ]),
+      limit: 5,
+      windowMs: 15 * 60 * 1000,
+    })
 
-    // Validate input
+    if (!rateLimit.allowed) {
+      return createRateLimitResponse(
+        rateLimit.retryAfterSeconds,
+        "Hiciste demasiados intentos de registro. Intenta de nuevo en unos minutos."
+      )
+    }
+
     const result = registerSchema.safeParse(body)
+
     if (!result.success) {
       return NextResponse.json(
         { error: result.error.issues[0].message },
@@ -18,10 +44,9 @@ export async function POST(req: Request) {
     }
 
     const { name, email, password, phone } = result.data
-
-    // Check if user exists
+    const normalizedEmail = email.toLowerCase().trim()
     const existingUser = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() },
+      where: { email: normalizedEmail },
     })
 
     if (existingUser) {
@@ -31,14 +56,11 @@ export async function POST(req: Request) {
       )
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
-
-    // Create user
     const user = await prisma.user.create({
       data: {
         name: name.trim(),
-        email: email.toLowerCase().trim(),
+        email: normalizedEmail,
         password: hashedPassword,
         phone: phone || null,
         role: "CUSTOMER",
@@ -61,8 +83,13 @@ export async function POST(req: Request) {
     )
   } catch (error) {
     console.error("Registration error:", error)
+
     return NextResponse.json(
-      { error: "Error interno del servidor" },
+      {
+        error: getPublicErrorMessage(error, {
+          fallbackMessage: "Error interno del servidor.",
+        }),
+      },
       { status: 500 }
     )
   }

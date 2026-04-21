@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { canCustomerCancelOrder } from "@/lib/order-status"
 import { releaseCouponUsage } from "@/lib/coupons"
+import { getPublicErrorMessage } from "@/lib/errors"
 
 export async function POST(
   _req: Request,
@@ -67,11 +68,15 @@ export async function POST(
 
     return NextResponse.json(updatedOrder)
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "No pudimos cancelar el pedido."
-
     console.error("Cancel order error:", error)
 
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: getPublicErrorMessage(error, {
+          fallbackMessage: "No pudimos cancelar el pedido.",
+        }),
+      },
+      { status: 500 }
+    )
   }
 }

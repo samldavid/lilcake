@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
 import {
   getStripe,
   getStripeProductImages,
@@ -9,17 +10,32 @@ import { prisma } from "@/lib/prisma"
 import {
   checkoutRequestSchema,
   createPendingOrder,
-  finalizePaidOrder,
   markOrderPaymentFailed,
   prepareCheckoutItems,
 } from "@/lib/checkout"
 import { authOptions } from "@/lib/auth"
-import { getServerSession } from "next-auth"
 import {
   CouponValidationError,
   createStripeDiscountCoupon,
   normalizeCouponCode,
 } from "@/lib/coupons"
+import { getPublicErrorMessage } from "@/lib/errors"
+
+function getCheckoutStatus(orderPaymentStatus: string, stripePaymentStatus: string | null) {
+  if (orderPaymentStatus === "PAID") {
+    return "paid"
+  }
+
+  if (orderPaymentStatus === "FAILED") {
+    return "failed"
+  }
+
+  if (stripePaymentStatus === "paid") {
+    return "processing"
+  }
+
+  return "pending"
+}
 
 export async function GET(req: Request) {
   try {
@@ -27,6 +43,15 @@ export async function GET(req: Request) {
       return NextResponse.json(
         { error: "Stripe no esta disponible en este entorno todavia." },
         { status: 503 }
+      )
+    }
+
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Debes iniciar sesion." },
+        { status: 401 }
       )
     }
 
@@ -42,8 +67,16 @@ export async function GET(req: Request) {
 
     const stripe = getStripe()
     const checkoutSession = await stripe.checkout.sessions.retrieve(sessionId)
+    const orderId =
+      checkoutSession.metadata?.orderId ||
+      (
+        await prisma.order.findFirst({
+          where: { stripeSessionId: sessionId },
+          select: { id: true },
+        })
+      )?.id
 
-    if (!checkoutSession.metadata?.orderId) {
+    if (!orderId) {
       return NextResponse.json(
         { error: "La sesion no esta asociada a una orden" },
         { status: 400 }
@@ -51,42 +84,51 @@ export async function GET(req: Request) {
     }
 
     const order = await prisma.order.findUnique({
-      where: { id: checkoutSession.metadata.orderId },
+      where: { id: orderId },
       select: {
         id: true,
+        userId: true,
         orderNumber: true,
         paymentStatus: true,
         status: true,
       },
     })
 
-    if (!order) {
+    if (!order || order.userId !== session.user.id) {
       return NextResponse.json(
-        { error: "No encontramos la orden asociada a la sesion" },
+        { error: "No encontramos la orden asociada a esa sesion." },
         { status: 404 }
       )
     }
 
-    if (checkoutSession.payment_status === "paid") {
-      const updatedOrder = await finalizePaidOrder(order.id)
-
-      return NextResponse.json({
-        status: "paid",
-        orderNumber: updatedOrder.orderNumber,
-      })
+    if (
+      checkoutSession.metadata?.userId &&
+      checkoutSession.metadata.userId !== session.user.id
+    ) {
+      return NextResponse.json(
+        { error: "No encontramos la orden asociada a esa sesion." },
+        { status: 404 }
+      )
     }
 
     return NextResponse.json({
-      status: checkoutSession.payment_status,
+      status: getCheckoutStatus(
+        order.paymentStatus,
+        checkoutSession.payment_status ?? null
+      ),
       orderNumber: order.orderNumber,
     })
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Error al validar el pago"
-
     console.error("Stripe Checkout Status Error:", error)
 
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: getPublicErrorMessage(error, {
+          fallbackMessage: "No pudimos validar el estado del pago.",
+        }),
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -104,7 +146,10 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Debes iniciar sesion" }, { status: 401 })
+      return NextResponse.json(
+        { error: "Debes iniciar sesion" },
+        { status: 401 }
+      )
     }
 
     const body = await req.json()
@@ -179,7 +224,10 @@ export async function POST(req: Request) {
       data: { stripeSessionId: checkoutSession.id },
     })
 
-    return NextResponse.json({ url: checkoutSession.url, orderNumber: order.orderNumber })
+    return NextResponse.json({
+      url: checkoutSession.url,
+      orderNumber: order.orderNumber,
+    })
   } catch (error) {
     if (pendingOrderId) {
       await markOrderPaymentFailed(
@@ -188,14 +236,19 @@ export async function POST(req: Request) {
       )
     }
 
-    const message =
-      error instanceof Error ? error.message : "No pudimos iniciar el pago con Stripe"
-
     console.error("Stripe Checkout Error:", error)
 
+    if (error instanceof CouponValidationError) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+
     return NextResponse.json(
-      { error: message },
-      { status: error instanceof CouponValidationError ? 400 : 500 }
+      {
+        error: getPublicErrorMessage(error, {
+          fallbackMessage: "No pudimos iniciar el pago con Stripe.",
+        }),
+      },
+      { status: 500 }
     )
   }
 }
