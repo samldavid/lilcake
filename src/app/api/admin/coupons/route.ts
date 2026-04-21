@@ -6,9 +6,20 @@ import {
   adminCouponSelect,
   serializeAdminCoupon,
 } from "@/lib/admin-coupons"
+import {
+  adminNotFoundResponse,
+  requireAdminApiSession,
+} from "@/lib/auth-guards"
+import { getPublicErrorMessage } from "@/lib/errors"
 
 export async function GET() {
   try {
+    const session = await requireAdminApiSession()
+
+    if (!session) {
+      return adminNotFoundResponse()
+    }
+
     const coupons = await prisma.coupon.findMany({
       select: adminCouponSelect,
       orderBy: { createdAt: "desc" },
@@ -23,6 +34,12 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const session = await requireAdminApiSession()
+
+    if (!session) {
+      return adminNotFoundResponse()
+    }
+
     const body = await req.json()
     const result = adminCouponPayloadSchema.safeParse(body)
 
@@ -64,11 +81,15 @@ export async function POST(req: Request) {
 
     return NextResponse.json(serializeAdminCoupon(coupon), { status: 201 })
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "No pudimos crear el cupon."
-
     console.error("Admin coupons POST error:", error)
 
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: getPublicErrorMessage(error, {
+          fallbackMessage: "No pudimos crear el cupon.",
+        }),
+      },
+      { status: 500 }
+    )
   }
 }

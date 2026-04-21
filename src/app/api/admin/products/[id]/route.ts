@@ -5,12 +5,23 @@ import {
   adminProductPayloadSchema,
   ensureUniqueProductSlug,
 } from "@/lib/admin-products"
+import {
+  adminNotFoundResponse,
+  requireAdminApiSession,
+} from "@/lib/auth-guards"
+import { getPublicErrorMessage } from "@/lib/errors"
 
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await requireAdminApiSession()
+
+    if (!session) {
+      return adminNotFoundResponse()
+    }
+
     const { id } = await params
 
     const product = await prisma.product.findUnique({
@@ -45,6 +56,12 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await requireAdminApiSession()
+
+    if (!session) {
+      return adminNotFoundResponse()
+    }
+
     const { id } = await params
     const body = await req.json()
     const result = adminProductPayloadSchema.safeParse(body)
@@ -170,11 +187,15 @@ export async function PUT(
 
     return NextResponse.json(updatedProduct)
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Internal Server Error"
-
     console.error("Admin product PUT error:", error)
 
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: getPublicErrorMessage(error, {
+          fallbackMessage: "No pudimos actualizar el producto.",
+        }),
+      },
+      { status: 500 }
+    )
   }
 }

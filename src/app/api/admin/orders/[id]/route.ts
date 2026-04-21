@@ -2,12 +2,23 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { updateOrderSchema } from "@/lib/validations"
 import { releaseCouponUsage } from "@/lib/coupons"
+import {
+  adminNotFoundResponse,
+  requireAdminApiSession,
+} from "@/lib/auth-guards"
+import { getPublicErrorMessage } from "@/lib/errors"
 
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await requireAdminApiSession()
+
+    if (!session) {
+      return adminNotFoundResponse()
+    }
+
     const { id } = await params
     const body = await req.json()
     const result = updateOrderSchema.safeParse(body)
@@ -98,11 +109,15 @@ export async function PATCH(
 
     return NextResponse.json(updatedOrder)
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "No pudimos actualizar el pedido."
-
     console.error("Admin order PATCH error:", error)
 
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: getPublicErrorMessage(error, {
+          fallbackMessage: "No pudimos actualizar el pedido.",
+        }),
+      },
+      { status: 500 }
+    )
   }
 }

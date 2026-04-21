@@ -1,15 +1,18 @@
 import { Sidebar } from "@/components/admin/Sidebar"
 import { Menu, Command } from "lucide-react"
+import { requireAdminPageAccess } from "@/lib/auth-guards"
 
 export const metadata = {
   title: "Admin Panel | LilCake",
 }
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  await requireAdminPageAccess()
+
   return (
     <div className="flex h-screen overflow-hidden bg-lc-black text-lc-white font-body selection:bg-lc-purple/30">
       

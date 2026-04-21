@@ -5,9 +5,20 @@ import {
   adminProductPayloadSchema,
   ensureUniqueProductSlug,
 } from "@/lib/admin-products"
+import {
+  adminNotFoundResponse,
+  requireAdminApiSession,
+} from "@/lib/auth-guards"
+import { getPublicErrorMessage } from "@/lib/errors"
 
 export async function GET() {
   try {
+    const session = await requireAdminApiSession()
+
+    if (!session) {
+      return adminNotFoundResponse()
+    }
+
     const products = await prisma.product.findMany({
       include: {
         category: true,
@@ -26,6 +37,12 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const session = await requireAdminApiSession()
+
+    if (!session) {
+      return adminNotFoundResponse()
+    }
+
     const body = await req.json()
     const result = adminProductPayloadSchema.safeParse(body)
 
@@ -75,11 +92,15 @@ export async function POST(req: Request) {
 
     return NextResponse.json(product, { status: 201 })
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Internal Server Error"
-
     console.error("Admin products POST error:", error)
 
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: getPublicErrorMessage(error, {
+          fallbackMessage: "No pudimos guardar el producto.",
+        }),
+      },
+      { status: 500 }
+    )
   }
 }
