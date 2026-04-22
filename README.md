@@ -12,6 +12,26 @@ LilCake is a Next.js storefront with:
 
 ## Changelog
 
+### 2026-04-22
+
+- Replaced the old "Detailed analytics" placeholder in the admin dashboard with a real business export center:
+  - the dashboard now lets admins export `sales`, `orders`, and `customers`
+  - reports can be filtered by `today`, `last 7 days`, `last 30 days`, `this month`, or a custom date range
+  - the panel now shows live summary metrics, a preview table, and direct export actions
+- Added secure admin reporting endpoints:
+  - `GET /api/admin/reports/summary` returns the preview and KPI summary for the selected range
+  - `GET /api/admin/reports/export` generates the final file in `xlsx` or `pdf`
+  - all report calculations are generated from PostgreSQL/Prisma on the server, not from frontend totals
+- Added real Excel and PDF exports for business data:
+  - Excel exports now include a cleaner executive summary sheet plus the full raw data sheet
+  - PDF exports keep the branded LilCake look while staying readable for operational use
+  - the export layer now supports sales, orders, and customer activity reporting from the same shared backend service
+- Fixed the first export-center regressions after implementation:
+  - the export request now always sends a valid format so `xlsx` and `pdf` downloads no longer fail with a format error
+  - the admin export panel effect was stabilized to avoid the React/Turbopack dependency error that appeared while filtering
+  - the Excel summary sheet was restyled for better readability and contrast
+  - the PDF data table spacing was adjusted so the first row no longer appears visually cut off under the header
+
 ### 2026-04-21
 
 - Added mandatory legal consent for account creation and checkout:
@@ -434,6 +454,49 @@ The checkout now supports both browser-native autocomplete and local remembering
 - Saved values are stored locally and reused on future visits to `/checkout`.
 - If the customer is authenticated, checkout also pre-fills available account name/email values.
 - This is local-browser convenience only; the discount logic and order totals still remain fully server-controlled.
+
+## Business reports and exports
+
+The admin dashboard now includes a report export center instead of a static analytics placeholder.
+
+- Available report types:
+  - `sales`
+  - `orders`
+  - `customers`
+- Available time filters:
+  - `today`
+  - `last7`
+  - `last30`
+  - `thisMonth`
+  - `custom`
+- Available export formats:
+  - `xlsx`
+  - `pdf`
+
+### What the export center does
+
+- Shows a live summary before exporting
+- Displays KPI metrics for the selected report type
+- Includes a preview table with representative rows
+- Lets the admin export the exact filtered dataset to Excel or PDF
+
+### Data source and security
+
+- Reports are generated from server-side Prisma queries against PostgreSQL
+- The browser does not calculate revenue or row totals for the final export
+- Admin guards protect both summary and export endpoints
+
+### Report endpoints
+
+- `GET /api/admin/reports/summary`
+- `GET /api/admin/reports/export`
+
+### Report implementation files
+
+- `src/components/admin/BusinessExportPanel.tsx`
+- `src/lib/business-reports.ts`
+- `src/app/api/admin/reports/summary/route.ts`
+- `src/app/api/admin/reports/export/route.ts`
 
 ## PostgreSQL migration plan
 

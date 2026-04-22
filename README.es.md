@@ -12,6 +12,26 @@ LilCake es una tienda construida con Next.js que incluye:
 
 ## Historial de cambios
 
+### 2026-04-22
+
+- Se reemplazo el placeholder de "analiticas detalladas" del dashboard admin por un centro real de exportacion:
+  - el panel ahora permite exportar `sales`, `orders` y `customers`
+  - los reportes pueden filtrarse por `today`, `last 7 days`, `last 30 days`, `this month` o un rango personalizado
+  - el panel muestra metricas en vivo, una tabla previa y acciones directas de exportacion
+- Se anadieron endpoints administrativos seguros para reportes:
+  - `GET /api/admin/reports/summary` devuelve el resumen y la vista previa del rango seleccionado
+  - `GET /api/admin/reports/export` genera el archivo final en `xlsx` o `pdf`
+  - todos los calculos salen de PostgreSQL/Prisma del lado del servidor, no de totales armados en frontend
+- Se anadieron exportaciones reales de negocio en Excel y PDF:
+  - el Excel ahora incluye una hoja de resumen ejecutivo mas clara y otra hoja con los datos completos
+  - el PDF mantiene el look de marca de LilCake, pero orientado a uso operativo y administrativo
+  - la misma capa de reportes ahora soporta ventas, pedidos y actividad de clientes
+- Se corrigieron las primeras regresiones del centro de exportacion:
+  - la exportacion ahora siempre envia un formato valido, por lo que ya no falla con el mensaje de formato invalido
+  - el efecto del panel admin se estabilizo para evitar el error de React/Turbopack al cambiar filtros
+  - la hoja `Resumen` del Excel se rehizo para ganar contraste y legibilidad
+  - el espaciado de la tabla del PDF se ajusto para que la primera fila no quede visualmente cortada bajo la cabecera
+
 ### 2026-04-21
 
 - Se anadio consentimiento legal obligatorio para registro y checkout:
@@ -435,6 +455,49 @@ El checkout ahora combina autocompletado nativo del navegador con recordatorio l
 - Los valores guardados se reutilizan en futuras visitas a `/checkout`.
 - Si el usuario esta autenticado, el checkout tambien completa nombre y email disponibles del perfil.
 - Esto solo mejora comodidad local; la logica de cupones y totales sigue estando completamente protegida en backend.
+
+## Reportes y exportaciones de negocio
+
+El dashboard admin ahora incluye un centro de exportacion de reportes en lugar del bloque estatico de analiticas.
+
+- Tipos de reporte disponibles:
+  - `sales`
+  - `orders`
+  - `customers`
+- Filtros de tiempo disponibles:
+  - `today`
+  - `last7`
+  - `last30`
+  - `thisMonth`
+  - `custom`
+- Formatos de salida disponibles:
+  - `xlsx`
+  - `pdf`
+
+### Que hace el centro de exportacion
+
+- Muestra un resumen en vivo antes de exportar
+- Enseña metricas clave segun el tipo de reporte
+- Incluye una tabla previa con filas representativas
+- Permite exportar exactamente el conjunto filtrado a Excel o PDF
+
+### Fuente de datos y seguridad
+
+- Los reportes se generan con consultas Prisma del lado del servidor sobre PostgreSQL
+- El navegador no calcula ingresos ni totales finales para la exportacion
+- Los guards de admin protegen tanto el endpoint de resumen como el de exportacion
+
+### Endpoints de reportes
+
+- `GET /api/admin/reports/summary`
+- `GET /api/admin/reports/export`
+
+### Archivos principales de la funcionalidad
+
+- `src/components/admin/BusinessExportPanel.tsx`
+- `src/lib/business-reports.ts`
+- `src/app/api/admin/reports/summary/route.ts`
+- `src/app/api/admin/reports/export/route.ts`
 
 ## Plan de migracion PostgreSQL
 
