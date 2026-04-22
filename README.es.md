@@ -31,6 +31,16 @@ LilCake es una tienda construida con Next.js que incluye:
   - el efecto del panel admin se estabilizo para evitar el error de React/Turbopack al cambiar filtros
   - la hoja `Resumen` del Excel se rehizo para ganar contraste y legibilidad
   - el espaciado de la tabla del PDF se ajusto para que la primera fila no quede visualmente cortada bajo la cabecera
+- Se mejoraron los campos de contraseña en toda la app:
+  - los inputs compartidos de contraseña ahora incluyen un toggle para mostrar u ocultar la clave con un icono de ojo
+  - esto aplica al login de cliente, registro, restablecimiento de contraseña y login de admin
+  - el control es accesible con teclado y no tapa el texto ingresado
+- Se completo el primer despliegue productivo en Vercel:
+  - el proyecto ya quedo publicado en `https://lilcake.vercel.app`
+  - se configuraron variables de produccion para PostgreSQL, autenticacion, correo, Google OAuth, WhatsApp y Stripe en modo test
+  - se creo el webhook de Stripe para `https://lilcake.vercel.app/api/webhooks/stripe`
+  - se validaron rutas publicas con datos reales desde Vercel y tambien la conexion directa Prisma/PostgreSQL contra Supabase
+  - se anadio `.vercelignore` para que futuros despliegues no suban archivos locales de entorno ni artefactos innecesarios
 
 ### 2026-04-21
 
@@ -328,6 +338,21 @@ Notas importantes de conexion:
 - Para Vercel/serverless mas adelante, manten `DATABASE_URL` en el Transaction Pooler. Opcionalmente puedes agregar `connection_limit=1` si ves presion de conexiones en serverless.
 - Si Stripe todavia no forma parte de ese entorno, manten `NEXT_PUBLIC_STRIPE_ENABLED=false` y deja desactivados los pagos hasta retomar ese rollout.
 - La ruta actual de subida de imagenes escribe archivos en `public/uploads/products`. Eso funciona localmente, pero el almacenamiento serverless de Vercel no es persistente. En produccion deberias mover uploads a Cloudinary, S3, Vercel Blob u otro object storage.
+
+### Configuracion productiva actual
+
+- Dominio productivo activo: `https://lilcake.vercel.app`
+- Redirect URI productiva de Google OAuth:
+  - `https://lilcake.vercel.app/api/auth/callback/google`
+- Endpoint productivo del webhook de Stripe:
+  - `https://lilcake.vercel.app/api/webhooks/stripe`
+
+Notas operativas:
+
+- Google OAuth ya esta activo en produccion tras cargar `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` en Vercel.
+- Stripe esta activo en produccion en modo test usando llaves de prueba.
+- El despliegue productivo se verifico con rutas publicas reales en Vercel y con una conexion directa Prisma/PostgreSQL contra Supabase.
+- Las subidas de imagenes del admin siguen usando el filesystem local, por lo que en Vercel conviene migrarlas a object storage persistente antes de considerarlas productivas.
 
 ## Flujo de ordenes y webhook de Stripe
 

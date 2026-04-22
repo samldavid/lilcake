@@ -31,6 +31,16 @@ LilCake is a Next.js storefront with:
   - the admin export panel effect was stabilized to avoid the React/Turbopack dependency error that appeared while filtering
   - the Excel summary sheet was restyled for better readability and contrast
   - the PDF data table spacing was adjusted so the first row no longer appears visually cut off under the header
+- Improved password inputs across the app:
+  - shared password fields now include a show/hide toggle with an eye icon
+  - this applies to customer login, registration, password reset, and admin login
+  - the control is keyboard-accessible and avoids covering the typed text
+- Finished the first full Vercel production rollout:
+  - the project is now linked to Vercel and deployed on `https://lilcake.vercel.app`
+  - production environment variables were configured for PostgreSQL, auth, email, Google OAuth, WhatsApp, and Stripe test mode
+  - a Stripe webhook endpoint was created for `https://lilcake.vercel.app/api/webhooks/stripe`
+  - production routing and public pages were rechecked after deployment, including live product data coming from PostgreSQL/Supabase
+  - a `.vercelignore` file was added so future deployments do not upload local env files or unnecessary local artifacts
 
 ### 2026-04-21
 
@@ -327,6 +337,21 @@ Important connection notes:
 - For Vercel/serverless later, keep `DATABASE_URL` on the Transaction Pooler. You can optionally append `connection_limit=1` if you hit connection pressure in serverless.
 - If Stripe is not part of the current environment yet, keep `NEXT_PUBLIC_STRIPE_ENABLED=false` and leave Stripe payments disabled until the payment rollout resumes.
 - The current image upload route writes files into `public/uploads/products`. That works locally, but Vercel serverless storage is not persistent. For production, move uploads to Cloudinary, S3, Vercel Blob, or another object storage service.
+
+### Current production setup
+
+- Active production domain: `https://lilcake.vercel.app`
+- Google OAuth production redirect URI:
+  - `https://lilcake.vercel.app/api/auth/callback/google`
+- Stripe webhook production endpoint:
+  - `https://lilcake.vercel.app/api/webhooks/stripe`
+
+Operational notes:
+
+- Google OAuth is enabled in production after loading `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` into Vercel.
+- Stripe is currently enabled in production in test mode using test publishable and secret keys.
+- The production deployment was verified with live product routes on Vercel and a direct Prisma/PostgreSQL connection against Supabase.
+- Admin image uploads still use the local filesystem route, so new uploads in Vercel should be migrated to persistent object storage before treating that flow as production-grade.
 
 ## Orders and Stripe webhook flow
 

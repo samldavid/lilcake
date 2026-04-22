@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+.next
+node_modules
+dev.db
+tsconfig.tsbuildinfo
+AGENTS.md
+CLAUDE.md
+README.md
+README.es.md
