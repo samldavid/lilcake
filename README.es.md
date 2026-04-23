@@ -32,6 +32,7 @@ Dentro del demo puedes explorar:
 ## Funcionalidades
 
 - 🛍️ Tienda online lista para vender con catálogo, páginas de producto, carrito, búsqueda y checkout
+- 🖼️ Almacenamiento persistente de imágenes de producto en producción con Vercel Blob
 - 🔐 Autenticación flexible con email/contraseña y acceso con Google
 - 💳 Checkout real con Stripe y validación segura desde backend
 - 📦 Ciclo completo de pedidos con estados de pago, seguimiento de envío y visibilidad para el cliente
@@ -135,6 +136,7 @@ Muchos repositorios de e-commerce se ven bien por fuera, pero se quedan cortos c
 LilCake destaca porque ya incluye lo que normalmente se deja para “después”:
 
 - validación backend real para checkout, descuentos y precios
+- almacenamiento persistente de imágenes en producción, separado de los archivos locales de desarrollo
 - un panel admin que sí sirve para operar el negocio
 - reglas de cupones pensadas para proteger ingresos, no solo para mostrar un campo promocional
 - reportes exportables útiles para operación, control y seguimiento

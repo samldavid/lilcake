@@ -2,6 +2,7 @@ import path from "path"
 import { randomUUID } from "crypto"
 import { mkdir, writeFile } from "fs/promises"
 import { NextResponse } from "next/server"
+import { put } from "@vercel/blob"
 import {
   adminNotFoundResponse,
   requireAdminApiSession,
@@ -97,6 +98,41 @@ function sanitizeFilename(fileName: string, extension: AllowedImageType["extensi
   return `${baseName || "image"}-${randomUUID().slice(0, 8)}${extension}`
 }
 
+async function uploadProductImage(
+  fileName: string,
+  fileBuffer: Buffer,
+  mime: AllowedImageType["mime"]
+) {
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blob = await put(`products/${fileName}`, fileBuffer, {
+      access: "public",
+      contentType: mime,
+      addRandomSuffix: false,
+    })
+
+    return blob.url
+  }
+
+  if (process.env.VERCEL) {
+    throw new Error(
+      "El almacenamiento de imagenes no esta configurado en Vercel. Conecta Vercel Blob para habilitar subidas en produccion."
+    )
+  }
+
+  const uploadDirectory = path.join(
+    process.cwd(),
+    "public",
+    "uploads",
+    "products"
+  )
+  await mkdir(uploadDirectory, { recursive: true })
+
+  const outputPath = path.join(uploadDirectory, fileName)
+  await writeFile(outputPath, fileBuffer)
+
+  return `/uploads/products/${fileName}`
+}
+
 export async function POST(req: Request) {
   try {
     const session = await requireAdminApiSession()
@@ -116,14 +152,6 @@ export async function POST(req: Request) {
         { status: 400 }
       )
     }
-
-    const uploadDirectory = path.join(
-      process.cwd(),
-      "public",
-      "uploads",
-      "products"
-    )
-    await mkdir(uploadDirectory, { recursive: true })
 
     const uploadedFiles: string[] = []
 
@@ -178,23 +206,31 @@ export async function POST(req: Request) {
       }
 
       const fileName = sanitizeFilename(file.name, detectedImageType.extension)
-      const outputPath = path.join(uploadDirectory, fileName)
+      const fileUrl = await uploadProductImage(
+        fileName,
+        fileBuffer,
+        detectedImageType.mime
+      )
 
-      await writeFile(outputPath, fileBuffer)
-      uploadedFiles.push(`/uploads/products/${fileName}`)
+      uploadedFiles.push(fileUrl)
     }
 
     return NextResponse.json({ files: uploadedFiles })
   } catch (error) {
     console.error("Image upload error:", error)
+    const isStorageConfigurationError =
+      error instanceof Error &&
+      error.message.startsWith("El almacenamiento de imagenes no esta configurado")
 
     return NextResponse.json(
       {
-        error: getPublicErrorMessage(error, {
-          fallbackMessage: "No pudimos subir las imagenes.",
-        }),
+        error: isStorageConfigurationError
+          ? error.message
+          : getPublicErrorMessage(error, {
+              fallbackMessage: "No pudimos subir las imagenes.",
+            }),
       },
-      { status: 500 }
+      { status: isStorageConfigurationError ? 503 : 500 }
     )
   }
 }

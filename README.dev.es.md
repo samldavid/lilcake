@@ -98,6 +98,14 @@ graph TB
 
 ## Historial de cambios
 
+### 2026-04-23
+
+- Se corrigieron las subidas de imagenes de productos en produccion sobre Vercel:
+  - en local, si no existe token de Blob, las subidas siguen guardandose en `public/uploads/products`
+  - en produccion, las subidas usan Vercel Blob cuando `BLOB_READ_WRITE_TOKEN` esta configurado
+  - los deployments de Vercel ya no dependen de escribir imagenes en el filesystem serverless
+  - el formulario admin mantiene el mismo flujo y el backend elige automaticamente el proveedor correcto
+
 ### 2026-04-22
 
 - Se separo el desarrollo local de la schema de base usada por Vercel:
@@ -476,6 +484,28 @@ Notas:
 - `POST /api/auth/reset-password`: guarda la nueva contraseña usando el token temporal
 - `GET /api/auth/verify-email`: consume el token de verificacion y marca el correo como verificado
 
+## Subidas de imagenes de productos en Vercel
+
+Las subidas de imagenes de productos tienen dos modos de almacenamiento:
+
+- Desarrollo local sin `BLOB_READ_WRITE_TOKEN`: los archivos se guardan en `public/uploads/products`.
+- Produccion en Vercel con `BLOB_READ_WRITE_TOKEN`: los archivos se suben a Vercel Blob y el producto guarda la URL publica del Blob.
+
+Por que esto importa:
+
+- Las funciones de Vercel no ofrecen almacenamiento persistente en el disco del proyecto para archivos subidos.
+- Escribir en `public/uploads/products` esta bien en local, pero no es confiable para uploads productivos.
+- Vercel Blob permite que el formulario de productos guarde URLs publicas persistentes sin cambiar el flujo CRUD.
+
+Configuracion en produccion:
+
+1. En Vercel, conecta un Blob store al proyecto `lilcake`.
+2. Confirma que `BLOB_READ_WRITE_TOKEN` exista en las variables de entorno de Production.
+3. Redespliega el proyecto.
+4. Prueba una subida desde `/admin/productos/[id]/editar`.
+
+Si el token falta en Vercel, el endpoint de subida devuelve un error claro de configuracion en vez de fingir que el archivo quedo guardado.
+
 ## Despliegue en Vercel
 
 1. Sube el repositorio a GitHub.
@@ -491,7 +521,7 @@ Notas importantes de conexion:
 - Si tu entorno soporta IPv6 o despues compras el add-on IPv4 de Supabase, `DIRECT_URL` puede apuntar al host directo.
 - Para Vercel/serverless mas adelante, manten `DATABASE_URL` en el Transaction Pooler. Opcionalmente puedes agregar `connection_limit=1` si ves presion de conexiones en serverless.
 - Si Stripe todavia no forma parte de ese entorno, manten `NEXT_PUBLIC_STRIPE_ENABLED=false` y deja desactivados los pagos hasta retomar ese rollout.
-- La ruta actual de subida de imagenes escribe archivos en `public/uploads/products`. Eso funciona localmente, pero el almacenamiento serverless de Vercel no es persistente. En produccion deberias mover uploads a Cloudinary, S3, Vercel Blob u otro object storage.
+- Las subidas de imagenes del admin deben usar Vercel Blob en produccion mediante `BLOB_READ_WRITE_TOKEN`; el desarrollo local puede seguir usando `public/uploads/products`.
 
 ### Configuracion productiva actual
 
@@ -506,7 +536,7 @@ Notas operativas:
 - Google OAuth ya esta activo en produccion tras cargar `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` en Vercel.
 - Stripe esta activo en produccion en modo test usando llaves de prueba.
 - El despliegue productivo se verifico con rutas publicas reales en Vercel y con una conexion directa Prisma/PostgreSQL contra Supabase.
-- Las subidas de imagenes del admin siguen usando el filesystem local, por lo que en Vercel conviene migrarlas a object storage persistente antes de considerarlas productivas.
+- Las subidas de imagenes del admin usan Vercel Blob en produccion cuando `BLOB_READ_WRITE_TOKEN` esta configurado, y mantienen fallback local al filesystem para desarrollo.
 
 ## Flujo de ordenes y webhook de Stripe
 

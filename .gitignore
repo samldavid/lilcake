@@ -41,6 +41,9 @@ dev.db
 # temporary local investigation logs
 .tmp*
 
+# local admin uploads should not be committed accidentally
+public/uploads/products/*
+
 # vercel
 .vercel
 

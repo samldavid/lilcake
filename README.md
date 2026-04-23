@@ -32,6 +32,7 @@ Inside the demo you can explore:
 ## Features
 
 - 🛍️ Storefront ready to sell with catalog, product pages, cart, search, and checkout flow
+- 🖼️ Persistent product media storage for production uploads through Vercel Blob
 - 🔐 Flexible authentication with email/password and Google sign-in
 - 💳 Real checkout experience with Stripe plus order-safe backend validation
 - 📦 Complete order lifecycle with payment states, shipment tracking, and customer visibility
@@ -134,6 +135,7 @@ Most commerce repos look good on the surface but fall apart in the real business
 LilCake stands out because it already includes the parts that usually get skipped:
 
 - real backend validation for checkout, discounts, and pricing
+- persistent production media storage for product images, separate from local development files
 - an admin panel that actually helps operate the business
 - coupon rules designed to protect revenue, not just display a promo field
 - reporting exports that are useful for operations, accounting, and daily control

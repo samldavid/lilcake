@@ -98,6 +98,14 @@ graph TB
 
 ## Changelog
 
+### 2026-04-23
+
+- Fixed production product image uploads on Vercel:
+  - local uploads still write to `public/uploads/products` when no Blob token exists
+  - production uploads now use Vercel Blob when `BLOB_READ_WRITE_TOKEN` is configured
+  - Vercel deployments no longer rely on writing product media into the serverless filesystem
+  - the admin product form can keep using the same upload flow while the backend chooses the correct storage provider
+
 ### 2026-04-22
 
 - Separated local development from the database schema used by Vercel:
@@ -475,6 +483,28 @@ Notes:
 - `POST /api/auth/reset-password`: submit the new password with the temporary token
 - `GET /api/auth/verify-email`: consume the verification token and mark the email as verified
 
+## Product image uploads in Vercel
+
+Product image uploads use two storage modes:
+
+- Local development without `BLOB_READ_WRITE_TOKEN`: files are written to `public/uploads/products`.
+- Vercel production with `BLOB_READ_WRITE_TOKEN`: files are uploaded to Vercel Blob and the product stores the public Blob URL.
+
+Why this matters:
+
+- Vercel Functions do not provide persistent project-disk storage for uploaded media.
+- Writing to `public/uploads/products` is fine locally, but it is not reliable for production uploads.
+- Vercel Blob gives the admin product form persistent public URLs without changing the product CRUD flow.
+
+Production setup:
+
+1. In Vercel, connect a Blob store to the `lilcake` project.
+2. Confirm that `BLOB_READ_WRITE_TOKEN` exists in the Production environment variables.
+3. Redeploy the project.
+4. Test an admin product upload from `/admin/productos/[id]/editar`.
+
+If the token is missing in Vercel, the upload endpoint returns a clear configuration error instead of silently pretending the file was saved.
+
 ## Deploying to Vercel
 
 1. Push the repository to GitHub.
@@ -490,7 +520,7 @@ Important connection notes:
 - If your environment supports IPv6 or you buy the Supabase IPv4 add-on later, `DIRECT_URL` can point to the direct host instead.
 - For Vercel/serverless later, keep `DATABASE_URL` on the Transaction Pooler. You can optionally append `connection_limit=1` if you hit connection pressure in serverless.
 - If Stripe is not part of the current environment yet, keep `NEXT_PUBLIC_STRIPE_ENABLED=false` and leave Stripe payments disabled until the payment rollout resumes.
-- The current image upload route writes files into `public/uploads/products`. That works locally, but Vercel serverless storage is not persistent. For production, move uploads to Cloudinary, S3, Vercel Blob, or another object storage service.
+- Admin product image uploads should use Vercel Blob in production through `BLOB_READ_WRITE_TOKEN`; local development can still fall back to `public/uploads/products`.
 
 ### Current production setup
 
@@ -505,7 +535,7 @@ Operational notes:
 - Google OAuth is enabled in production after loading `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` into Vercel.
 - Stripe is currently enabled in production in test mode using test publishable and secret keys.
 - The production deployment was verified with live product routes on Vercel and a direct Prisma/PostgreSQL connection against Supabase.
-- Admin image uploads still use the local filesystem route, so new uploads in Vercel should be migrated to persistent object storage before treating that flow as production-grade.
+- Admin image uploads use Vercel Blob in production when `BLOB_READ_WRITE_TOKEN` is configured, and keep a local filesystem fallback for development.
 
 ## Orders and Stripe webhook flow
 
