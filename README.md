@@ -4,7 +4,7 @@ Launch a customizable e-commerce system with storefront, admin, payments, coupon
 
 LilCake is not just a store theme. It is a complete, customizable commerce system designed to be adapted to different businesses, catalogs, and operational flows without rebuilding the core from scratch.
 
-[Live Demo](https://lilcake.vercel.app/) · [Versión en Español](./README.es.md) · [Technical Docs](./README.dev.md) · [Guía Técnica en Español](./README.dev.es.md)
+[Live Demo](https://lilcake.vercel.app/) · [Admin Demo](https://lilcake.vercel.app/admin-demo) · [Versión en Español](./README.es.md) · [Technical Docs](./README.dev.md) · [Guía Técnica en Español](./README.dev.es.md)
 
 ## What is this?
 
@@ -13,6 +13,21 @@ LilCake Commerce System is a full e-commerce platform built to help brands launc
 It combines customer-facing shopping flows with an internal admin system, order management, discount controls, transactional emails, reporting, and production-oriented backend validation. The visual identity can be customized for different businesses, while the system logic stays solid and reusable.
 
 The current demo uses a fashion/streetwear brand, but the product is meant to be re-skinned and adapted to many different business models.
+
+## See the Admin in Action
+
+If you want to evaluate the operational side of the product first, go straight to the admin sandbox:
+
+👉 [Open the Admin Demo](https://lilcake.vercel.app/admin-demo)
+
+Inside the demo you can explore:
+
+- product and catalog management
+- order monitoring and customer visibility
+- coupon controls, exports, and operational workflows
+
+### Admin Preview
+![Admin preview](./screenshots/Captura%20de%20pantalla%202026-04-22%20191149.png)
 
 ## Features
 
@@ -34,6 +49,12 @@ Explore the live system here:
 👉 [https://lilcake.vercel.app/](https://lilcake.vercel.app/)
 
 If you are evaluating the product for a brand, a client project, or a custom commerce build, start with the live storefront and then explore the admin sandbox to see how the system behaves end to end.
+
+Best way to evaluate the system:
+
+1. Explore the storefront experience in the live demo.
+2. Open the admin demo to review operations, orders, coupons, and exports.
+3. Use the screenshots below to get a quick overview before diving deeper.
 
 ## ⚠️ Demo Information
 
@@ -66,14 +87,14 @@ A safe admin sandbox is available at:
 ### Checkout Flow
 ![Checkout flow](./screenshots/carrito.png)
 
-### Admin Dashboard
-![Admin dashboard](./screenshots/Captura%20de%20pantalla%202026-04-22%20191149.png)
-
 ### Orders Management
 ![Orders management](./screenshots/Captura%20de%20pantalla%202026-04-22%20191221.png)
 
 ### Coupons Engine
 ![Coupons engine](./screenshots/Captura%20de%20pantalla%202026-04-22%20191238.png)
+
+### Admin Dashboard
+![Admin dashboard](./screenshots/Captura%20de%20pantalla%202026-04-22%20191149.png)
 
 ## Use Cases
 

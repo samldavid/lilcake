@@ -4,7 +4,7 @@ Lanza un sistema e-commerce personalizable con storefront, panel admin, pagos, c
 
 LilCake no es solo una plantilla visual. Es un sistema de comercio completo y personalizable, pensado para adaptarse a distintos negocios, catálogos y flujos operativos sin reconstruir la base cada vez.
 
-[Demo en Vivo](https://lilcake.vercel.app/) · [Versión en Inglés](./README.md) · [Guía Técnica en Español](./README.dev.es.md) · [Technical Docs](./README.dev.md)
+[Demo en Vivo](https://lilcake.vercel.app/) · [Admin Demo](https://lilcake.vercel.app/admin-demo) · [Versión en Inglés](./README.md) · [Guía Técnica en Español](./README.dev.es.md) · [Technical Docs](./README.dev.md)
 
 ## ¿Qué es esto?
 
@@ -13,6 +13,21 @@ LilCake Commerce System es una plataforma e-commerce integral creada para ayudar
 Combina experiencia de compra para clientes con un panel administrativo funcional, gestión de pedidos, control de descuentos, correos transaccionales, reportes y validaciones backend orientadas a producción. La identidad visual puede personalizarse para distintos negocios, mientras la lógica del sistema se mantiene sólida y reutilizable.
 
 La demo actual usa una marca de moda/streetwear, pero el producto está pensado para rebrandearse y adaptarse a muchos otros modelos de negocio.
+
+## Mira el Admin en Acción
+
+Si quieres evaluar primero la parte operativa del sistema, entra directo al sandbox administrativo:
+
+👉 [Abrir Admin Demo](https://lilcake.vercel.app/admin-demo)
+
+Dentro del demo puedes explorar:
+
+- gestión de productos y catálogo
+- seguimiento de pedidos y visibilidad de clientes
+- control de cupones, exportaciones y flujos operativos
+
+### Vista Previa del Admin
+![Vista previa del admin](./screenshots/Captura%20de%20pantalla%202026-04-22%20191149.png)
 
 ## Funcionalidades
 
@@ -34,6 +49,12 @@ Puedes explorar el sistema aquí:
 👉 [https://lilcake.vercel.app/](https://lilcake.vercel.app/)
 
 Si estás evaluando el sistema para una marca, un cliente o un desarrollo comercial a medida, empieza por el storefront público y luego entra al sandbox administrativo para ver el flujo completo.
+
+La mejor forma de evaluarlo es:
+
+1. Recorrer el storefront en la demo pública.
+2. Abrir el admin demo para revisar operación, pedidos, cupones y exportaciones.
+3. Usar las capturas de abajo para entender rápido el alcance antes de navegar.
 
 ## ⚠️ Información de la Demo
 
@@ -67,14 +88,14 @@ Existe un panel administrativo demo disponible en:
 ### Flujo de Checkout
 ![Flujo de checkout](./screenshots/carrito.png)
 
-### Dashboard Administrativo
-![Dashboard administrativo](./screenshots/Captura%20de%20pantalla%202026-04-22%20191149.png)
-
 ### Gestión de Pedidos
 ![Gestión de pedidos](./screenshots/Captura%20de%20pantalla%202026-04-22%20191221.png)
 
 ### Motor de Cupones
 ![Motor de cupones](./screenshots/Captura%20de%20pantalla%202026-04-22%20191238.png)
+
+### Dashboard Administrativo
+![Dashboard administrativo](./screenshots/Captura%20de%20pantalla%202026-04-22%20191149.png)
 
 ## Casos de Uso
 
