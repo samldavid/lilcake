@@ -35,7 +35,11 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
+!.env.local.example
 dev.db
+
+# temporary local investigation logs
+.tmp*
 
 # vercel
 .vercel

@@ -100,6 +100,15 @@ graph TB
 
 ### 2026-04-22
 
+- Separated local development from the database schema used by Vercel:
+  - `localhost` now uses a dedicated PostgreSQL/Supabase schema through `.env.local`
+  - `npm run dev` and local Prisma scripts now block connections to the remote `public` schema automatically
+  - added `npm run db:local:setup` to prepare the local schema, sync Prisma, and seed it without touching production
+  - `prisma.config.ts` now loads `.env.local`, so Next.js and Prisma CLI share the same safe local environment
+- Fixed the admin product form so it no longer overwrites user input after mount:
+  - create/edit pages now preload categories and product data on the server
+  - the form stops rehydrating itself once initial data already exists, avoiding fields that look locked or values that revert while typing
+
 - Moved reusable technical planning context out of `CLAUDE.md` and into the developer guides:
   - added a sanitized stack overview, runtime architecture map, domain model summary, and API surface summary
   - kept the useful development reference in `README.dev.md` and `README.dev.es.md`
@@ -332,6 +341,47 @@ npm run dev
 - `NEXT_PUBLIC_APP_URL`: public app URL used by client flows.
 - `NEXT_PUBLIC_APP_NAME`: display name.
 - `NEXT_PUBLIC_SUPPORT_EMAIL`: public support/legal contact email shown in storefront legal pages.
+
+## Safe local database separation
+
+Local development must not use the same PostgreSQL schema that powers Vercel production.
+This repo now supports a safer setup where localhost uses a dedicated schema inside the
+same Supabase/PostgreSQL instance.
+
+How it works:
+
+- `.env` keeps the shared/base PostgreSQL credentials.
+- `.env.local` overrides `DATABASE_URL` and `DIRECT_URL` with `?schema=local_<user>`.
+- `npm run dev` now refuses to start if local is still pointing at the remote `public` schema.
+- local Prisma scripts (`db:migrate`, `db:push`, `db:seed`, `db:studio`) also refuse to run
+  against the remote `public` schema unless you explicitly set `ALLOW_PRODUCTION_DATABASE=true`.
+- `prisma.config.ts` now loads `.env.local`, so Prisma CLI follows the same local overrides as Next.js.
+
+Recommended first-time setup:
+
+```bash
+npm run db:local:setup
+```
+
+That command:
+
+1. generates or updates `.env.local`
+2. creates local-only database URLs using a dedicated schema
+3. runs `prisma db push`
+4. runs the seed on the local schema
+
+After that, restart local development with:
+
+```bash
+npm run dev
+```
+
+Important notes:
+
+- This keeps localhost separate from Vercel even if both environments use the same Supabase project.
+- The separation happens at the PostgreSQL schema level, not by sharing production tables.
+- If you ever need a completely different database later, you can still replace the local URLs in `.env.local`.
+- Avoid running raw `prisma ...` commands directly; prefer the npm scripts so the safety checks always run.
 
 ## Google sign-in setup
 

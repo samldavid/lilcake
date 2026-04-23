@@ -60,6 +60,8 @@ type ProductFormProps = {
   demoCategories?: ProductCategoryOption[]
   demoProduct?: ProductFormSeed | null
   demoNotice?: string
+  initialCategories?: ProductCategoryOption[]
+  initialProduct?: ProductFormSeed | null
 }
 
 const initialFormData = {
@@ -123,25 +125,49 @@ export function ProductForm({
   demoCategories = [],
   demoProduct = null,
   demoNotice = "Esto es una demo. Los cambios no se guardan.",
+  initialCategories = [],
+  initialProduct = null,
 }: ProductFormProps) {
   const router = useRouter()
   const isEditing = Boolean(productId)
   const isDemo = mode === "demo"
   const fileInputRef = React.useRef<HTMLInputElement>(null)
   const previewUrlsRef = React.useRef<string[]>([])
+  const liveSeedState = React.useMemo(
+    () => (initialProduct ? mapSeedProductToDrafts(initialProduct) : null),
+    [initialProduct]
+  )
+  const demoSeedState = React.useMemo(
+    () => (demoProduct ? mapSeedProductToDrafts(demoProduct) : null),
+    [demoProduct]
+  )
+  const hasInitialLiveData =
+    !isDemo && initialCategories.length > 0 && (!isEditing || Boolean(liveSeedState))
 
   const [loading, setLoading] = React.useState(false)
   const [uploadingImages, setUploadingImages] = React.useState(false)
-  const [isBootstrapping, setIsBootstrapping] = React.useState(true)
+  const [isBootstrapping, setIsBootstrapping] = React.useState(
+    isDemo ? false : !hasInitialLiveData
+  )
   const [error, setError] = React.useState("")
   const [success, setSuccess] = React.useState("")
   const [imageInput, setImageInput] = React.useState("")
-  const [categories, setCategories] = React.useState<ProductCategoryOption[]>([])
-  const [formData, setFormData] = React.useState(initialFormData)
-  const [images, setImages] = React.useState<string[]>([])
-  const [variants, setVariants] = React.useState<ProductVariantDraft[]>([
-    createEmptyVariant(),
-  ])
+  const [categories, setCategories] = React.useState<ProductCategoryOption[]>(
+    isDemo ? demoCategories : initialCategories
+  )
+  const [formData, setFormData] = React.useState(
+    isDemo
+      ? demoSeedState?.formData ?? initialFormData
+      : liveSeedState?.formData ?? initialFormData
+  )
+  const [images, setImages] = React.useState<string[]>(
+    isDemo ? demoSeedState?.images ?? [] : liveSeedState?.images ?? []
+  )
+  const [variants, setVariants] = React.useState<ProductVariantDraft[]>(
+    isDemo
+      ? demoSeedState?.variants ?? [createEmptyVariant()]
+      : liveSeedState?.variants ?? [createEmptyVariant()]
+  )
 
   React.useEffect(() => {
     return () => {
@@ -153,17 +179,25 @@ export function ProductForm({
   React.useEffect(() => {
     let isActive = true
 
+    if (!isDemo && hasInitialLiveData) {
+      setIsBootstrapping(false)
+
+      return () => {
+        isActive = false
+      }
+    }
+
     const loadForm = async () => {
       try {
-        setIsBootstrapping(true)
         setError("")
         setSuccess("")
 
         if (isDemo) {
+          setIsBootstrapping(false)
           setCategories(demoCategories)
 
-          if (isEditing && demoProduct) {
-            const nextState = mapSeedProductToDrafts(demoProduct)
+          if (isEditing && demoSeedState) {
+            const nextState = demoSeedState
             setFormData(nextState.formData)
             setImages(nextState.images)
             setVariants(nextState.variants)
@@ -175,6 +209,8 @@ export function ProductForm({
 
           return
         }
+
+        setIsBootstrapping(true)
 
         const requests = [
           fetch("/api/categories"),
@@ -232,7 +268,16 @@ export function ProductForm({
     return () => {
       isActive = false
     }
-  }, [demoCategories, demoProduct, isDemo, isEditing, productId])
+  }, [
+    demoCategories,
+    demoSeedState,
+    hasInitialLiveData,
+    initialCategories,
+    isDemo,
+    isEditing,
+    liveSeedState,
+    productId,
+  ])
 
   const addVariant = () => {
     setVariants((current) => [...current, createEmptyVariant(createVariantTempId())])
