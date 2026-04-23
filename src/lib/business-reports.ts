@@ -64,15 +64,15 @@ type ReportMetric = {
 
 type ReportColumnFormat = "text" | "currency" | "date" | "datetime" | "number"
 
-type ReportColumn = {
+export type ReportColumn = {
   key: string
   header: string
   format?: ReportColumnFormat
   width?: number
 }
 
-type ReportRowValue = string | number | Date | null
-type ReportRow = Record<string, ReportRowValue>
+export type ReportRowValue = string | number | Date | null
+export type ReportRow = Record<string, ReportRowValue>
 
 export type ReportSummaryPayload = {
   kind: ReportKind
@@ -86,7 +86,7 @@ export type ReportSummaryPayload = {
   notes: string[]
 }
 
-type ReportExportPayload = {
+export type ReportExportPayload = {
   kind: ReportKind
   title: string
   description: string
@@ -779,8 +779,7 @@ function excelNumberFormat(format?: ReportColumnFormat) {
   }
 }
 
-export async function exportReportAsWorkbook(filters: ReportFilters) {
-  const report = await getReportPayload(filters)
+export async function exportReportPayloadAsWorkbook(report: ReportExportPayload) {
   const workbook = new ExcelJS.Workbook()
   workbook.creator = "LilCake"
   workbook.company = "LilCake"
@@ -950,6 +949,11 @@ export async function exportReportAsWorkbook(filters: ReportFilters) {
   return workbook.xlsx.writeBuffer()
 }
 
+export async function exportReportAsWorkbook(filters: ReportFilters) {
+  const report = await getReportPayload(filters)
+  return exportReportPayloadAsWorkbook(report)
+}
+
 function truncatePdfText(value: string, limit = 26) {
   if (value.length <= limit) {
     return value
@@ -974,8 +978,7 @@ function formatPdfValue(value: ReportRowValue, format?: ReportColumnFormat) {
   return truncatePdfText(formatReportValue(value, format), format === "currency" ? 18 : 26)
 }
 
-export async function exportReportAsPdf(filters: ReportFilters) {
-  const report = await getReportPayload(filters)
+export async function exportReportPayloadAsPdf(report: ReportExportPayload) {
   const pdfDoc = await PDFDocument.create()
   const [regularFont, boldFont] = await Promise.all([
     pdfDoc.embedFont(StandardFonts.Helvetica),
@@ -1163,6 +1166,11 @@ export async function exportReportAsPdf(filters: ReportFilters) {
   }
 
   return Buffer.from(await pdfDoc.save())
+}
+
+export async function exportReportAsPdf(filters: ReportFilters) {
+  const report = await getReportPayload(filters)
+  return exportReportPayloadAsPdf(report)
 }
 
 export async function getSerializedReportSummary(filters: ReportFilters) {

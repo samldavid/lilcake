@@ -6,11 +6,11 @@ import {
   FileSpreadsheet,
   FileText,
   Filter,
+  LoaderCircle,
 } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import {
-  ADMIN_DEMO_NOTICE,
   getAdminDemoReportSummary,
 } from "@/lib/admin-demo-data"
 import { DEFAULT_REPORT_FILTERS, type ReportFilters } from "@/lib/business-reports"
@@ -31,12 +31,86 @@ const REPORT_PRESET_OPTIONS = [
 
 export function BusinessExportDemoPanel() {
   const [filters, setFilters] = React.useState<ReportFilters>(DEFAULT_REPORT_FILTERS)
-  const [feedback, setFeedback] = React.useState("")
+  const [feedback, setFeedback] = React.useState<{
+    type: "success" | "error"
+    message: string
+  } | null>(null)
+  const [loadingExport, setLoadingExport] = React.useState<"xlsx" | "pdf" | null>(
+    null
+  )
 
   const customRangeIncomplete =
     filters.preset === "custom" && (!filters.startDate || !filters.endDate)
 
   const summary = React.useMemo(() => getAdminDemoReportSummary(filters), [filters])
+
+  const handleExport = async (format: "xlsx" | "pdf") => {
+    if (customRangeIncomplete) {
+      setFeedback({
+        type: "error",
+        message: "Completa la fecha inicial y final para exportar ese rango.",
+      })
+      return
+    }
+
+    try {
+      setLoadingExport(format)
+      setFeedback(null)
+
+      const searchParams = new URLSearchParams({
+        kind: filters.kind,
+        preset: filters.preset,
+        format,
+      })
+
+      if (filters.startDate) {
+        searchParams.set("startDate", filters.startDate)
+      }
+
+      if (filters.endDate) {
+        searchParams.set("endDate", filters.endDate)
+      }
+
+      const response = await fetch(`/api/demo/reports/export?${searchParams}`, {
+        cache: "no-store",
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "No pudimos generar la exportacion demo.")
+      }
+
+      const blob = await response.blob()
+      const contentDisposition = response.headers.get("content-disposition") || ""
+      const filenameMatch = contentDisposition.match(/filename="([^"]+)"/i)
+      const fileName =
+        filenameMatch?.[1] || `lilcake-demo-${filters.kind}.${format}`
+
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = fileName
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+
+      setFeedback({
+        type: "success",
+        message: `Reporte demo exportado correctamente en ${format === "xlsx" ? "Excel" : "PDF"}.`,
+      })
+    } catch (exportError) {
+      setFeedback({
+        type: "error",
+        message:
+          exportError instanceof Error
+            ? exportError.message
+            : "No pudimos exportar el reporte demo.",
+      })
+    } finally {
+      setLoadingExport(null)
+    }
+  }
 
   return (
     <div className="card group relative overflow-hidden">
@@ -62,19 +136,27 @@ export function BusinessExportDemoPanel() {
               type="button"
               variant="secondary"
               className="gap-2"
-              disabled={customRangeIncomplete}
-              onClick={() => setFeedback(`${ADMIN_DEMO_NOTICE} La exportacion en Excel se simula.`)}
+              disabled={customRangeIncomplete || loadingExport !== null}
+              onClick={() => void handleExport("xlsx")}
             >
-              <FileSpreadsheet size={16} />
+              {loadingExport === "xlsx" ? (
+                <LoaderCircle size={16} className="animate-spin" />
+              ) : (
+                <FileSpreadsheet size={16} />
+              )}
               Exportar Excel
             </Button>
             <Button
               type="button"
               className="gap-2"
-              disabled={customRangeIncomplete}
-              onClick={() => setFeedback(`${ADMIN_DEMO_NOTICE} La exportacion en PDF se simula.`)}
+              disabled={customRangeIncomplete || loadingExport !== null}
+              onClick={() => void handleExport("pdf")}
             >
-              <FileText size={16} />
+              {loadingExport === "pdf" ? (
+                <LoaderCircle size={16} className="animate-spin" />
+              ) : (
+                <FileText size={16} />
+              )}
               Exportar PDF
             </Button>
           </div>
@@ -162,8 +244,14 @@ export function BusinessExportDemoPanel() {
         ) : null}
 
         {feedback ? (
-          <div className="rounded-2xl border border-lc-warning/30 bg-lc-warning/10 p-4 text-sm text-lc-warning">
-            {feedback}
+          <div
+            className={`rounded-2xl p-4 text-sm ${
+              feedback.type === "success"
+                ? "border border-lc-cyan/30 bg-lc-cyan/10 text-lc-cyan"
+                : "border border-lc-error/30 bg-lc-error/10 text-lc-error"
+            }`}
+          >
+            {feedback.message}
           </div>
         ) : null}
 

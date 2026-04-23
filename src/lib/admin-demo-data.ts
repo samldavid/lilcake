@@ -735,7 +735,7 @@ export function getAdminDemoReportSummary(
       ]),
       notes: [
         "Ideal para demostrar segmentacion basica y seguimiento de clientes.",
-        "El modo demo no genera archivos ni modifica registros reales.",
+        "El modo demo exporta archivos de muestra y no modifica registros reales.",
       ],
     }
   }
