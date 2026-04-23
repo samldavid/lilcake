@@ -38,9 +38,13 @@ export type AdminOrderRow = {
 
 type AdminOrdersTableProps = {
   orders: AdminOrderRow[]
+  basePath?: string
 }
 
-export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
+export function AdminOrdersTable({
+  orders,
+  basePath = "/admin",
+}: AdminOrdersTableProps) {
   const [query, setQuery] = React.useState("")
   const deferredQuery = useDeferredValue(query)
   const activeQuery = deferredQuery.trim()
@@ -182,7 +186,7 @@ export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <Link
-                      href={`/admin/pedidos/${order.id}`}
+                      href={`${basePath}/pedidos/${order.id}`}
                       className="inline-flex items-center justify-center text-lc-gray hover:text-lc-purple p-2 rounded-lg hover:bg-lc-purple/10 transition-colors"
                       title="Ver Detalles"
                     >

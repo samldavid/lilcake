@@ -13,9 +13,41 @@ LilCake es una tienda construida con Next.js que incluye:
 
 [Read this technical guide in English](./README.dev.md)
 
+## Estructura de documentacion
+
+- `README.md`: presentacion comercial en ingles
+- `README.es.md`: presentacion comercial en espanol
+- `README.dev.md`: guia tecnica para desarrollo en ingles
+- `README.dev.es.md`: guia tecnica para desarrollo en espanol
+
+## Admin demo y seguridad del admin real
+
+- `/admin-demo` es publico a proposito para que cualquier visitante pueda explorar la experiencia administrativa sin credenciales.
+- El demo nunca escribe en la base real y evita por diseno los endpoints reales de escritura del admin.
+- El admin real sigue separado y protegido con:
+  - control de acceso por roles en servidor
+  - rutas `/admin` protegidas
+  - endpoints `/api/admin/*` protegidos
+  - autenticacion respaldada por secreto de sesion
+  - rate limits sobre acciones sensibles
+  - validacion backend y errores publicos sanitizados
+
 ## Historial de cambios
 
 ### 2026-04-22
+
+- Se anadio un sandbox publico `admin-demo` totalmente separado del admin real:
+  - `/admin-demo` ahora expone la UI administrativa con datos demo y acciones simuladas
+  - crear, editar, eliminar, exportar y cambiar estados muestra feedback de demo en lugar de escribir en PostgreSQL
+  - el demo usa mocks dedicados y evita a proposito los endpoints reales de escritura del admin
+  - un banner fijo deja claro que el entorno es solo de evaluacion y que no persiste cambios
+- Se aclaro la proteccion de rutas para que el demo sea publico sin abrir el admin real:
+  - la proteccion ahora apunta de forma precisa a `/admin` y `/api/admin/*`, sin capturar `/admin-demo`
+  - el admin real sigue dependiendo de control por roles, guards del lado del servidor, APIs administrativas protegidas, secretos de sesion, rate limits y validacion backend
+- Se separo con mas claridad la documentacion comercial y la tecnica:
+  - `README.md` y `README.es.md` ahora funcionan como entrada comercial/orientada a producto
+  - `README.dev.md` y `README.dev.es.md` conservan el setup tecnico, la operacion y el historial de cambios
+  - los README de venta ahora resaltan el live demo, el admin demo, el comportamiento sandbox y el contexto de evaluacion para visitantes externos
 
 - Se reemplazo el placeholder de "analiticas detalladas" del dashboard admin por un centro real de exportacion:
   - el panel ahora permite exportar `sales`, `orders` y `customers`

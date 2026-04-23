@@ -71,8 +71,12 @@ function payloadFromRow(coupon: AdminCouponRow) {
 
 export function AdminCouponsManager({
   initialCoupons,
+  mode = "live",
+  demoNotice = "Esto es una demo. Los cambios no se guardan.",
 }: {
   initialCoupons: AdminCouponRow[]
+  mode?: "live" | "demo"
+  demoNotice?: string
 }) {
   const [coupons, setCoupons] = React.useState(initialCoupons)
   const [query, setQuery] = React.useState("")
@@ -189,6 +193,47 @@ export function AdminCouponsManager({
 
     try {
       const isEditing = Boolean(editingId)
+
+      if (mode === "demo") {
+        const currentCoupon = editingId
+          ? coupons.find((coupon) => coupon.id === editingId) || null
+          : null
+        const savedCoupon: AdminCouponRow = {
+          id: currentCoupon?.id || `demo-coupon-${Date.now()}`,
+          code: payload.code,
+          type: payload.type,
+          value: payload.value,
+          minPurchase: payload.minPurchase,
+          maxUses: payload.maxUses,
+          maxUsesPerUser: payload.maxUsesPerUser,
+          usedCount: currentCoupon?.usedCount ?? 0,
+          isActive: payload.isActive,
+          expiresAt: payload.expiresAt,
+          createdAt: currentCoupon?.createdAt || new Date().toISOString(),
+          totalOrders: currentCoupon?.totalOrders ?? 0,
+          paidOrders: currentCoupon?.paidOrders ?? 0,
+          pendingOrders: currentCoupon?.pendingOrders ?? 0,
+          cancelledOrders: currentCoupon?.cancelledOrders ?? 0,
+          paidRevenue: currentCoupon?.paidRevenue ?? 0,
+        }
+
+        setCoupons((currentCoupons) => {
+          const withoutCurrent = currentCoupons.filter(
+            (coupon) => coupon.id !== savedCoupon.id
+          )
+
+          return [savedCoupon, ...withoutCurrent].sort((left, right) =>
+            right.createdAt.localeCompare(left.createdAt)
+          )
+        })
+        setFeedback({
+          type: "success",
+          message: demoNotice,
+        })
+        closeForm()
+        return
+      }
+
       const endpoint = isEditing
         ? `/api/admin/coupons/${editingId}`
         : "/api/admin/coupons"
@@ -248,6 +293,20 @@ export function AdminCouponsManager({
     setFeedback(null)
 
     try {
+      if (mode === "demo") {
+        setCoupons((currentCoupons) =>
+          currentCoupons.filter((coupon) => coupon.id !== couponId)
+        )
+        if (editingId === couponId) {
+          closeForm()
+        }
+        setFeedback({
+          type: "success",
+          message: demoNotice,
+        })
+        return
+      }
+
       const response = await fetch(`/api/admin/coupons/${couponId}`, {
         method: "DELETE",
       })
@@ -285,6 +344,21 @@ export function AdminCouponsManager({
     setFeedback(null)
 
     try {
+      if (mode === "demo") {
+        setCoupons((currentCoupons) =>
+          currentCoupons.map((currentCoupon) =>
+            currentCoupon.id === coupon.id
+              ? { ...currentCoupon, isActive: !currentCoupon.isActive }
+              : currentCoupon
+          )
+        )
+        setFeedback({
+          type: "success",
+          message: demoNotice,
+        })
+        return
+      }
+
       const response = await fetch(`/api/admin/coupons/${coupon.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -374,6 +448,13 @@ export function AdminCouponsManager({
       ) : null}
 
       <section className="space-y-4">
+        {mode === "demo" ? (
+          <div className="rounded-2xl border border-lc-warning/30 bg-lc-warning/10 px-4 py-3 text-sm text-lc-warning">
+            Puedes explorar, crear y editar promociones, pero ningun cambio se
+            persistira fuera de esta sesion demo.
+          </div>
+        ) : null}
+
         <div className="flex flex-col gap-4 rounded-2xl border border-lc-border bg-lc-card p-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex-1">
             <AdminSearchInput

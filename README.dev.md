@@ -13,9 +13,41 @@ LilCake is a Next.js storefront with:
 
 [Leer esta guia tecnica en espanol](./README.dev.es.md)
 
+## Documentation structure
+
+- `README.md`: product-facing overview in English
+- `README.es.md`: product-facing overview in Spanish
+- `README.dev.md`: technical/developer guide in English
+- `README.dev.es.md`: technical/developer guide in Spanish
+
+## Admin demo and real admin security
+
+- `/admin-demo` is intentionally public so visitors can explore the admin experience without credentials.
+- The demo never writes to the real database and avoids the real admin write APIs by design.
+- The real admin stays separate and protected with:
+  - role-based access checks on the server
+  - protected `/admin` routes
+  - protected `/api/admin/*` endpoints
+  - session-secret backed authentication
+  - rate-limited sensitive actions
+  - backend validation and sanitized public errors
+
 ## Changelog
 
 ### 2026-04-22
+
+- Added a public `admin-demo` sandbox that is fully separated from the real admin:
+  - `/admin-demo` now exposes the admin UI with demo-safe data and simulated actions
+  - create, edit, delete, export, and status-update interactions now show demo feedback instead of writing to PostgreSQL
+  - the demo uses dedicated mock data and intentionally avoids real admin write endpoints
+  - a fixed banner now explains that the environment is only for evaluation and that no changes are persisted
+- Clarified route protection so the demo stays public while the real admin remains locked down:
+  - route protection now targets `/admin` and `/api/admin/*` precisely, without catching `/admin-demo`
+  - the real admin still depends on role-based access, server-side guards, protected admin APIs, session secrets, rate limits, and backend validation
+- Split the project documentation more clearly between sales and development audiences:
+  - `README.md` and `README.es.md` now act as the product-facing entry points
+  - `README.dev.md` and `README.dev.es.md` remain the technical setup, operations, and changelog references
+  - the sales READMEs now highlight the live demo, admin demo, sandbox behavior, and evaluation context for external visitors
 
 - Replaced the old "Detailed analytics" placeholder in the admin dashboard with a real business export center:
   - the dashboard now lets admins export `sales`, `orders`, and `customers`

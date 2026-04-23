@@ -29,15 +29,29 @@ export type AdminProductRow = {
 
 type AdminProductsTableProps = {
   products: AdminProductRow[]
+  basePath?: string
+  demoMode?: boolean
+  demoNotice?: string
 }
 
-export function AdminProductsTable({ products }: AdminProductsTableProps) {
+export function AdminProductsTable({
+  products,
+  basePath = "/admin",
+  demoMode = false,
+  demoNotice = "Esto es una demo. Los cambios no se guardan.",
+}: AdminProductsTableProps) {
   const [query, setQuery] = React.useState("")
+  const [rows, setRows] = React.useState(products)
+  const [feedback, setFeedback] = React.useState("")
   const deferredQuery = useDeferredValue(query)
   const activeQuery = deferredQuery.trim()
 
+  React.useEffect(() => {
+    setRows(products)
+  }, [products])
+
   const filteredProducts = activeQuery
-    ? products
+    ? rows
         .map((product) => {
           const totalStock = product.variants.reduce((acc, variant) => acc + variant.stock, 0)
           const score = scoreAdminSearchMatch(activeQuery, [
@@ -65,7 +79,7 @@ export function AdminProductsTable({ products }: AdminProductsTableProps) {
             sensitivity: "base",
           })
         })
-    : products.map((product) => ({
+    : rows.map((product) => ({
         product,
         totalStock: product.variants.reduce((acc, variant) => acc + variant.stock, 0),
         score: 1,
@@ -83,13 +97,19 @@ export function AdminProductsTable({ products }: AdminProductsTableProps) {
           <p className="text-xs text-lc-gray">
             {query.trim()
               ? `${filteredProducts.length} coincidencias en tiempo real`
-              : `${products.length} productos cargados`}
+              : `${rows.length} productos cargados`}
           </p>
         </div>
         <Button variant="secondary" className="flex items-center gap-2 px-4 whitespace-nowrap">
           <Filter size={18} /> Filtrar
         </Button>
       </div>
+
+      {feedback ? (
+        <div className="rounded-2xl border border-lc-warning/30 bg-lc-warning/10 p-4 text-sm text-lc-warning">
+          {feedback}
+        </div>
+      ) : null}
 
       <div className="bg-lc-card rounded-2xl shadow-sm border border-lc-border overflow-hidden">
         <div className="overflow-x-auto custom-scrollbar">
@@ -111,7 +131,7 @@ export function AdminProductsTable({ products }: AdminProductsTableProps) {
                       ? `No encontramos productos que coincidan con "${query.trim()}".`
                       : "No hay productos registrados."}{" "}
                     {!query.trim() ? (
-                      <Link href="/admin/productos/nuevo" className="text-lc-purple hover:underline">
+                      <Link href={`${basePath}/productos/nuevo`} className="text-lc-purple hover:underline">
                         Empieza agregando uno.
                       </Link>
                     ) : null}
@@ -156,12 +176,26 @@ export function AdminProductsTable({ products }: AdminProductsTableProps) {
                       )}
                     </td>
                     <td className="px-6 py-4 text-right space-x-2">
-                      <Link href={`/admin/productos/${product.id}/editar`}>
+                      <Link href={`${basePath}/productos/${product.id}/editar`}>
                         <button className="text-lc-gray hover:text-lc-cyan p-2 rounded-lg hover:bg-lc-cyan/10 transition-colors" title="Editar">
                           <Edit size={18} />
                         </button>
                       </Link>
-                      <button className="text-lc-gray hover:text-lc-error p-2 rounded-lg hover:bg-lc-error/10 transition-colors" title="Eliminar">
+                      <button
+                        className="text-lc-gray hover:text-lc-error p-2 rounded-lg hover:bg-lc-error/10 transition-colors"
+                        title="Eliminar"
+                        type="button"
+                        onClick={() => {
+                          if (!demoMode) {
+                            return
+                          }
+
+                          setRows((currentRows) =>
+                            currentRows.filter((currentProduct) => currentProduct.id !== product.id)
+                          )
+                          setFeedback(demoNotice)
+                        }}
+                      >
                         <Trash2 size={18} />
                       </button>
                     </td>

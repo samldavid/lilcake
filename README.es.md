@@ -1,6 +1,6 @@
 # Sistema de Comercio LilCake
 
-Infraestructura e-commerce lista para producción para marcas que necesitan algo más que una tienda bonita. 🚀
+Lanza un sistema e-commerce personalizable con storefront, panel admin, pagos, cupones y operación real en una sola base lista para producción. 🚀
 
 LilCake no es solo una plantilla visual. Es un sistema de comercio completo y personalizable, pensado para adaptarse a distintos negocios, catálogos y flujos operativos sin reconstruir la base cada vez.
 
@@ -32,6 +32,29 @@ La demo actual usa una marca de moda/streetwear, pero el producto está pensado 
 Puedes explorar el sistema aquí:
 
 👉 [https://lilcake.vercel.app/](https://lilcake.vercel.app/)
+
+Si estás evaluando el sistema para una marca, un cliente o un desarrollo comercial a medida, empieza por el storefront público y luego entra al sandbox administrativo para ver el flujo completo.
+
+## ⚠️ Información de la Demo
+
+- Este despliegue público es un entorno de demostración.
+- Los productos, clientes, pedidos y movimientos mostrados en la demo son datos de ejemplo.
+- El objetivo es enseñar las funcionalidades, la navegación y la operación general del sistema.
+- Algunas acciones pueden estar simuladas o reiniciarse como parte de la experiencia demo.
+- La demo sirve para evaluar el producto, no para operar un negocio real.
+
+## 🔒 Admin Demo
+
+Existe un panel administrativo demo disponible en:
+
+👉 [https://lilcake.vercel.app/admin-demo](https://lilcake.vercel.app/admin-demo)
+
+- Muestra la experiencia del admin sin exponer el panel administrativo real.
+- Está aislado de la operación productiva y no escribe sobre los datos reales del negocio.
+- Las acciones de crear, editar, eliminar y exportar se simulan para enseñar el flujo completo.
+- Un banner visible deja claro que ningún cambio se guarda de forma permanente.
+
+- El admin real se mantiene protegido con control por roles, sesiones seguras, APIs de escritura protegidas, rate limits y validacion backend.
 
 ## Capturas
 

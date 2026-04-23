@@ -7,11 +7,19 @@ function rewriteToNotFound(request: NextRequest) {
   return NextResponse.rewrite(notFoundUrl)
 }
 
+function isProtectedAdminPage(pathname: string) {
+  return pathname === "/admin" || pathname.startsWith("/admin/")
+}
+
+function isProtectedAdminApi(pathname: string) {
+  return pathname === "/api/admin" || pathname.startsWith("/api/admin/")
+}
+
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const isAdminRoute = pathname.startsWith("/admin")
+  const isAdminRoute = isProtectedAdminPage(pathname)
   const isAdminLoginRoute = pathname === "/admin/login"
-  const isAdminApiRoute = pathname.startsWith("/api/admin")
+  const isAdminApiRoute = isProtectedAdminApi(pathname)
 
   if (isAdminRoute || isAdminApiRoute) {
     const token = await getToken({

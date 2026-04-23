@@ -12,6 +12,8 @@ type AdminOrderStatusFormProps = {
   shippingCarrier: string | null
   trackingNumber: string | null
   notes: string | null
+  mode?: "live" | "demo"
+  demoNotice?: string
 }
 
 export function AdminOrderStatusForm({
@@ -21,6 +23,8 @@ export function AdminOrderStatusForm({
   shippingCarrier,
   trackingNumber,
   notes,
+  mode = "live",
+  demoNotice = "Esto es una demo. Los cambios no se guardan.",
 }: AdminOrderStatusFormProps) {
   const router = useRouter()
   const [formData, setFormData] = React.useState({
@@ -41,6 +45,12 @@ export function AdminOrderStatusForm({
       setLoading(true)
       setError("")
       setMessage("")
+
+      if (mode === "demo") {
+        await new Promise((resolve) => setTimeout(resolve, 350))
+        setMessage(demoNotice)
+        return
+      }
 
       const response = await fetch(`/api/admin/orders/${orderId}`, {
         method: "PATCH",

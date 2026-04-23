@@ -3,7 +3,15 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, ImagePlus, Plus, Star, Trash2, Upload, X } from "lucide-react"
+import {
+  ArrowLeft,
+  ImagePlus,
+  Plus,
+  Star,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Card, CardBody } from "@/components/ui/Card"
@@ -12,7 +20,7 @@ import {
   normalizeProductImageReference,
 } from "@/lib/image-utils"
 
-type CategoryOption = {
+export type ProductCategoryOption = {
   id: string
   name: string
 }
@@ -26,7 +34,7 @@ type ProductVariantDraft = {
   stock: string
 }
 
-type ProductPayload = {
+export type ProductFormSeed = {
   id: string
   name: string
   description: string
@@ -47,6 +55,11 @@ type ProductPayload = {
 
 type ProductFormProps = {
   productId?: string
+  mode?: "live" | "demo"
+  basePath?: string
+  demoCategories?: ProductCategoryOption[]
+  demoProduct?: ProductFormSeed | null
+  demoNotice?: string
 }
 
 const initialFormData = {
@@ -77,22 +90,65 @@ function createEmptyVariant(tempId = "initial-variant"): ProductVariantDraft {
   }
 }
 
-export function ProductForm({ productId }: ProductFormProps) {
+function mapSeedProductToDrafts(product: ProductFormSeed) {
+  return {
+    formData: {
+      name: product.name,
+      description: product.description,
+      price: String(product.price),
+      compareAtPrice: product.compareAtPrice ? String(product.compareAtPrice) : "",
+      categoryId: product.categoryId,
+      isActive: product.isActive,
+      isFeatured: product.isFeatured,
+    },
+    images: product.images.map((image) => image.url),
+    variants:
+      product.variants.length > 0
+        ? product.variants.map((variant) => ({
+            id: variant.id,
+            tempId: variant.id,
+            size: variant.size || "",
+            color: variant.color || "",
+            sku: variant.sku,
+            stock: String(variant.stock),
+          }))
+        : [createEmptyVariant()],
+  }
+}
+
+export function ProductForm({
+  productId,
+  mode = "live",
+  basePath = "/admin",
+  demoCategories = [],
+  demoProduct = null,
+  demoNotice = "Esto es una demo. Los cambios no se guardan.",
+}: ProductFormProps) {
   const router = useRouter()
   const isEditing = Boolean(productId)
+  const isDemo = mode === "demo"
   const fileInputRef = React.useRef<HTMLInputElement>(null)
+  const previewUrlsRef = React.useRef<string[]>([])
 
   const [loading, setLoading] = React.useState(false)
   const [uploadingImages, setUploadingImages] = React.useState(false)
   const [isBootstrapping, setIsBootstrapping] = React.useState(true)
   const [error, setError] = React.useState("")
+  const [success, setSuccess] = React.useState("")
   const [imageInput, setImageInput] = React.useState("")
-  const [categories, setCategories] = React.useState<CategoryOption[]>([])
+  const [categories, setCategories] = React.useState<ProductCategoryOption[]>([])
   const [formData, setFormData] = React.useState(initialFormData)
   const [images, setImages] = React.useState<string[]>([])
   const [variants, setVariants] = React.useState<ProductVariantDraft[]>([
     createEmptyVariant(),
   ])
+
+  React.useEffect(() => {
+    return () => {
+      previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url))
+      previewUrlsRef.current = []
+    }
+  }, [])
 
   React.useEffect(() => {
     let isActive = true
@@ -101,6 +157,24 @@ export function ProductForm({ productId }: ProductFormProps) {
       try {
         setIsBootstrapping(true)
         setError("")
+        setSuccess("")
+
+        if (isDemo) {
+          setCategories(demoCategories)
+
+          if (isEditing && demoProduct) {
+            const nextState = mapSeedProductToDrafts(demoProduct)
+            setFormData(nextState.formData)
+            setImages(nextState.images)
+            setVariants(nextState.variants)
+          } else {
+            setFormData(initialFormData)
+            setImages([])
+            setVariants([createEmptyVariant()])
+          }
+
+          return
+        }
 
         const requests = [
           fetch("/api/categories"),
@@ -123,7 +197,7 @@ export function ProductForm({ productId }: ProductFormProps) {
 
         if (productId) {
           const productResponse = responses[1]
-          const productData: ProductPayload = await productResponse.json()
+          const productData: ProductFormSeed = await productResponse.json()
 
           if (!productResponse.ok) {
             throw new Error(productData?.name || "No pudimos cargar el producto.")
@@ -133,30 +207,10 @@ export function ProductForm({ productId }: ProductFormProps) {
             return
           }
 
-          setFormData({
-            name: productData.name,
-            description: productData.description,
-            price: String(productData.price),
-            compareAtPrice: productData.compareAtPrice
-              ? String(productData.compareAtPrice)
-              : "",
-            categoryId: productData.categoryId,
-            isActive: productData.isActive,
-            isFeatured: productData.isFeatured,
-          })
-          setImages(productData.images.map((image) => image.url))
-          setVariants(
-            productData.variants.length > 0
-              ? productData.variants.map((variant) => ({
-                  id: variant.id,
-                  tempId: variant.id,
-                  size: variant.size || "",
-                  color: variant.color || "",
-                  sku: variant.sku,
-                  stock: String(variant.stock),
-                }))
-              : [createEmptyVariant()]
-          )
+          const nextState = mapSeedProductToDrafts(productData)
+          setFormData(nextState.formData)
+          setImages(nextState.images)
+          setVariants(nextState.variants)
         }
       } catch (loadError) {
         if (isActive) {
@@ -178,7 +232,7 @@ export function ProductForm({ productId }: ProductFormProps) {
     return () => {
       isActive = false
     }
-  }, [productId])
+  }, [demoCategories, demoProduct, isDemo, isEditing, productId])
 
   const addVariant = () => {
     setVariants((current) => [...current, createEmptyVariant(createVariantTempId())])
@@ -222,6 +276,7 @@ export function ProductForm({ productId }: ProductFormProps) {
       return [...current, normalizedValue]
     })
     setError("")
+    setSuccess(isDemo ? demoNotice : "")
     return true
   }
 
@@ -249,6 +304,19 @@ export function ProductForm({ productId }: ProductFormProps) {
     try {
       setUploadingImages(true)
       setError("")
+      setSuccess("")
+
+      if (isDemo) {
+        const previewUrls = Array.from(fileList).map((file) => {
+          const url = URL.createObjectURL(file)
+          previewUrlsRef.current.push(url)
+          return url
+        })
+
+        setImages((current) => [...current, ...previewUrls])
+        setSuccess(demoNotice)
+        return
+      }
 
       const uploadData = new FormData()
 
@@ -299,7 +367,14 @@ export function ProductForm({ productId }: ProductFormProps) {
   }
 
   const removeImage = (imageUrl: string) => {
-    setImages((current) => current.filter((existingImage) => existingImage !== imageUrl))
+    if (imageUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(imageUrl)
+      previewUrlsRef.current = previewUrlsRef.current.filter((url) => url !== imageUrl)
+    }
+
+    setImages((current) =>
+      current.filter((existingImage) => existingImage !== imageUrl)
+    )
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -308,6 +383,7 @@ export function ProductForm({ productId }: ProductFormProps) {
     try {
       setLoading(true)
       setError("")
+      setSuccess("")
 
       if (images.length === 0) {
         throw new Error("Debes agregar al menos una imagen.")
@@ -334,6 +410,12 @@ export function ProductForm({ productId }: ProductFormProps) {
         })),
       }
 
+      if (isDemo) {
+        await new Promise((resolve) => setTimeout(resolve, 450))
+        setSuccess(demoNotice)
+        return
+      }
+
       const endpoint = isEditing
         ? `/api/admin/products/${productId}`
         : "/api/admin/products"
@@ -350,7 +432,7 @@ export function ProductForm({ productId }: ProductFormProps) {
         throw new Error(data.error || "No pudimos guardar el producto.")
       }
 
-      router.push("/admin/productos")
+      router.push(`${basePath}/productos`)
       router.refresh()
     } catch (submitError) {
       setError(
@@ -365,10 +447,10 @@ export function ProductForm({ productId }: ProductFormProps) {
 
   return (
     <div className="max-w-5xl animate-fade-in pb-12">
-      <div className="flex items-center gap-4 mb-8">
+      <div className="mb-8 flex items-center gap-4">
         <Link
-          href="/admin/productos"
-          className="p-2 rounded-full bg-lc-dark border border-lc-border text-lc-gray hover:text-lc-white transition-colors"
+          href={`${basePath}/productos`}
+          className="rounded-full border border-lc-border bg-lc-dark p-2 text-lc-gray transition-colors hover:text-lc-white"
         >
           <ArrowLeft size={20} />
         </Link>
@@ -376,7 +458,7 @@ export function ProductForm({ productId }: ProductFormProps) {
           <h1 className="text-3xl font-heading font-bold text-lc-white">
             {isEditing ? "Editar Producto" : "Nuevo Producto"}
           </h1>
-          <p className="text-lc-gray text-sm mt-1">
+          <p className="mt-1 text-sm text-lc-gray">
             {isEditing
               ? "Actualiza la informacion principal del producto."
               : "Completa los datos para crear un nuevo articulo."}
@@ -384,17 +466,30 @@ export function ProductForm({ productId }: ProductFormProps) {
         </div>
       </div>
 
-      {error && (
+      {isDemo ? (
+        <div className="mb-6 rounded-2xl border border-lc-warning/30 bg-lc-warning/10 p-4 text-sm text-lc-warning">
+          Modo demo activo. Puedes probar el formulario completo sin afectar el
+          catalogo real.
+        </div>
+      ) : null}
+
+      {success ? (
+        <div className="mb-6 rounded-2xl border border-lc-success/30 bg-lc-success/10 p-4 text-sm text-lc-success">
+          {success}
+        </div>
+      ) : null}
+
+      {error ? (
         <div className="mb-6 rounded-2xl border border-lc-error/30 bg-lc-error/10 p-4 text-sm text-lc-error">
           {error}
         </div>
-      )}
+      ) : null}
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="col-span-1 lg:col-span-2 space-y-8">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div className="col-span-1 space-y-8 lg:col-span-2">
           <Card>
             <CardBody className="space-y-6">
-              <h2 className="text-xl font-bold font-heading text-lc-white mb-4">
+              <h2 className="mb-4 text-xl font-bold font-heading text-lc-white">
                 Informacion Basica
               </h2>
 
@@ -408,7 +503,7 @@ export function ProductForm({ productId }: ProductFormProps) {
               />
 
               <div>
-                <label className="block text-sm font-medium text-lc-gray-light mb-1.5 ml-1">
+                <label className="mb-1.5 ml-1 block text-sm font-medium text-lc-gray-light">
                   Descripcion
                 </label>
                 <textarea
@@ -428,12 +523,12 @@ export function ProductForm({ productId }: ProductFormProps) {
 
           <Card>
             <CardBody className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="text-xl font-bold font-heading text-lc-white">
                     Galeria de Imagenes
                   </h2>
-                  <p className="text-sm text-lc-gray mt-1">
+                  <p className="mt-1 text-sm text-lc-gray">
                     La primera imagen sera la portada del producto.
                   </p>
                 </div>
@@ -445,7 +540,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                   className="flex items-center gap-2"
                 >
                   {uploadingImages ? <Upload size={16} /> : <ImagePlus size={16} />}
-                  {uploadingImages ? "Subiendo..." : "Añadir imagenes"}
+                  {uploadingImages ? "Subiendo..." : "Anadir imagenes"}
                 </Button>
               </div>
 
@@ -459,10 +554,10 @@ export function ProductForm({ productId }: ProductFormProps) {
               />
 
               <div className="rounded-2xl border border-dashed border-lc-border bg-lc-darker/40 p-4">
-                <label className="block text-sm font-medium text-lc-gray-light mb-2">
-                  Añadir por ruta publica o URL
+                <label className="mb-2 block text-sm font-medium text-lc-gray-light">
+                  Anadir por ruta publica o URL
                 </label>
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex flex-col gap-3 sm:flex-row">
                   <input
                     type="text"
                     value={imageInput}
@@ -479,38 +574,37 @@ export function ProductForm({ productId }: ProductFormProps) {
                     className="flex items-center gap-2"
                   >
                     <Plus size={16} />
-                    Añadir
+                    Anadir
                   </Button>
                 </div>
               </div>
 
               {images.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-lc-border bg-lc-darker/40 p-8 text-center text-sm text-lc-gray">
-                  Sube una o varias imagenes, o usa una ruta publica como
-                  {" "}
+                  Sube una o varias imagenes, o usa una ruta publica como{" "}
                   <code>/images/retro1999.png</code>.
                 </div>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
                   {images.map((imageUrl, index) => (
                     <div
                       key={imageUrl}
-                      className="rounded-2xl border border-lc-border bg-lc-darker/50 overflow-hidden"
+                      className="overflow-hidden rounded-2xl border border-lc-border bg-lc-darker/50"
                     >
-                      <div className="relative aspect-[4/5] overflow-hidden group">
+                      <div className="group relative aspect-[4/5] overflow-hidden">
                         <img
                           src={imageUrl}
                           alt={`Vista previa ${index + 1}`}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
-                        <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-lc-black/80 to-transparent">
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-lc-black/80 to-transparent p-3">
                           <span className="text-xs font-bold uppercase tracking-wide text-lc-white">
                             {index === 0 ? "Portada" : `Imagen ${index + 1}`}
                           </span>
                         </div>
                       </div>
 
-                      <div className="p-3 flex items-center justify-between gap-2">
+                      <div className="flex items-center justify-between gap-2 p-3">
                         <Button
                           type="button"
                           size="sm"
@@ -525,7 +619,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                         <button
                           type="button"
                           onClick={() => removeImage(imageUrl)}
-                          className="h-8 w-8 rounded-full border border-lc-border text-lc-gray hover:text-lc-error hover:border-lc-error/40 transition-colors inline-flex items-center justify-center"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-lc-border text-lc-gray transition-colors hover:border-lc-error/40 hover:text-lc-error"
                           aria-label="Eliminar imagen"
                         >
                           <Trash2 size={14} />
@@ -540,7 +634,7 @@ export function ProductForm({ productId }: ProductFormProps) {
 
           <Card>
             <CardBody>
-              <div className="flex justify-between items-center mb-6">
+              <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-xl font-bold font-heading text-lc-white">
                   Variantes
                 </h2>
@@ -560,45 +654,45 @@ export function ProductForm({ productId }: ProductFormProps) {
                 {variants.map((variant) => (
                   <div
                     key={variant.tempId}
-                    className="relative grid grid-cols-2 md:grid-cols-4 gap-4 p-4 border border-lc-border rounded-xl bg-lc-darker/50"
+                    className="relative grid grid-cols-2 gap-4 rounded-xl border border-lc-border bg-lc-darker/50 p-4 md:grid-cols-4"
                   >
                     <button
                       type="button"
                       onClick={() => removeVariant(variant.tempId)}
-                      className="absolute -top-3 -right-3 p-1.5 bg-lc-error text-white rounded-full hover:bg-red-600 transition-colors z-10"
+                      className="absolute -right-3 -top-3 z-10 rounded-full bg-lc-error p-1.5 text-white transition-colors hover:bg-red-600"
                       disabled={variants.length <= 1 || isBootstrapping}
                     >
                       <X size={14} />
                     </button>
 
                     <div>
-                      <label className="block text-xs text-lc-gray mb-1">Talla</label>
+                      <label className="mb-1 block text-xs text-lc-gray">Talla</label>
                       <input
                         type="text"
                         value={variant.size}
                         onChange={(e) =>
                           updateVariant(variant.tempId, "size", e.target.value)
                         }
-                        className="w-full bg-lc-dark border border-lc-border rounded-lg px-3 py-2 text-sm text-lc-white focus:border-lc-purple outline-none"
+                        className="w-full rounded-lg border border-lc-border bg-lc-dark px-3 py-2 text-sm text-lc-white outline-none focus:border-lc-purple"
                         placeholder="S, M, L..."
                         disabled={isBootstrapping}
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-lc-gray mb-1">Color</label>
+                      <label className="mb-1 block text-xs text-lc-gray">Color</label>
                       <input
                         type="text"
                         value={variant.color}
                         onChange={(e) =>
                           updateVariant(variant.tempId, "color", e.target.value)
                         }
-                        className="w-full bg-lc-dark border border-lc-border rounded-lg px-3 py-2 text-sm text-lc-white focus:border-lc-purple outline-none"
+                        className="w-full rounded-lg border border-lc-border bg-lc-dark px-3 py-2 text-sm text-lc-white outline-none focus:border-lc-purple"
                         placeholder="Black, White..."
                         disabled={isBootstrapping}
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-lc-gray mb-1">SKU</label>
+                      <label className="mb-1 block text-xs text-lc-gray">SKU</label>
                       <input
                         type="text"
                         required
@@ -606,12 +700,12 @@ export function ProductForm({ productId }: ProductFormProps) {
                         onChange={(e) =>
                           updateVariant(variant.tempId, "sku", e.target.value)
                         }
-                        className="w-full bg-lc-dark border border-lc-border rounded-lg px-3 py-2 text-sm text-lc-white focus:border-lc-purple outline-none"
+                        className="w-full rounded-lg border border-lc-border bg-lc-dark px-3 py-2 text-sm text-lc-white outline-none focus:border-lc-purple"
                         disabled={isBootstrapping}
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-lc-gray mb-1">Stock</label>
+                      <label className="mb-1 block text-xs text-lc-gray">Stock</label>
                       <input
                         type="number"
                         required
@@ -620,7 +714,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                         onChange={(e) =>
                           updateVariant(variant.tempId, "stock", e.target.value)
                         }
-                        className="w-full bg-lc-dark border border-lc-border rounded-lg px-3 py-2 text-sm text-lc-white focus:border-lc-purple outline-none"
+                        className="w-full rounded-lg border border-lc-border bg-lc-dark px-3 py-2 text-sm text-lc-white outline-none focus:border-lc-purple"
                         disabled={isBootstrapping}
                       />
                     </div>
@@ -634,17 +728,17 @@ export function ProductForm({ productId }: ProductFormProps) {
         <div className="col-span-1 space-y-8">
           <Card>
             <CardBody className="space-y-6">
-              <h2 className="text-xl font-bold font-heading text-lc-white mb-4">
+              <h2 className="mb-4 text-xl font-bold font-heading text-lc-white">
                 Organizacion
               </h2>
 
               <div>
-                <label className="block text-sm font-medium text-lc-gray-light mb-1.5 ml-1">
+                <label className="mb-1.5 ml-1 block text-sm font-medium text-lc-gray-light">
                   Categoria
                 </label>
                 <select
                   required
-                  className="w-full bg-lc-darker border border-lc-border rounded-xl px-4 py-3 text-sm text-lc-white focus:border-lc-purple outline-none"
+                  className="w-full rounded-xl border border-lc-border bg-lc-darker px-4 py-3 text-sm text-lc-white outline-none focus:border-lc-purple"
                   value={formData.categoryId}
                   onChange={(e) =>
                     setFormData({ ...formData, categoryId: e.target.value })
@@ -660,43 +754,43 @@ export function ProductForm({ productId }: ProductFormProps) {
                 </select>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-lc-darker rounded-xl border border-lc-border">
+              <div className="flex items-center justify-between rounded-xl border border-lc-border bg-lc-darker p-4">
                 <div>
-                  <div className="font-bold text-sm text-lc-white">Estado Activo</div>
+                  <div className="text-sm font-bold text-lc-white">Estado Activo</div>
                   <div className="text-xs text-lc-gray">Visible en la tienda</div>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
+                <label className="relative inline-flex cursor-pointer items-center">
                   <input
                     type="checkbox"
                     checked={formData.isActive}
                     onChange={(e) =>
                       setFormData({ ...formData, isActive: e.target.checked })
                     }
-                    className="sr-only peer"
+                    className="peer sr-only"
                     disabled={isBootstrapping}
                   />
-                  <div className="w-11 h-6 bg-lc-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-lc-success"></div>
+                  <div className="h-6 w-11 rounded-full bg-lc-border peer-focus:outline-none peer-checked:bg-lc-success peer-checked:after:translate-x-full peer-checked:after:border-white after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-['']"></div>
                 </label>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-lc-darker rounded-xl border border-lc-border">
+              <div className="flex items-center justify-between rounded-xl border border-lc-border bg-lc-darker p-4">
                 <div>
-                  <div className="font-bold text-sm text-lc-purple-light">
+                  <div className="text-sm font-bold text-lc-purple-light">
                     Drop Exclusivo
                   </div>
                   <div className="text-xs text-lc-gray">Mostrar en portada</div>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
+                <label className="relative inline-flex cursor-pointer items-center">
                   <input
                     type="checkbox"
                     checked={formData.isFeatured}
                     onChange={(e) =>
                       setFormData({ ...formData, isFeatured: e.target.checked })
                     }
-                    className="sr-only peer"
+                    className="peer sr-only"
                     disabled={isBootstrapping}
                   />
-                  <div className="w-11 h-6 bg-lc-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-lc-purple"></div>
+                  <div className="h-6 w-11 rounded-full bg-lc-border peer-focus:outline-none peer-checked:bg-lc-purple peer-checked:after:translate-x-full peer-checked:after:border-white after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-['']"></div>
                 </label>
               </div>
             </CardBody>
@@ -704,7 +798,7 @@ export function ProductForm({ productId }: ProductFormProps) {
 
           <Card>
             <CardBody className="space-y-6">
-              <h2 className="text-xl font-bold font-heading text-lc-white mb-4">
+              <h2 className="mb-4 text-xl font-bold font-heading text-lc-white">
                 Precios (COP)
               </h2>
 
@@ -734,8 +828,8 @@ export function ProductForm({ productId }: ProductFormProps) {
           </Card>
         </div>
 
-        <div className="lg:col-span-3 flex justify-end gap-4 mt-8 pt-8 border-t border-lc-border">
-          <Link href="/admin/productos">
+        <div className="mt-8 flex justify-end gap-4 border-t border-lc-border pt-8 lg:col-span-3">
+          <Link href={`${basePath}/productos`}>
             <Button type="button" variant="ghost">
               Cancelar
             </Button>
@@ -745,7 +839,17 @@ export function ProductForm({ productId }: ProductFormProps) {
             disabled={loading || uploadingImages || isBootstrapping}
             className="w-48"
           >
-            {loading ? "Guardando..." : isEditing ? "Guardar Cambios" : "Guardar Producto"}
+            {loading
+              ? isDemo
+                ? "Simulando..."
+                : "Guardando..."
+              : isDemo
+                ? isEditing
+                  ? "Simular cambios"
+                  : "Simular creacion"
+                : isEditing
+                  ? "Guardar Cambios"
+                  : "Guardar Producto"}
           </Button>
         </div>
       </form>
