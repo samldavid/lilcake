@@ -32,6 +32,7 @@ type AdminProductsTableProps = {
   basePath?: string
   demoMode?: boolean
   demoNotice?: string
+  onDemoDelete?: (productId: string) => void
 }
 
 export function AdminProductsTable({
@@ -39,6 +40,7 @@ export function AdminProductsTable({
   basePath = "/admin",
   demoMode = false,
   demoNotice = "Esto es una demo. Los cambios no se guardan.",
+  onDemoDelete,
 }: AdminProductsTableProps) {
   const [query, setQuery] = React.useState("")
   const [rows, setRows] = React.useState(products)
@@ -193,6 +195,7 @@ export function AdminProductsTable({
                           setRows((currentRows) =>
                             currentRows.filter((currentProduct) => currentProduct.id !== product.id)
                           )
+                          onDemoDelete?.(product.id)
                           setFeedback(demoNotice)
                         }}
                       >

@@ -54,6 +54,25 @@ export type ProductFormSeed = {
   }>
 }
 
+export type ProductFormSubmitPayload = {
+  name: string
+  description: string
+  price: number
+  compareAtPrice: number | null
+  categoryId: string
+  isActive: boolean
+  isFeatured: boolean
+  images: string[]
+  variants: Array<{
+    id?: string
+    size?: string
+    color?: string
+    sku: string
+    stock: number
+    priceOverride: null
+  }>
+}
+
 type ProductFormProps = {
   productId?: string
   mode?: "live" | "demo"
@@ -61,9 +80,15 @@ type ProductFormProps = {
   demoCategories?: ProductCategoryOption[]
   demoProduct?: ProductFormSeed | null
   demoNotice?: string
+  onDemoSave?: (
+    payload: ProductFormSubmitPayload,
+    context: { productId?: string; isEditing: boolean }
+  ) => Promise<void> | void
   initialCategories?: ProductCategoryOption[]
   initialProduct?: ProductFormSeed | null
 }
+
+const EMPTY_CATEGORY_OPTIONS: ProductCategoryOption[] = []
 
 const initialFormData = {
   name: "",
@@ -156,14 +181,36 @@ function buildProductImagePathname(file: File) {
   return `products/${baseName || "image"}-${suffix}${extension}`
 }
 
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result)
+        return
+      }
+
+      reject(new Error(`No pudimos procesar la imagen ${file.name}.`))
+    }
+
+    reader.onerror = () => {
+      reject(new Error(`No pudimos leer la imagen ${file.name}.`))
+    }
+
+    reader.readAsDataURL(file)
+  })
+}
+
 export function ProductForm({
   productId,
   mode = "live",
   basePath = "/admin",
-  demoCategories = [],
+  demoCategories = EMPTY_CATEGORY_OPTIONS,
   demoProduct = null,
   demoNotice = "Esto es una demo. Los cambios no se guardan.",
-  initialCategories = [],
+  onDemoSave,
+  initialCategories = EMPTY_CATEGORY_OPTIONS,
   initialProduct = null,
 }: ProductFormProps) {
   const router = useRouter()
@@ -411,13 +458,21 @@ export function ProductForm({
       }
 
       if (isDemo) {
-        const previewUrls = selectedFiles.map((file) => {
-          const url = URL.createObjectURL(file)
-          previewUrlsRef.current.push(url)
-          return url
-        })
+        const previewUrls = await Promise.all(
+          selectedFiles.map((file) => readFileAsDataUrl(file))
+        )
 
-        setImages((current) => [...current, ...previewUrls])
+        setImages((current) => {
+          const nextImages = [...current]
+
+          for (const previewUrl of previewUrls) {
+            if (!nextImages.includes(previewUrl)) {
+              nextImages.push(previewUrl)
+            }
+          }
+
+          return nextImages
+        })
         setSuccess(demoNotice)
         return
       }
@@ -525,7 +580,7 @@ export function ProductForm({
         throw new Error("Debes agregar al menos una imagen.")
       }
 
-      const payload = {
+      const payload: ProductFormSubmitPayload = {
         name: formData.name.trim(),
         description: formData.description.trim(),
         price: Number(formData.price),
@@ -547,8 +602,13 @@ export function ProductForm({
       }
 
       if (isDemo) {
+        await Promise.resolve(onDemoSave?.(payload, { productId, isEditing }))
         await new Promise((resolve) => setTimeout(resolve, 450))
         setSuccess(demoNotice)
+        if (onDemoSave) {
+          router.push(`${basePath}/productos`)
+          router.refresh()
+        }
         return
       }
 
