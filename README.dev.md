@@ -107,6 +107,8 @@ graph TB
   - the admin product form can keep using the same upload flow while the backend chooses the correct storage provider
   - hardened multipart file detection for the Vercel runtime so uploads are not rejected by fragile `instanceof File` checks
   - restricted the admin file picker to the image formats that the backend validates: JPG, PNG, WEBP, GIF and AVIF
+  - switched production uploads to Vercel Blob client uploads with a temporary admin-only token, avoiding Vercel Function request body limits for larger product photos
+  - updated the Content Security Policy to allow direct browser uploads to Vercel Blob endpoints
 
 ### 2026-04-22
 

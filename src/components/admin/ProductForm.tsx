@@ -3,6 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { upload } from "@vercel/blob/client"
 import {
   ArrowLeft,
   ImagePlus,
@@ -84,6 +85,14 @@ const ACCEPTED_IMAGE_TYPES = [
 const ACCEPTED_IMAGE_TYPES_LABEL = "JPG, PNG, WEBP, GIF o AVIF"
 const MAX_PRODUCT_IMAGE_SIZE = 8 * 1024 * 1024
 
+const IMAGE_EXTENSION_BY_TYPE: Record<string, ".jpg" | ".png" | ".webp" | ".gif" | ".avif"> = {
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
+  "image/webp": ".webp",
+  "image/gif": ".gif",
+  "image/avif": ".avif",
+}
+
 function createVariantTempId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID()
@@ -126,6 +135,25 @@ function mapSeedProductToDrafts(product: ProductFormSeed) {
           }))
         : [createEmptyVariant()],
   }
+}
+
+function buildProductImagePathname(file: File) {
+  const currentExtension = file.name.includes(".")
+    ? file.name.slice(file.name.lastIndexOf("."))
+    : ""
+  const baseName = file.name
+    .slice(0, currentExtension ? -currentExtension.length : undefined)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "")
+    .slice(0, 40)
+  const extension = IMAGE_EXTENSION_BY_TYPE[file.type] ?? ".jpg"
+  const suffix =
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID().slice(0, 8)
+      : `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
+
+  return `products/${baseName || "image"}-${suffix}${extension}`
 }
 
 export function ProductForm({
@@ -394,26 +422,58 @@ export function ProductForm({
         return
       }
 
-      const uploadData = new FormData()
+      const uploadedFiles: string[] = []
 
-      selectedFiles.forEach((file) => {
-        uploadData.append("files", file)
-      })
+      try {
+        for (const file of selectedFiles) {
+          const blob = await upload(buildProductImagePathname(file), file, {
+            access: "public",
+            contentType: file.type,
+            handleUploadUrl: "/api/admin/uploads/images",
+            multipart: file.size > 4 * 1024 * 1024,
+            clientPayload: JSON.stringify({
+              name: file.name,
+              type: file.type,
+              size: file.size,
+            }),
+          })
 
-      const response = await fetch("/api/admin/uploads/images", {
-        method: "POST",
-        body: uploadData,
-      })
-      const data = await response.json()
+          uploadedFiles.push(blob.url)
+        }
+      } catch (directUploadError) {
+        const directUploadMessage =
+          directUploadError instanceof Error ? directUploadError.message : ""
+        const shouldUseServerFallback =
+          directUploadMessage.includes("BLOB_CLIENT_UPLOAD_UNAVAILABLE") ||
+          directUploadMessage.includes("Failed to retrieve the client token")
 
-      if (!response.ok) {
-        throw new Error(data.error || "No pudimos subir las imagenes.")
+        if (!shouldUseServerFallback) {
+          throw directUploadError
+        }
+
+        const uploadData = new FormData()
+
+        selectedFiles.forEach((file) => {
+          uploadData.append("files", file)
+        })
+
+        const response = await fetch("/api/admin/uploads/images", {
+          method: "POST",
+          body: uploadData,
+        })
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || "No pudimos subir las imagenes.")
+        }
+
+        uploadedFiles.push(...(data.files as string[]))
       }
 
       setImages((current) => {
         const nextImages = [...current]
 
-        for (const fileUrl of data.files as string[]) {
+        for (const fileUrl of uploadedFiles) {
           if (!nextImages.includes(fileUrl)) {
             nextImages.push(fileUrl)
           }

@@ -3,6 +3,7 @@ import { randomUUID } from "crypto"
 import { mkdir, writeFile } from "fs/promises"
 import { NextResponse } from "next/server"
 import { put } from "@vercel/blob"
+import { handleUpload, type HandleUploadBody } from "@vercel/blob/client"
 import {
   adminNotFoundResponse,
   requireAdminApiSession,
@@ -20,6 +21,7 @@ const ALLOWED_MIME_TYPES = new Set([
 const ALLOWED_EXTENSIONS = new Set([
   ".jpg",
   ".jpeg",
+  ".jfif",
   ".png",
   ".webp",
   ".gif",
@@ -102,6 +104,15 @@ function normalizeExtension(extension: string) {
   return extension === ".jpeg" || extension === ".jfif" ? ".jpg" : extension
 }
 
+function isAllowedProductBlobPathname(pathname: string) {
+  if (!pathname.startsWith("products/")) {
+    return false
+  }
+
+  const extension = normalizeExtension(path.extname(pathname).toLowerCase())
+  return ALLOWED_EXTENSIONS.has(extension)
+}
+
 function sanitizeFilename(fileName: string, extension: AllowedImageType["extension"]) {
   const currentExtension = path.extname(fileName)
   const baseName = path
@@ -155,6 +166,49 @@ export async function POST(req: Request) {
 
     if (!session) {
       return adminNotFoundResponse()
+    }
+
+    const contentType = req.headers.get("content-type") ?? ""
+
+    if (contentType.includes("application/json")) {
+      if (!process.env.BLOB_READ_WRITE_TOKEN) {
+        return NextResponse.json(
+          {
+            error:
+              "BLOB_CLIENT_UPLOAD_UNAVAILABLE: Vercel Blob no esta configurado para subidas directas.",
+          },
+          { status: 501 }
+        )
+      }
+
+      const body = (await req.json()) as HandleUploadBody
+
+      if (body.type !== "blob.generate-client-token") {
+        return NextResponse.json(
+          { error: "Tipo de subida no permitido." },
+          { status: 400 }
+        )
+      }
+
+      const jsonResponse = await handleUpload({
+        body,
+        request: req,
+        onBeforeGenerateToken: async (pathname, clientPayload) => {
+          if (!isAllowedProductBlobPathname(pathname)) {
+            throw new Error("La ruta del archivo no esta permitida.")
+          }
+
+          return {
+            allowedContentTypes: Array.from(ALLOWED_MIME_TYPES),
+            maximumSizeInBytes: MAX_FILE_SIZE,
+            addRandomSuffix: false,
+            allowOverwrite: false,
+            tokenPayload: clientPayload,
+          }
+        },
+      })
+
+      return NextResponse.json(jsonResponse)
     }
 
     const formData = await req.formData()

@@ -107,6 +107,8 @@ graph TB
   - el formulario admin mantiene el mismo flujo y el backend elige automaticamente el proveedor correcto
   - se reforzo la deteccion de archivos multipart en el runtime de Vercel para evitar rechazos por checks fragiles con `instanceof File`
   - el selector del admin ahora limita los formatos a los que valida el backend: JPG, PNG, WEBP, GIF y AVIF
+  - en produccion, las imagenes ahora suben directo a Vercel Blob con un token temporal solo para admins, evitando los limites de tamano del body en Vercel Functions para fotos mas pesadas
+  - se actualizo la politica CSP para permitir subidas directas desde el navegador hacia los endpoints de Vercel Blob
 
 ### 2026-04-22
 

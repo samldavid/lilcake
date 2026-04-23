@@ -21,6 +21,8 @@ const contentSecurityPolicy = [
     "connect-src 'self'",
     "https://api.stripe.com",
     "https://checkout.stripe.com",
+    "https://blob.vercel-storage.com",
+    "https://*.public.blob.vercel-storage.com",
     isDevelopment ? "ws: wss:" : "",
   ]
     .filter(Boolean)
