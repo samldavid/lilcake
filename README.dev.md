@@ -32,9 +32,78 @@ LilCake is a Next.js storefront with:
   - rate-limited sensitive actions
   - backend validation and sanitized public errors
 
+## Stack overview
+
+| Layer | Current choice | Purpose |
+| --- | --- | --- |
+| Framework | Next.js 16 App Router | Storefront, admin, API routes, SSR and RSC |
+| UI | Tailwind CSS v4 + Lucide React | Consistent dark UI, dashboards, storefront components |
+| Database | PostgreSQL (Supabase) | Production persistence for users, products, orders, coupons and reports |
+| ORM | Prisma 6 | Typed queries, schema management, migrations and indexing |
+| Auth | NextAuth + credentials + Google OAuth | Role-based access, customer auth, protected admin |
+| Payments | Stripe Checkout + WhatsApp fallback | Real payment flow with safe backend order finalization |
+| Emails | SMTP mailer | Verification, password recovery, order and shipping notifications |
+| Reports | ExcelJS + pdf-lib | Operational exports for sales, orders and customers |
+| Deploy | Vercel | Production hosting, env handling and webhook-ready routes |
+
+## Runtime architecture
+
+```mermaid
+graph TB
+    A["Storefront (/ , /productos, /checkout)"]
+    B["Real Admin (/admin)"]
+    C["Public Admin Demo (/admin-demo)"]
+    D["Next.js Route Handlers"]
+    E["Auth Layer (NextAuth + roles)"]
+    F["Commerce Services (checkout, coupons, reports, mail)"]
+    G["Prisma ORM"]
+    H["PostgreSQL / Supabase"]
+    I["Stripe"]
+    J["SMTP Provider"]
+
+    A --> D
+    B --> D
+    C --> D
+    D --> E
+    D --> F
+    F --> G
+    G --> H
+    F --> I
+    F --> J
+```
+
+## Core domain model
+
+| Domain | Main models | Responsibility |
+| --- | --- | --- |
+| Identity | `User`, `Account`, `Session`, `AccountSecurityToken` | Credentials, Google OAuth, sessions, verification and recovery flows |
+| Catalog | `Category`, `Product`, `ProductImage`, `ProductVariant` | Product organization, media gallery, stock and SKU management |
+| Cart | `CartItem` | Persisted authenticated cart with safer sync behavior |
+| Orders | `Order`, `OrderItem` | Checkout snapshots, totals, shipping data, payment state and audit trail |
+| Promotions | `Coupon`, `CouponCustomerUsage` | Global and per-customer discount control with safe backend usage tracking |
+| Operations | report/export services + transactional emails | Admin exports, order comms, shipping updates and business visibility |
+
+## API surface summary
+
+| Access | Example routes | Notes |
+| --- | --- | --- |
+| Public | `/api/products`, `/api/categories`, `/api/auth/register`, `/api/checkout/stripe`, `/api/webhooks/stripe` | Storefront reads, auth entry points, checkout bootstrap and Stripe webhook |
+| Authenticated customer | `/api/cart/sync`, `/api/orders/[id]/resume`, `/api/orders/[id]/cancel`, `/api/checkout/coupon` | Cart sync, order recovery/cancellation and coupon preview/validation |
+| Protected admin | `/api/admin/products`, `/api/admin/orders/[id]`, `/api/admin/coupons`, `/api/admin/reports/export` | Catalog, order, coupon and reporting operations guarded by admin checks |
+
+## Development reference moved from local planning docs
+
+- The architecture notes that used to live in `CLAUDE.md` were distilled into this developer guide so the repo keeps the useful technical reference without exposing that local planning file.
+- `CLAUDE.md` can stay on the machine as a private workspace note, but it is no longer needed as a tracked source of truth for the project.
+
 ## Changelog
 
 ### 2026-04-22
+
+- Moved reusable technical planning context out of `CLAUDE.md` and into the developer guides:
+  - added a sanitized stack overview, runtime architecture map, domain model summary, and API surface summary
+  - kept the useful development reference in `README.dev.md` and `README.dev.es.md`
+  - prepared `CLAUDE.md` to stay local-only instead of appearing as a versioned project document
 
 - Added a public `admin-demo` sandbox that is fully separated from the real admin:
   - `/admin-demo` now exposes the admin UI with demo-safe data and simulated actions

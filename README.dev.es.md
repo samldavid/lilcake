@@ -32,9 +32,78 @@ LilCake es una tienda construida con Next.js que incluye:
   - rate limits sobre acciones sensibles
   - validacion backend y errores publicos sanitizados
 
+## Resumen del stack
+
+| Capa | Opcion actual | Proposito |
+| --- | --- | --- |
+| Framework | Next.js 16 App Router | Storefront, panel admin, rutas API, SSR y RSC |
+| UI | Tailwind CSS v4 + Lucide React | Interfaz oscura coherente para tienda y dashboard |
+| Base de datos | PostgreSQL (Supabase) | Persistencia productiva de usuarios, productos, pedidos, cupones y reportes |
+| ORM | Prisma 6 | Consultas tipadas, schema, migraciones e indices |
+| Auth | NextAuth + credenciales + Google OAuth | Acceso por roles, login de clientes y proteccion del admin |
+| Pagos | Stripe Checkout + fallback por WhatsApp | Flujo real de pago con cierre seguro de ordenes |
+| Correos | SMTP mailer | Verificacion, recuperacion, notificaciones de pedido y envio |
+| Reportes | ExcelJS + pdf-lib | Exportaciones operativas de ventas, pedidos y clientes |
+| Deploy | Vercel | Hosting productivo, variables de entorno y rutas listas para webhooks |
+
+## Arquitectura de ejecucion
+
+```mermaid
+graph TB
+    A["Storefront (/ , /productos, /checkout)"]
+    B["Admin real (/admin)"]
+    C["Admin demo publico (/admin-demo)"]
+    D["Route Handlers de Next.js"]
+    E["Capa de auth (NextAuth + roles)"]
+    F["Servicios de comercio (checkout, cupones, reportes, mail)"]
+    G["Prisma ORM"]
+    H["PostgreSQL / Supabase"]
+    I["Stripe"]
+    J["Proveedor SMTP"]
+
+    A --> D
+    B --> D
+    C --> D
+    D --> E
+    D --> F
+    F --> G
+    G --> H
+    F --> I
+    F --> J
+```
+
+## Modelo funcional del dominio
+
+| Dominio | Modelos principales | Responsabilidad |
+| --- | --- | --- |
+| Identidad | `User`, `Account`, `Session`, `AccountSecurityToken` | Credenciales, Google OAuth, sesiones, verificacion y recuperacion |
+| Catalogo | `Category`, `Product`, `ProductImage`, `ProductVariant` | Organizacion de productos, galeria, stock y SKUs |
+| Carrito | `CartItem` | Carrito autenticado persistido con sincronizacion mas segura |
+| Pedidos | `Order`, `OrderItem` | Snapshots de checkout, totales, envio, estado de pago y trazabilidad |
+| Promociones | `Coupon`, `CouponCustomerUsage` | Control de descuentos globales y por cliente desde backend |
+| Operacion | servicios de reportes/exportacion + correos transaccionales | Reportes, comunicacion con clientes, envios y visibilidad del negocio |
+
+## Resumen de APIs
+
+| Acceso | Rutas ejemplo | Uso |
+| --- | --- | --- |
+| Publico | `/api/products`, `/api/categories`, `/api/auth/register`, `/api/checkout/stripe`, `/api/webhooks/stripe` | Lecturas del storefront, entrada de auth, bootstrap de checkout y webhook de Stripe |
+| Cliente autenticado | `/api/cart/sync`, `/api/orders/[id]/resume`, `/api/orders/[id]/cancel`, `/api/checkout/coupon` | Sync del carrito, reintento/cancelacion de pedidos y vista previa de cupones |
+| Admin protegido | `/api/admin/products`, `/api/admin/orders/[id]`, `/api/admin/coupons`, `/api/admin/reports/export` | Operacion de catalogo, pedidos, cupones y reportes bajo checks de admin |
+
+## Referencia de desarrollo migrada desde notas locales
+
+- La informacion tecnica reutilizable que antes vivia en `CLAUDE.md` se concentro aqui para mantener una referencia de desarrollo util sin exponer ese archivo local.
+- `CLAUDE.md` puede quedarse como nota privada en la maquina, pero ya no hace falta como documento versionado del proyecto.
+
 ## Historial de cambios
 
 ### 2026-04-22
+
+- Se movio la referencia tecnica reutilizable de `CLAUDE.md` hacia las guias de desarrollo:
+  - se anadieron un resumen del stack, un mapa de arquitectura, un resumen del dominio y una vista general de APIs
+  - la informacion util de desarrollo ahora vive en `README.dev.md` y `README.dev.es.md`
+  - `CLAUDE.md` quedo preparado para mantenerse solo de forma local y no como documento versionado del proyecto
 
 - Se anadio un sandbox publico `admin-demo` totalmente separado del admin real:
   - `/admin-demo` ahora expone la UI administrativa con datos demo y acciones simuladas
