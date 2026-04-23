@@ -105,6 +105,8 @@ graph TB
   - production uploads now use Vercel Blob when `BLOB_READ_WRITE_TOKEN` is configured
   - Vercel deployments no longer rely on writing product media into the serverless filesystem
   - the admin product form can keep using the same upload flow while the backend chooses the correct storage provider
+  - hardened multipart file detection for the Vercel runtime so uploads are not rejected by fragile `instanceof File` checks
+  - restricted the admin file picker to the image formats that the backend validates: JPG, PNG, WEBP, GIF and AVIF
 
 ### 2026-04-22
 

@@ -31,6 +31,22 @@ type AllowedImageType = {
   mime: "image/jpeg" | "image/png" | "image/webp" | "image/gif" | "image/avif"
 }
 
+function isUploadedFile(entry: FormDataEntryValue): entry is File {
+  if (typeof entry !== "object" || entry === null) {
+    return false
+  }
+
+  const file = entry as Partial<File>
+
+  return (
+    typeof file.name === "string" &&
+    typeof file.type === "string" &&
+    typeof file.size === "number" &&
+    file.size > 0 &&
+    typeof file.arrayBuffer === "function"
+  )
+}
+
 function detectImageType(buffer: Uint8Array): AllowedImageType | null {
   if (
     buffer.length >= 3 &&
@@ -83,7 +99,7 @@ function detectImageType(buffer: Uint8Array): AllowedImageType | null {
 }
 
 function normalizeExtension(extension: string) {
-  return extension === ".jpeg" ? ".jpg" : extension
+  return extension === ".jpeg" || extension === ".jfif" ? ".jpg" : extension
 }
 
 function sanitizeFilename(fileName: string, extension: AllowedImageType["extension"]) {
@@ -142,9 +158,7 @@ export async function POST(req: Request) {
     }
 
     const formData = await req.formData()
-    const files = formData
-      .getAll("files")
-      .filter((file): file is File => file instanceof File && file.size > 0)
+    const files = formData.getAll("files").filter(isUploadedFile)
 
     if (files.length === 0) {
       return NextResponse.json(

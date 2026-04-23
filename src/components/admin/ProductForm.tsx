@@ -74,6 +74,16 @@ const initialFormData = {
   isFeatured: false,
 }
 
+const ACCEPTED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/avif",
+]
+const ACCEPTED_IMAGE_TYPES_LABEL = "JPG, PNG, WEBP, GIF o AVIF"
+const MAX_PRODUCT_IMAGE_SIZE = 8 * 1024 * 1024
+
 function createVariantTempId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID()
@@ -351,8 +361,29 @@ export function ProductForm({
       setError("")
       setSuccess("")
 
+      const selectedFiles = Array.from(fileList)
+      const invalidTypeFile = selectedFiles.find(
+        (file) => !ACCEPTED_IMAGE_TYPES.includes(file.type)
+      )
+
+      if (invalidTypeFile) {
+        throw new Error(
+          `La imagen ${invalidTypeFile.name} debe ser ${ACCEPTED_IMAGE_TYPES_LABEL}.`
+        )
+      }
+
+      const oversizedFile = selectedFiles.find(
+        (file) => file.size > MAX_PRODUCT_IMAGE_SIZE
+      )
+
+      if (oversizedFile) {
+        throw new Error(
+          `La imagen ${oversizedFile.name} supera el limite de 8 MB.`
+        )
+      }
+
       if (isDemo) {
-        const previewUrls = Array.from(fileList).map((file) => {
+        const previewUrls = selectedFiles.map((file) => {
           const url = URL.createObjectURL(file)
           previewUrlsRef.current.push(url)
           return url
@@ -365,7 +396,7 @@ export function ProductForm({
 
       const uploadData = new FormData()
 
-      Array.from(fileList).forEach((file) => {
+      selectedFiles.forEach((file) => {
         uploadData.append("files", file)
       })
 
@@ -592,7 +623,7 @@ export function ProductForm({
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept={ACCEPTED_IMAGE_TYPES.join(",")}
                 multiple
                 className="hidden"
                 onChange={handleFileSelection}

@@ -105,6 +105,8 @@ graph TB
   - en produccion, las subidas usan Vercel Blob cuando `BLOB_READ_WRITE_TOKEN` esta configurado
   - los deployments de Vercel ya no dependen de escribir imagenes en el filesystem serverless
   - el formulario admin mantiene el mismo flujo y el backend elige automaticamente el proveedor correcto
+  - se reforzo la deteccion de archivos multipart en el runtime de Vercel para evitar rechazos por checks fragiles con `instanceof File`
+  - el selector del admin ahora limita los formatos a los que valida el backend: JPG, PNG, WEBP, GIF y AVIF
 
 ### 2026-04-22
 
