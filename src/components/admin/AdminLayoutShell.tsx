@@ -20,6 +20,12 @@ export function AdminLayoutShell({
   banner,
 }: AdminLayoutShellProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
+  const handleMobileOpen = React.useCallback(() => {
+    setMobileMenuOpen(true)
+  }, [])
+  const handleMobileClose = React.useCallback(() => {
+    setMobileMenuOpen(false)
+  }, [])
 
   return (
     <div className="flex h-screen overflow-hidden bg-lc-black font-body text-lc-white selection:bg-lc-purple/30">
@@ -27,7 +33,7 @@ export function AdminLayoutShell({
         basePath={basePath}
         demoMode={demoMode}
         mobileOpen={mobileMenuOpen}
-        onMobileClose={() => setMobileMenuOpen(false)}
+        onMobileClose={handleMobileClose}
       />
 
       <main className="relative flex h-screen flex-1 flex-col overflow-hidden">
@@ -48,7 +54,7 @@ export function AdminLayoutShell({
 
           <button
             type="button"
-            onClick={() => setMobileMenuOpen(true)}
+            onClick={handleMobileOpen}
             className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-lc-border text-lc-gray transition-colors hover:text-lc-white"
             aria-label="Abrir menu administrativo"
           >
