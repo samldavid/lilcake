@@ -1,4 +1,4 @@
-import { TrendingUp, ShoppingCart, Package, Users } from "lucide-react"
+import { Package, ShoppingCart, TrendingUp, Users } from "lucide-react"
 import { BusinessExportPanel } from "@/components/admin/BusinessExportPanel"
 import { Card, CardBody } from "@/components/ui/Card"
 import {
@@ -25,24 +25,22 @@ export default async function AdminDashboard() {
   const totalSales = salesResult._sum.total || 0
 
   return (
-    <div className="animate-fade-in space-y-8">
+    <div className="animate-fade-in space-y-6 sm:space-y-8">
       <div>
-        <h1 className="text-3xl font-heading font-bold text-lc-white mb-2">
+        <h1 className="mb-2 text-2xl font-heading font-bold text-lc-white sm:text-3xl">
           Resumen General
         </h1>
-        <p className="text-lc-gray-light">
-          Métricas principales de tu negocio.
-        </p>
+        <p className="text-lc-gray-light">Metricas principales de tu negocio.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4">
         <Card glass>
-          <CardBody className="p-6 flex items-center">
-            <div className="p-4 bg-lc-success/10 rounded-2xl text-lc-success shrink-0 mr-4 border border-lc-success/20">
+          <CardBody className="flex flex-col items-start gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
+            <div className="rounded-2xl border border-lc-success/20 bg-lc-success/10 p-4 text-lc-success">
               <TrendingUp size={28} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-lc-gray tracking-wide uppercase mb-1">
+              <p className="mb-1 text-sm font-semibold uppercase tracking-wide text-lc-gray">
                 Ventas Reales
               </p>
               <p className="text-2xl font-bold text-lc-white">
@@ -53,12 +51,12 @@ export default async function AdminDashboard() {
         </Card>
 
         <Card glass>
-          <CardBody className="p-6 flex items-center">
-            <div className="p-4 bg-lc-cyan/10 rounded-2xl text-lc-cyan shrink-0 mr-4 border border-lc-cyan/20">
+          <CardBody className="flex flex-col items-start gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
+            <div className="rounded-2xl border border-lc-cyan/20 bg-lc-cyan/10 p-4 text-lc-cyan">
               <ShoppingCart size={28} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-lc-gray tracking-wide uppercase mb-1">
+              <p className="mb-1 text-sm font-semibold uppercase tracking-wide text-lc-gray">
                 Pedidos Totales
               </p>
               <p className="text-2xl font-bold text-lc-white">{ordersCount}</p>
@@ -67,28 +65,26 @@ export default async function AdminDashboard() {
         </Card>
 
         <Card glass>
-          <CardBody className="p-6 flex items-center">
-            <div className="p-4 bg-lc-purple/10 rounded-2xl text-lc-purple shrink-0 mr-4 border border-lc-purple/20">
+          <CardBody className="flex flex-col items-start gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
+            <div className="rounded-2xl border border-lc-purple/20 bg-lc-purple/10 p-4 text-lc-purple">
               <Package size={28} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-lc-gray tracking-wide uppercase mb-1">
-                Catálogo Activo
+              <p className="mb-1 text-sm font-semibold uppercase tracking-wide text-lc-gray">
+                Catalogo Activo
               </p>
-              <p className="text-2xl font-bold text-lc-white">
-                {productsCount}
-              </p>
+              <p className="text-2xl font-bold text-lc-white">{productsCount}</p>
             </div>
           </CardBody>
         </Card>
 
         <Card glass>
-          <CardBody className="p-6 flex items-center">
-            <div className="p-4 bg-lc-pink/10 rounded-2xl text-lc-pink shrink-0 mr-4 border border-lc-pink/20">
+          <CardBody className="flex flex-col items-start gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
+            <div className="rounded-2xl border border-lc-pink/20 bg-lc-pink/10 p-4 text-lc-pink">
               <Users size={28} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-lc-gray tracking-wide uppercase mb-1">
+              <p className="mb-1 text-sm font-semibold uppercase tracking-wide text-lc-gray">
                 Clientes Registrados
               </p>
               <p className="text-2xl font-bold text-lc-white">{usersCount}</p>

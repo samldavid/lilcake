@@ -3,102 +3,129 @@ import { ArrowRight, Flame, Layers, Sparkles } from "lucide-react"
 
 export function HeroSection() {
   return (
-    <div className="relative overflow-hidden bg-lc-black pt-16 pb-24 lg:pt-24 lg:pb-32">
-      {/* Background gradients */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-lc-purple/20 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[40%] bg-lc-pink/20 rounded-full blur-[120px] pointer-events-none" />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          
-          {/* Text Content */}
+    <div className="relative overflow-hidden bg-lc-black pb-16 pt-10 sm:pb-24 sm:pt-16 lg:pb-32 lg:pt-24">
+      <div className="pointer-events-none absolute left-[-10%] top-[-10%] h-[40%] w-[40%] rounded-full bg-lc-purple/20 blur-[120px]" />
+      <div className="pointer-events-none absolute bottom-[-10%] right-[-10%] h-[40%] w-[30%] rounded-full bg-lc-pink/20 blur-[120px]" />
+
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-12">
           <div className="max-w-2xl animate-slide-up">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-lc-dark border border-lc-border mb-8">
-              <Sparkles size={16} className="text-lc-warning" />
-              <span className="text-sm font-semibold tracking-wide text-lc-gray-light uppercase">Nueva Colección Drop #04</span>
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-lc-border bg-lc-dark px-3 py-1.5 sm:mb-8">
+              <Sparkles size={14} className="text-lc-warning sm:size-4" />
+              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-lc-gray-light sm:text-sm">
+                Nueva Coleccion Drop #04
+              </span>
             </div>
-            
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-heading font-extrabold tracking-tighter text-lc-white leading-[1.1] mb-6">
+
+            <h1 className="mb-5 text-4xl font-heading font-extrabold leading-[1.05] tracking-tighter text-lc-white sm:mb-6 sm:text-6xl lg:text-7xl">
               TU ESTILO. <br />
               <span className="gradient-text">TU REGLA.</span>
             </h1>
-            
-            <p className="text-lg text-lc-gray-light mb-10 max-w-xl leading-relaxed">
-              Descubre la nueva ola del streetwear en Colombia. 
-              Piezas exclusivas, diseños que rompen el molde y la mejor calidad para los que no siguen tendencias, las crean.
+
+            <p className="mb-8 max-w-xl text-base leading-7 text-lc-gray-light sm:mb-10 sm:text-lg sm:leading-relaxed">
+              Descubre la nueva ola del streetwear en Colombia. Piezas
+              exclusivas, disenos que rompen el molde y la mejor calidad para
+              los que no siguen tendencias, las crean.
             </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link 
-                href="/productos" 
-                className="btn-primary inline-flex items-center justify-center gap-2 group text-lg py-4 px-8"
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+              <Link
+                href="/productos"
+                className="btn-primary group inline-flex items-center justify-center gap-2 px-6 py-3.5 text-base sm:px-8 sm:py-4 sm:text-lg"
               >
-                Ver Colección
-                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                Ver Coleccion
+                <ArrowRight
+                  size={20}
+                  className="transition-transform group-hover:translate-x-1"
+                />
               </Link>
-              <Link 
-                href="/productos?categoria=zapatos" 
-                className="btn-secondary inline-flex items-center justify-center gap-2 text-lg py-4 px-8"
+              <Link
+                href="/productos?categoria=zapatos"
+                className="btn-secondary inline-flex items-center justify-center gap-2 px-6 py-3.5 text-base sm:px-8 sm:py-4 sm:text-lg"
               >
                 Sneakers
               </Link>
             </div>
-            
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 mt-16 pt-8 border-t border-lc-border/50">
+
+            <div className="mt-10 grid grid-cols-3 gap-4 border-t border-lc-border/50 pt-6 sm:mt-16 sm:gap-6 sm:pt-8">
               <div>
-                <p className="text-3xl font-heading font-bold text-lc-white">500+</p>
-                <p className="text-sm text-lc-gray mt-1">Productos</p>
+                <p className="text-2xl font-heading font-bold text-lc-white sm:text-3xl">
+                  500+
+                </p>
+                <p className="mt-1 text-xs text-lc-gray sm:text-sm">Productos</p>
               </div>
               <div>
-                <p className="text-3xl font-heading font-bold text-lc-white">24h</p>
-                <p className="text-sm text-lc-gray mt-1">Envíos rápidos</p>
+                <p className="text-2xl font-heading font-bold text-lc-white sm:text-3xl">
+                  24h
+                </p>
+                <p className="mt-1 text-xs text-lc-gray sm:text-sm">
+                  Envios rapidos
+                </p>
               </div>
               <div>
-                <p className="text-3xl font-heading font-bold text-lc-white">100%</p>
-                <p className="text-sm text-lc-gray mt-1">Garantía</p>
+                <p className="text-2xl font-heading font-bold text-lc-white sm:text-3xl">
+                  100%
+                </p>
+                <p className="mt-1 text-xs text-lc-gray sm:text-sm">Garantia</p>
               </div>
             </div>
           </div>
-          
-          {/* Hero Images Grid */}
-          <div className="hidden lg:grid grid-cols-2 gap-4 h-[600px] animate-fade-in delay-200">
-            <div className="flex flex-col gap-4 mt-12">
-              <div className="bg-lc-dark rounded-3xl overflow-hidden h-2/5 relative group border border-lc-border">
+
+          <div className="hidden h-[600px] grid-cols-2 gap-4 animate-fade-in delay-200 lg:grid">
+            <div className="mt-12 flex flex-col gap-4">
+              <div className="relative h-2/5 overflow-hidden rounded-3xl border border-lc-border bg-lc-dark group">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/images/accesorios.png" alt="Streetwear accesory" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 bg-lc-black" />
+                <img
+                  src="/images/accesorios.png"
+                  alt="Streetwear accesory"
+                  className="h-full w-full bg-lc-black object-cover opacity-80 transition-all duration-700 group-hover:scale-105 group-hover:opacity-100"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-lc-black/60 to-transparent" />
                 <div className="absolute bottom-4 left-4 flex items-center gap-2">
                   <Layers size={16} className="text-lc-pink" />
-                  <span className="font-bold text-sm tracking-wide">ACCESORIOS</span>
+                  <span className="text-sm font-bold tracking-wide">ACCESORIOS</span>
                 </div>
               </div>
-              <div className="bg-lc-dark rounded-3xl overflow-hidden h-3/5 relative group border border-lc-border">
+              <div className="relative h-3/5 overflow-hidden rounded-3xl border border-lc-border bg-lc-dark group">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/images/ropa.png" alt="Streetwear clothing" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 bg-lc-black" />
+                <img
+                  src="/images/ropa.png"
+                  alt="Streetwear clothing"
+                  className="h-full w-full bg-lc-black object-cover opacity-80 transition-all duration-700 group-hover:scale-105 group-hover:opacity-100"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-lc-black/60 to-transparent" />
                 <div className="absolute bottom-4 left-4 flex items-center gap-2">
                   <Flame size={16} className="text-lc-purple-light" />
-                  <span className="font-bold text-sm tracking-wide">PIEZAS ÚNICAS</span>
+                  <span className="text-sm font-bold tracking-wide">PIEZAS UNICAS</span>
                 </div>
               </div>
             </div>
-            
+
             <div className="flex flex-col gap-4">
-              <div className="bg-lc-dark rounded-3xl overflow-hidden h-3/5 relative group border border-lc-border">
+              <div className="relative h-3/5 overflow-hidden rounded-3xl border border-lc-border bg-lc-dark group">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/images/zapatos.png" alt="Streetwear model" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 bg-lc-black" />
+                <img
+                  src="/images/zapatos.png"
+                  alt="Streetwear model"
+                  className="h-full w-full bg-lc-black object-cover opacity-80 transition-all duration-700 group-hover:scale-105 group-hover:opacity-100"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-lc-black/60 to-transparent" />
-                <div className="absolute top-4 right-4 bg-lc-white/10 backdrop-blur-md text-white text-xs px-3 py-1 rounded-full border border-white/20">HOT OUTFITS</div>
+                <div className="absolute right-4 top-4 rounded-full border border-white/20 bg-lc-white/10 px-3 py-1 text-xs text-white backdrop-blur-md">
+                  HOT OUTFITS
+                </div>
               </div>
-              <div className="bg-lc-dark rounded-3xl overflow-hidden h-2/5 p-8 flex flex-col justify-center items-center text-center border border-lc-border relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-br from-lc-purple/20 to-lc-pink/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <h3 className="text-2xl font-heading font-bold mb-2 relative z-10">¿Listo para el cambio?</h3>
-                <p className="text-sm text-lc-gray relative z-10">Únete a la revolución urbana y lleva tu estilo al siguiente nivel.</p>
+              <div className="relative flex h-2/5 flex-col items-center justify-center overflow-hidden rounded-3xl border border-lc-border bg-lc-dark p-8 text-center group">
+                <div className="absolute inset-0 bg-gradient-to-br from-lc-purple/20 to-lc-pink/20 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                <h3 className="relative z-10 mb-2 text-2xl font-heading font-bold">
+                  Listo para el cambio?
+                </h3>
+                <p className="relative z-10 text-sm text-lc-gray">
+                  Unete a la revolucion urbana y lleva tu estilo al siguiente
+                  nivel.
+                </p>
               </div>
             </div>
           </div>
-          
         </div>
       </div>
     </div>

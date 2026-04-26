@@ -44,7 +44,8 @@ export function CatalogSearchExperience({
   const initialActiveQuery = normalizedInitialQuery.length >= 3 ? normalizedInitialQuery : ""
   const isShortQuery = normalizedRawQuery.length > 0 && normalizedRawQuery.length < 3
   const activeCategoryName =
-    categories.find((category) => category.slug === selectedCategory)?.name || selectedCategory
+    categories.find((category) => category.slug === selectedCategory)?.name ||
+    selectedCategory
 
   React.useEffect(() => {
     const params = new URLSearchParams()
@@ -97,7 +98,7 @@ export function CatalogSearchExperience({
     })
       .then(async (response) => {
         if (!response.ok) {
-          throw new Error("No pudimos actualizar el catálogo.")
+          throw new Error("No pudimos actualizar el catalogo.")
         }
 
         return response.json()
@@ -138,19 +139,19 @@ export function CatalogSearchExperience({
   const title = activeQuery
     ? `Resultados para "${activeQuery}"`
     : selectedCategory
-      ? `Categoría: ${activeCategoryName}`
-      : "Catálogo Completo"
+      ? `Categoria: ${activeCategoryName}`
+      : "Catalogo Completo"
 
   const subtitle = isShortQuery
-    ? "Escribe al menos 3 letras para activar resultados dinámicos más precisos."
+    ? "Escribe al menos 3 letras para activar resultados dinamicos mas precisos."
     : isLoading
       ? "Buscando productos..."
       : `Mostrando ${products.length} productos`
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in">
-      <div className="flex flex-col gap-8 md:flex-row">
-        <aside className="w-full shrink-0 space-y-8 md:w-64">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8 animate-fade-in">
+      <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
+        <aside className="w-full shrink-0 space-y-6 lg:w-72 lg:space-y-8">
           <div>
             <h3 className="mb-4 text-lg font-bold font-heading text-lc-white">Buscar</h3>
             <form onSubmit={handleSubmit} className="relative">
@@ -161,18 +162,18 @@ export function CatalogSearchExperience({
                 placeholder="Hoodie, sneakers..."
                 autoComplete="off"
                 spellCheck={false}
-                className="w-full rounded-xl border border-lc-border bg-lc-dark py-2.5 text-sm text-lc-white focus:outline-none focus:border-lc-purple"
+                className="h-12 w-full rounded-xl border border-lc-border bg-lc-dark py-2.5 text-sm text-lc-white focus:border-lc-purple focus:outline-none"
                 style={{ paddingLeft: "2.5rem", paddingRight: "1rem" }}
               />
-              <Search size={18} className="absolute left-3 top-3 text-lc-gray" />
+              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-lc-gray" />
             </form>
 
             <div className="mt-3 min-h-6 text-xs text-lc-gray">
               {isShortQuery
-                ? "Sigue escribiendo para ver coincidencias más precisas."
+                ? "Sigue escribiendo para ver coincidencias mas precisas."
                 : activeQuery
-                  ? "La búsqueda se actualiza mientras escribes."
-                  : "Puedes buscar por nombre, estilo o categoría."}
+                  ? "La busqueda se actualiza mientras escribes."
+                  : "Puedes buscar por nombre, estilo o categoria."}
             </div>
 
             {activeQuery && products.length > 0 ? (
@@ -212,16 +213,16 @@ export function CatalogSearchExperience({
           </div>
 
           <div>
-            <h3 className="mb-4 text-lg font-bold font-heading text-lc-white">Categorías</h3>
-            <div className="space-y-2">
+            <h3 className="mb-4 text-lg font-bold font-heading text-lc-white">Categorias</h3>
+            <div className="flex flex-wrap gap-2 lg:flex-col lg:gap-2">
               <button
                 type="button"
                 onClick={() => handleCategoryChange(undefined)}
                 className={cn(
-                  "block py-1.5 text-sm transition-colors",
+                  "rounded-full border px-4 py-2 text-sm transition-colors lg:rounded-none lg:border-0 lg:px-0 lg:py-1.5",
                   !selectedCategory
-                    ? "font-semibold text-lc-purple"
-                    : "text-lc-gray hover:text-lc-white"
+                    ? "border-lc-purple/40 bg-lc-purple/10 font-semibold text-lc-purple lg:bg-transparent"
+                    : "border-lc-border text-lc-gray hover:border-lc-purple/40 hover:text-lc-white lg:hover:border-transparent"
                 )}
               >
                 Todas
@@ -233,10 +234,10 @@ export function CatalogSearchExperience({
                   key={category.id}
                   onClick={() => handleCategoryChange(category.slug)}
                   className={cn(
-                    "block py-1.5 text-left text-sm transition-colors",
+                    "rounded-full border px-4 py-2 text-left text-sm transition-colors lg:rounded-none lg:border-0 lg:px-0 lg:py-1.5",
                     selectedCategory === category.slug
-                      ? "font-semibold text-lc-purple"
-                      : "text-lc-gray hover:text-lc-white"
+                      ? "border-lc-purple/40 bg-lc-purple/10 font-semibold text-lc-purple lg:bg-transparent"
+                      : "border-lc-border text-lc-gray hover:border-lc-purple/40 hover:text-lc-white lg:hover:border-transparent"
                   )}
                 >
                   {category.name}
@@ -247,9 +248,11 @@ export function CatalogSearchExperience({
         </aside>
 
         <div className="flex-1">
-          <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h1 className="text-3xl font-heading font-bold text-lc-white mb-2">{title}</h1>
+              <h1 className="mb-2 text-2xl font-heading font-bold text-lc-white sm:text-3xl">
+                {title}
+              </h1>
               <p className="text-sm text-lc-gray">{subtitle}</p>
             </div>
 
@@ -262,9 +265,9 @@ export function CatalogSearchExperience({
           </div>
 
           {products.length === 0 ? (
-            <div className="rounded-2xl border border-lc-border bg-lc-dark p-12 text-center">
+            <div className="rounded-2xl border border-lc-border bg-lc-dark p-8 text-center sm:p-12">
               <p className="mb-4 text-lc-gray">
-                No encontramos productos que coincidan con tu búsqueda.
+                No encontramos productos que coincidan con tu busqueda.
               </p>
               <button
                 type="button"
@@ -274,11 +277,11 @@ export function CatalogSearchExperience({
                 }}
                 className="btn-secondary inline-block"
               >
-                Ver todo el catálogo
+                Ver todo el catalogo
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
               {products.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}

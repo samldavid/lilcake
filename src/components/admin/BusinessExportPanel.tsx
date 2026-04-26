@@ -182,11 +182,11 @@ export function BusinessExportPanel({
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+          <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
             <Button
               type="button"
               variant="secondary"
-              className="gap-2"
+              className="w-full gap-2 sm:w-auto"
               disabled={loadingExport !== null || customRangeIncomplete}
               onClick={() => void handleExport("xlsx")}
             >
@@ -199,7 +199,7 @@ export function BusinessExportPanel({
             </Button>
             <Button
               type="button"
-              className="gap-2"
+              className="w-full gap-2 sm:w-auto"
               disabled={loadingExport !== null || customRangeIncomplete}
               onClick={() => void handleExport("pdf")}
             >

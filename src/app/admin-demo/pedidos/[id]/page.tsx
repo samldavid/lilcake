@@ -1,9 +1,8 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeft, MailCheck, Package, Truck } from "lucide-react"
-import { Badge } from "@/components/ui/Badge"
-import { formatCOP } from "@/lib/utils"
 import { AdminOrderStatusForm } from "@/components/orders/AdminOrderStatusForm"
+import { Badge } from "@/components/ui/Badge"
 import {
   ADMIN_DEMO_NOTICE,
   getAdminDemoOrderDetail,
@@ -14,6 +13,7 @@ import {
   getPaymentStatusClasses,
   getPaymentStatusLabel,
 } from "@/lib/order-status"
+import { formatCOP } from "@/lib/utils"
 
 export default async function AdminDemoOrderDetailPage({
   params,
@@ -28,8 +28,8 @@ export default async function AdminDemoOrderDetailPage({
   }
 
   return (
-    <div className="animate-fade-in space-y-8">
-      <div className="flex items-center justify-between gap-4">
+    <div className="animate-fade-in space-y-6 sm:space-y-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <Link
           href="/admin-demo/pedidos"
           className="inline-flex items-center gap-2 text-sm text-lc-gray transition-colors hover:text-lc-white"
@@ -37,7 +37,7 @@ export default async function AdminDemoOrderDetailPage({
           <ArrowLeft size={16} />
           Volver al listado
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Badge variant={getOrderStatusBadgeVariant(order.status)}>
             {getOrderStatusLabel(order.status)}
           </Badge>
@@ -49,16 +49,16 @@ export default async function AdminDemoOrderDetailPage({
         </div>
       </div>
 
-      <section className="rounded-2xl border border-lc-border bg-lc-card p-6 lg:p-8">
-        <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
+      <section className="rounded-2xl border border-lc-border bg-lc-card p-5 sm:p-6 lg:p-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="mb-2 text-sm font-bold tracking-widest text-lc-purple">
               {order.orderNumber}
             </p>
-            <h1 className="mb-2 text-3xl font-heading font-bold text-lc-white">
+            <h1 className="mb-2 text-2xl font-heading font-bold text-lc-white sm:text-3xl">
               Detalle del pedido demo
             </h1>
-            <p className="text-lc-gray">
+            <p className="text-sm text-lc-gray sm:text-base">
               Creado el {order.createdAt.toLocaleDateString("es-CO")}
             </p>
           </div>
@@ -74,12 +74,12 @@ export default async function AdminDemoOrderDetailPage({
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-8 xl:grid-cols-3">
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-3 xl:gap-8">
         <div className="space-y-6 xl:col-span-2">
-          <div className="rounded-2xl border border-lc-border bg-lc-card p-6">
+          <div className="rounded-2xl border border-lc-border bg-lc-card p-5 sm:p-6">
             <div className="mb-6 flex items-center gap-3">
               <Package className="text-lc-purple" />
-              <h2 className="text-xl font-heading font-bold text-lc-white">
+              <h2 className="text-lg font-heading font-bold text-lc-white sm:text-xl">
                 Productos del pedido
               </h2>
             </div>
@@ -96,8 +96,9 @@ export default async function AdminDemoOrderDetailPage({
                     key={item.id}
                     className="flex flex-col gap-4 rounded-2xl border border-lc-border bg-lc-darker/60 p-4 sm:flex-row"
                   >
-                    <div className="h-28 w-full shrink-0 rounded-xl bg-lc-black overflow-hidden sm:w-24">
+                    <div className="h-28 w-full shrink-0 overflow-hidden rounded-xl bg-lc-black sm:w-24">
                       {imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={imageUrl}
                           alt={item.productName}
@@ -121,7 +122,7 @@ export default async function AdminDemoOrderDetailPage({
                           {formatCOP(item.unitPrice * item.quantity)}
                         </p>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-lc-gray">
+                      <div className="flex flex-col gap-1 text-sm text-lc-gray sm:flex-row sm:items-center sm:gap-4">
                         <span>Cantidad: {item.quantity}</span>
                         <span>Unitario: {formatCOP(item.unitPrice)}</span>
                       </div>
@@ -132,10 +133,10 @@ export default async function AdminDemoOrderDetailPage({
             </div>
           </div>
 
-          <div className="rounded-2xl border border-lc-border bg-lc-card p-6">
+          <div className="rounded-2xl border border-lc-border bg-lc-card p-5 sm:p-6">
             <div className="mb-6 flex items-center gap-3">
               <Truck className="text-lc-cyan" />
-              <h2 className="text-xl font-heading font-bold text-lc-white">
+              <h2 className="text-lg font-heading font-bold text-lc-white sm:text-xl">
                 Seguimiento y envio
               </h2>
             </div>
@@ -171,7 +172,7 @@ export default async function AdminDemoOrderDetailPage({
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
+            <div className="mt-4 grid grid-cols-1 gap-4 text-sm lg:grid-cols-3">
               <div className="rounded-2xl border border-lc-border bg-lc-darker/50 p-4">
                 <div className="mb-2 flex items-center gap-2 text-lc-gray">
                   <MailCheck size={15} />
@@ -210,8 +211,8 @@ export default async function AdminDemoOrderDetailPage({
         </div>
 
         <div className="space-y-6">
-          <div className="rounded-2xl border border-lc-border bg-lc-card p-6">
-            <h2 className="mb-4 text-xl font-heading font-bold text-lc-white">
+          <div className="rounded-2xl border border-lc-border bg-lc-card p-5 sm:p-6">
+            <h2 className="mb-4 text-lg font-heading font-bold text-lc-white sm:text-xl">
               Resumen
             </h2>
             <div className="space-y-4 text-sm">
@@ -262,8 +263,8 @@ export default async function AdminDemoOrderDetailPage({
             </div>
           </div>
 
-          <div className="rounded-2xl border border-lc-border bg-lc-card p-6">
-            <h2 className="mb-4 text-xl font-heading font-bold text-lc-white">
+          <div className="rounded-2xl border border-lc-border bg-lc-card p-5 sm:p-6">
+            <h2 className="mb-4 text-lg font-heading font-bold text-lc-white sm:text-xl">
               Actualizar pedido
             </h2>
             <AdminOrderStatusForm

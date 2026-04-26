@@ -1,8 +1,8 @@
 import Link from "next/link"
 import { Plus } from "lucide-react"
+import { AdminProductsTable } from "@/components/admin/AdminProductsTable"
 import { Button } from "@/components/ui/Button"
 import { prisma } from "@/lib/prisma"
-import { AdminProductsTable } from "@/components/admin/AdminProductsTable"
 
 export const dynamic = "force-dynamic"
 
@@ -36,16 +36,18 @@ export default async function AdminProductsPage() {
   })
 
   return (
-    <div className="animate-fade-in space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="animate-fade-in space-y-5 sm:space-y-6">
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-3xl font-heading font-bold text-lc-white">Productos</h1>
-          <p className="text-lc-gray text-sm mt-1">
-            Gestiona tu catálogo, inventario y variantes.
+          <h1 className="text-2xl font-heading font-bold text-lc-white sm:text-3xl">
+            Productos
+          </h1>
+          <p className="mt-1 text-sm text-lc-gray">
+            Gestiona tu catalogo, inventario y variantes.
           </p>
         </div>
-        <Link href="/admin/productos/nuevo">
-          <Button className="flex items-center gap-2">
+        <Link href="/admin/productos/nuevo" className="w-full sm:w-auto">
+          <Button className="flex w-full items-center justify-center gap-2">
             <Plus size={18} /> Nuevo Producto
           </Button>
         </Link>

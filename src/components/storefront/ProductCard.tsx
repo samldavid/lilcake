@@ -26,16 +26,21 @@ export function ProductCard({ product }: ProductCardProps) {
     : 0
 
   return (
-    <div className="group card flex flex-col h-full bg-lc-card overflow-hidden">
-      {/* Image Container */}
-      <Link href={`/productos/${product.slug}`} className="relative aspect-[4/5] block overflow-hidden bg-lc-dark">
-        {/* Badges */}
-        <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+    <div className="group card flex h-full flex-col overflow-hidden bg-lc-card">
+      <Link
+        href={`/productos/${product.slug}`}
+        className="relative block aspect-[4/5] overflow-hidden bg-lc-dark sm:aspect-[10/13] lg:aspect-[4/5]"
+      >
+        <div className="absolute left-3 top-3 z-10 flex flex-col gap-1.5 sm:left-4 sm:top-4 sm:gap-2">
           {product.isFeatured && (
-            <Badge variant="purple" className="shadow-lg backdrop-blur-md">NUEVO</Badge>
+            <Badge variant="purple" className="px-2 py-1 text-[10px] shadow-lg backdrop-blur-md sm:px-3 sm:text-xs">
+              NUEVO
+            </Badge>
           )}
           {discount > 0 && (
-            <Badge variant="pink" className="shadow-lg backdrop-blur-md">-{discount}%</Badge>
+            <Badge variant="pink" className="px-2 py-1 text-[10px] shadow-lg backdrop-blur-md sm:px-3 sm:text-xs">
+              -{discount}%
+            </Badge>
           )}
         </div>
 
@@ -54,39 +59,37 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
 
         {product.images.length > 1 && (
-          <div className="absolute top-4 right-4 z-10 rounded-full bg-lc-black/70 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-lc-white backdrop-blur-md">
+          <div className="absolute right-3 top-3 z-10 rounded-full bg-lc-black/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-lc-white backdrop-blur-md sm:right-4 sm:top-4 sm:px-3 sm:text-[11px]">
             {product.images.length} fotos
           </div>
         )}
         
-        {/* Quick View Overlay */}
-        <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+        <div className="absolute inset-x-0 bottom-0 hidden translate-y-4 p-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 lg:block">
           <div className="bg-lc-black/70 backdrop-blur-md text-whitetext-sm font-bold text-center py-3 rounded-xl border border-white/10 uppercase tracking-wider text-lc-white hover:bg-lc-purple transition-colors">
             Ver Detalles
           </div>
         </div>
       </Link>
 
-      {/* Details */}
-      <div className="p-5 flex flex-col flex-1">
-        <div className="flex justify-between items-start gap-2 mb-2">
-          <Link href={`/productos/${product.slug}`}>
-            <h3 className="font-heading font-bold text-lg text-lc-white group-hover:text-lc-purple transition-colors line-clamp-1">
+      <div className="flex flex-1 flex-col p-3 sm:p-5">
+        <div className="mb-2 flex items-start gap-2 sm:gap-3">
+          <Link href={`/productos/${product.slug}`} className="min-w-0 flex-1">
+            <h3 className="line-clamp-2 text-[13px] font-bold leading-snug text-lc-white transition-colors group-hover:text-lc-purple sm:text-base lg:line-clamp-1 lg:text-lg">
               {product.name}
             </h3>
           </Link>
-          <div className="text-right shrink-0">
-            <span className="font-bold text-lc-white block">
+          <div className="shrink-0 text-right">
+            <span className="block text-sm font-bold text-lc-white sm:text-base">
               {formatCOP(product.price)}
             </span>
             {product.compareAtPrice && (
-              <span className="text-xs text-lc-gray line-through decoration-lc-pink">
+              <span className="text-[10px] text-lc-gray line-through decoration-lc-pink sm:text-xs">
                 {formatCOP(product.compareAtPrice)}
               </span>
             )}
           </div>
         </div>
-        <p className="text-sm text-lc-gray mt-auto">
+        <p className="mt-auto text-[11px] text-lc-gray sm:text-sm">
           {product.category?.name || "Ropa Urbana"}
         </p>
       </div>

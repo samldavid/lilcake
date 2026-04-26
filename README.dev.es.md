@@ -98,6 +98,16 @@ graph TB
 
 ## Historial de cambios
 
+### 2026-04-25
+
+- Se mejoro la experiencia responsive en el storefront, el admin real y el admin demo publico sin cambiar el comportamiento del backend:
+  - la tienda ahora usa mejores espaciados moviles, una grilla de productos mas equilibrada y layouts mas comodos al tacto en carrito, checkout, navbar y detalle de producto
+  - las cards de producto, la galeria y los CTA de compra se ajustaron para que la experiencia movil se sienta mas pulida y menos como un desktop comprimido
+  - el admin real y `/admin-demo` ahora comparten un shell movil con navegacion tipo drawer, en lugar de forzar la sidebar de escritorio en pantallas pequenas
+  - productos, pedidos, clientes y cupones ahora muestran tarjetas en movil mientras conservan las tablas en desktop
+  - el formulario de producto, el detalle de pedido, las acciones de exportacion y los controles de estado se reorganizaron para apilarse mejor en telefonos y tablets pequenas
+  - estos cambios se limitaron a frontend y experiencia de uso, por lo que no se alteraron la logica de backend, auth, pagos ni base de datos
+
 ### 2026-04-23
 
 - Se corrigieron las subidas de imagenes de productos en produccion sobre Vercel:

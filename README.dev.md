@@ -98,6 +98,16 @@ graph TB
 
 ## Changelog
 
+### 2026-04-25
+
+- Improved the responsive experience across the storefront, the real admin, and the public admin demo without changing backend behavior:
+  - the storefront now uses tighter mobile spacing, a better-balanced product grid, and more touch-friendly cart, checkout, navbar, and product detail layouts
+  - product cards, gallery thumbnails, and purchase CTAs were refined so the mobile flow feels closer to a polished commerce app instead of a compressed desktop layout
+  - the real admin and `/admin-demo` now share a mobile-friendly shell with a proper drawer navigation instead of forcing the desktop sidebar into small screens
+  - admin products, orders, customers, and coupons now present mobile card views while preserving desktop tables for larger screens
+  - the product form, order detail view, export actions, and status controls were reorganized to stack cleanly on phones and small tablets
+  - these changes were intentionally limited to frontend layout and UX refinements, so no backend logic, auth rules, payment flow, or database behavior changed
+
 ### 2026-04-23
 
 - Fixed production product image uploads on Vercel:

@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/prisma"
 import { AdminCustomersTable } from "@/components/admin/AdminCustomersTable"
+import { prisma } from "@/lib/prisma"
 
 export const dynamic = "force-dynamic"
 
@@ -18,10 +18,10 @@ export default async function AdminCustomersPage() {
   })
 
   return (
-    <div className="animate-fade-in space-y-6">
+    <div className="animate-fade-in space-y-5 sm:space-y-6">
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-3xl font-heading font-bold text-lc-white">
+          <h1 className="text-2xl font-heading font-bold text-lc-white sm:text-3xl">
             Clientes
           </h1>
           <p className="mt-1 text-sm text-lc-gray">

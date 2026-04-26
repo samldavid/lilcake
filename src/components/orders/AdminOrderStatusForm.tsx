@@ -84,7 +84,7 @@ export function AdminOrderStatusForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-lc-gray-light mb-1.5 ml-1">
@@ -197,7 +197,7 @@ export function AdminOrderStatusForm({
         </div>
       )}
 
-      <Button type="submit" disabled={loading}>
+      <Button type="submit" disabled={loading} className="w-full sm:w-auto">
         {loading ? "Guardando..." : "Guardar cambios"}
       </Button>
     </form>

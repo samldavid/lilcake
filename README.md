@@ -77,6 +77,11 @@ A safe admin sandbox is available at:
 - A visible demo banner makes it clear that nothing is permanently stored.
 - The real admin remains protected with role-based access, secured sessions, protected write APIs, rate limits, and backend validation.
 
+## Recent Improvements
+
+- As of 2026-04-25, the storefront, real admin, and admin demo received a full responsive UX pass focused on phones and tablets.
+- Product browsing, cart, checkout, admin navigation, and admin data views now feel cleaner on small screens while keeping the desktop experience intact.
+
 ## Screenshots
 
 ### Home Experience

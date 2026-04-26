@@ -78,6 +78,11 @@ Existe un panel administrativo demo disponible en:
 
 - El admin real se mantiene protegido con control por roles, sesiones seguras, APIs de escritura protegidas, rate limits y validacion backend.
 
+## Mejoras Recientes
+
+- A fecha de 2026-04-25, el storefront, el admin real y el admin demo recibieron una pasada completa de UX responsive enfocada en telefonos y tablets.
+- La navegacion, el carrito, el checkout y las vistas operativas del admin ahora se sienten mas limpias en pantallas pequenas sin romper la experiencia de escritorio.
+
 ## Capturas
 
 ### Experiencia de Inicio

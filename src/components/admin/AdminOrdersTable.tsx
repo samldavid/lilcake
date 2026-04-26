@@ -84,9 +84,9 @@ export function AdminOrdersTable({
       }))
 
   return (
-    <div className="bg-lc-card rounded-2xl shadow-sm border border-lc-border overflow-hidden">
-      <div className="p-4 border-b border-lc-border space-y-3">
-        <div className="max-w-sm">
+    <div className="overflow-hidden rounded-2xl border border-lc-border bg-lc-card shadow-sm">
+      <div className="space-y-3 border-b border-lc-border p-4 sm:p-5">
+        <div className="max-w-xl">
           <AdminSearchInput
             value={query}
             onChange={setQuery}
@@ -95,80 +95,174 @@ export function AdminOrdersTable({
         </div>
         <p className="text-xs text-lc-gray">
           {query.trim()
-            ? `${filteredOrders.length} pedidos coinciden con tu búsqueda`
+            ? `${filteredOrders.length} pedidos coinciden con tu busqueda`
             : `${orders.length} pedidos cargados`}
         </p>
       </div>
 
-      <div className="overflow-x-auto custom-scrollbar">
-        <table className="w-full text-left whitespace-nowrap">
-          <thead className="bg-lc-darker border-b border-lc-border">
-            <tr>
-              <th className="px-6 py-4 text-xs font-semibold text-lc-gray uppercase tracking-wider">
-                Pedido / Fecha
-              </th>
-              <th className="px-6 py-4 text-xs font-semibold text-lc-gray uppercase tracking-wider">
-                Cliente
-              </th>
-              <th className="px-6 py-4 text-xs font-semibold text-lc-gray uppercase tracking-wider">
-                Pago
-              </th>
-              <th className="px-6 py-4 text-xs font-semibold text-lc-gray uppercase tracking-wider text-center">
-                Estado
-              </th>
-              <th className="px-6 py-4 text-xs font-semibold text-lc-gray uppercase tracking-wider text-right">
-                Total
-              </th>
-              <th className="px-6 py-4 text-xs font-semibold text-lc-gray uppercase tracking-wider text-right">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-lc-border">
-            {filteredOrders.length === 0 ? (
+      {filteredOrders.length === 0 ? (
+        <div className="px-6 py-12 text-center text-lc-gray">
+          {query.trim()
+            ? `No encontramos pedidos que coincidan con "${query.trim()}".`
+            : "Aun no hay pedidos en el sistema."}
+        </div>
+      ) : null}
+
+      {filteredOrders.length > 0 ? (
+        <div className="grid gap-4 p-4 md:hidden">
+          {filteredOrders.map(({ order }) => (
+            <article
+              key={order.id}
+              className="rounded-2xl border border-lc-border bg-lc-darker/40 p-4"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-mono text-sm font-bold text-lc-white">
+                    {order.orderNumber}
+                  </p>
+                  <p className="mt-1 text-xs text-lc-gray">
+                    {new Date(order.createdAt).toLocaleDateString("es-CO")}
+                  </p>
+                </div>
+                <Badge variant={getOrderStatusBadgeVariant(order.status)}>
+                  {getOrderStatusLabel(order.status)}
+                </Badge>
+              </div>
+
+              <div className="mt-4 grid gap-3 text-sm">
+                <div className="rounded-xl border border-lc-border bg-lc-black/20 p-3">
+                  <p className="text-xs uppercase tracking-wide text-lc-gray">
+                    Cliente
+                  </p>
+                  <p className="mt-1 font-semibold text-lc-white">
+                    {order.shippingName || order.user.name || "Cliente"}
+                  </p>
+                  <p className="mt-1 text-xs text-lc-gray">
+                    {order.customerEmail || order.user.email}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl border border-lc-border bg-lc-black/20 p-3">
+                    <p className="text-xs uppercase tracking-wide text-lc-gray">
+                      Pago
+                    </p>
+                    <span
+                      className={`mt-2 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${getPaymentStatusClasses(order.paymentStatus)}`}
+                    >
+                      {getPaymentStatusLabel(order.paymentStatus)}
+                    </span>
+                    <p className="mt-2 text-xs text-lc-gray uppercase">
+                      {order.paymentMethod}
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border border-lc-border bg-lc-black/20 p-3">
+                    <p className="text-xs uppercase tracking-wide text-lc-gray">
+                      Total
+                    </p>
+                    <p className="mt-1 font-bold text-lc-white">
+                      {formatCOP(order.total)}
+                    </p>
+                    <p className="mt-1 text-xs text-lc-gray">
+                      {order._count.items} items
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-lc-border bg-lc-black/20 p-3">
+                  <p className="text-xs uppercase tracking-wide text-lc-gray">
+                    Logistica
+                  </p>
+                  <p className="mt-1 text-sm text-lc-white">
+                    {order.shippingCarrier || "Pendiente por asignar"}
+                  </p>
+                  <p className="mt-1 text-xs text-lc-gray">
+                    {order.trackingNumber
+                      ? `Guia ${order.trackingNumber}`
+                      : "Sin numero de guia"}
+                  </p>
+                </div>
+              </div>
+
+              <Link
+                href={`${basePath}/pedidos/${order.id}`}
+                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full border border-lc-purple/20 bg-lc-purple/10 px-4 py-2 text-sm font-semibold text-lc-purple transition-colors hover:bg-lc-purple/20"
+              >
+                <Eye size={16} />
+                Ver detalles
+              </Link>
+            </article>
+          ))}
+        </div>
+      ) : null}
+
+      {filteredOrders.length > 0 ? (
+        <div className="hidden overflow-x-auto custom-scrollbar md:block">
+          <table className="w-full whitespace-nowrap text-left">
+            <thead className="border-b border-lc-border bg-lc-darker">
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-lc-gray">
-                  {query.trim()
-                    ? `No encontramos pedidos que coincidan con "${query.trim()}".`
-                    : "Aún no hay pedidos en el sistema."}
-                </td>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-lc-gray">
+                  Pedido / Fecha
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-lc-gray">
+                  Cliente
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-lc-gray">
+                  Pago
+                </th>
+                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-lc-gray">
+                  Estado
+                </th>
+                <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-lc-gray">
+                  Total
+                </th>
+                <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-lc-gray">
+                  Acciones
+                </th>
               </tr>
-            ) : (
-              filteredOrders.map(({ order }) => (
-                <tr key={order.id} className="hover:bg-lc-dark/40 transition-colors">
+            </thead>
+            <tbody className="divide-y divide-lc-border">
+              {filteredOrders.map(({ order }) => (
+                <tr
+                  key={order.id}
+                  className="transition-colors hover:bg-lc-dark/40"
+                >
                   <td className="px-6 py-4">
-                    <div className="font-bold text-lc-white font-mono text-sm">
+                    <div className="font-mono text-sm font-bold text-lc-white">
                       {order.orderNumber}
                     </div>
-                    <div className="text-xs text-lc-gray mt-0.5">
+                    <div className="mt-0.5 text-xs text-lc-gray">
                       {new Date(order.createdAt).toLocaleDateString("es-CO")}
                     </div>
                     {order.trackingNumber ? (
-                      <div className="text-xs text-lc-cyan mt-1">
+                      <div className="mt-1 text-xs text-lc-cyan">
                         {order.shippingCarrier
-                          ? `${order.shippingCarrier} • Guia ${order.trackingNumber}`
+                          ? `${order.shippingCarrier} - Guia ${order.trackingNumber}`
                           : `Guia ${order.trackingNumber}`}
                       </div>
                     ) : null}
                   </td>
                   <td className="px-6 py-4">
-                    <div className="font-bold text-lc-white text-sm">
+                    <div className="text-sm font-bold text-lc-white">
                       {order.shippingName || order.user.name || "Cliente"}
                     </div>
-                    <div className="text-xs text-lc-gray mt-0.5">
+                    <div className="mt-0.5 text-xs text-lc-gray">
                       {order.customerEmail || order.user.email}
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex flex-col gap-1 items-start">
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${getPaymentStatusClasses(order.paymentStatus)}`}
-                      >
-                        {getPaymentStatusLabel(order.paymentStatus)}
-                      </span>
-                      <span className="text-xs text-lc-gray uppercase">
-                        {order.paymentMethod}
-                      </span>
+                    <div className="flex items-start gap-1">
+                      <div className="flex flex-col gap-1">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${getPaymentStatusClasses(order.paymentStatus)}`}
+                        >
+                          {getPaymentStatusLabel(order.paymentStatus)}
+                        </span>
+                        <span className="text-xs uppercase text-lc-gray">
+                          {order.paymentMethod}
+                        </span>
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
@@ -180,25 +274,25 @@ export function AdminOrdersTable({
                     <div className="text-sm font-bold text-lc-white">
                       {formatCOP(order.total)}
                     </div>
-                    <div className="text-xs text-lc-gray mt-0.5">
+                    <div className="mt-0.5 text-xs text-lc-gray">
                       {order._count.items} items
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <Link
                       href={`${basePath}/pedidos/${order.id}`}
-                      className="inline-flex items-center justify-center text-lc-gray hover:text-lc-purple p-2 rounded-lg hover:bg-lc-purple/10 transition-colors"
+                      className="inline-flex items-center justify-center rounded-lg p-2 text-lc-gray transition-colors hover:bg-lc-purple/10 hover:text-lc-purple"
                       title="Ver Detalles"
                     >
                       <Eye size={18} />
                     </Link>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
     </div>
   )
 }

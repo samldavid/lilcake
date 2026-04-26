@@ -55,7 +55,7 @@ export function AddToCartBtn({ product, variants }: AddToCartBtnProps) {
   const requireSelection = variants.length > 1
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       {requireSelection && (
         <div className="space-y-3">
           <label className="block text-sm font-bold text-lc-white font-heading">
@@ -72,7 +72,7 @@ export function AddToCartBtn({ product, variants }: AddToCartBtnProps) {
                   key={v.id}
                   disabled={isOutOfStock}
                   onClick={() => setSelectedVariantId(v.id)}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${
+                  className={`rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors sm:px-4 ${
                     isSelected
                       ? "border-lc-purple bg-lc-purple/10 text-lc-white"
                       : isOutOfStock
@@ -89,7 +89,7 @@ export function AddToCartBtn({ product, variants }: AddToCartBtnProps) {
       )}
 
       {selectedVariantId && availableStock > 0 && (
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
           <div className="flex items-center border border-lc-border rounded-xl bg-lc-dark">
             <button
               onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -112,7 +112,7 @@ export function AddToCartBtn({ product, variants }: AddToCartBtnProps) {
       )}
 
       <Button
-        className="w-full h-14 text-lg font-bold shadow-[0_0_20px_rgba(108,60,225,0.2)]"
+        className="h-12 w-full text-base font-bold shadow-[0_0_20px_rgba(108,60,225,0.2)] sm:h-14 sm:text-lg"
         disabled={!selectedVariantId || availableStock === 0 || quantity < 1}
         onClick={handleAddToCart}
       >

@@ -400,7 +400,7 @@ export function AdminCouponsManager({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-2xl border border-lc-border bg-lc-card p-5">
           <p className="text-xs uppercase tracking-[0.25em] text-lc-gray">
             Activos
@@ -468,14 +468,157 @@ export function AdminCouponsManager({
                 : `${coupons.length} cupones cargados`}
             </p>
           </div>
-          <Button className="flex items-center gap-2" onClick={openCreateForm}>
+          <Button
+            className="flex w-full items-center justify-center gap-2 lg:w-auto"
+            onClick={openCreateForm}
+          >
             <Plus size={18} />
             Crear cupon
           </Button>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-lc-border bg-lc-card">
-          <div className="overflow-x-auto custom-scrollbar">
+        {filteredCoupons.length === 0 ? (
+          <div className="rounded-2xl border border-lc-border bg-lc-card px-6 py-12 text-center text-lc-gray">
+            {query.trim()
+              ? `No encontramos cupones que coincidan con "${query.trim()}".`
+              : "Todavia no hay cupones registrados."}
+          </div>
+        ) : null}
+
+        {filteredCoupons.length > 0 ? (
+          <div className="grid gap-4 lg:hidden">
+            {filteredCoupons.map((coupon) => {
+              const isBusy = busyCouponId === coupon.id
+              const isExpired =
+                Boolean(coupon.expiresAt) &&
+                new Date(coupon.expiresAt as string) <= new Date()
+              const statusLabel = coupon.isActive
+                ? isExpired
+                  ? "Vencido"
+                  : coupon.maxUses !== null && coupon.usedCount >= coupon.maxUses
+                    ? "Agotado"
+                    : "Activo"
+                : "Inactivo"
+              const statusVariant = coupon.isActive
+                ? isExpired
+                  ? "warning"
+                  : coupon.maxUses !== null && coupon.usedCount >= coupon.maxUses
+                    ? "error"
+                    : "success"
+                : "error"
+
+              return (
+                <article
+                  key={coupon.id}
+                  className="rounded-2xl border border-lc-border bg-lc-card p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="inline-flex rounded-xl border border-lc-border bg-lc-darker px-3 py-1 font-mono text-sm font-bold text-lc-white">
+                        {coupon.code}
+                      </div>
+                      <p className="mt-2 text-xs text-lc-gray">
+                        Creado el{" "}
+                        {new Date(coupon.createdAt).toLocaleDateString("es-CO")}
+                      </p>
+                    </div>
+                    <Badge
+                      variant={statusVariant}
+                      className={!coupon.isActive ? "bg-lc-dark text-lc-gray" : undefined}
+                    >
+                      {statusLabel}
+                    </Badge>
+                  </div>
+
+                  <div className="mt-4 grid gap-3 text-sm">
+                    <div className="rounded-xl border border-lc-border bg-lc-darker/60 p-3">
+                      <p className="text-xs uppercase tracking-wide text-lc-gray">
+                        Descuento
+                      </p>
+                      <p className="mt-1 font-bold text-lc-pink">
+                        {formatCouponValue(coupon)}
+                      </p>
+                      <p className="mt-1 text-xs text-lc-gray">
+                        {coupon.minPurchase
+                          ? `Minimo ${formatCOP(coupon.minPurchase)}`
+                          : "Sin compra minima"}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="rounded-xl border border-lc-border bg-lc-darker/60 p-3">
+                        <p className="text-xs uppercase tracking-wide text-lc-gray">
+                          Uso global
+                        </p>
+                        <p className="mt-1 font-bold text-lc-white">
+                          {coupon.usedCount} / {coupon.maxUses ?? "sin limite"}
+                        </p>
+                        <p className="mt-1 text-xs text-lc-gray">
+                          Por cliente: {coupon.maxUsesPerUser ?? "sin limite"}
+                        </p>
+                      </div>
+                      <div className="rounded-xl border border-lc-border bg-lc-darker/60 p-3">
+                        <p className="text-xs uppercase tracking-wide text-lc-gray">
+                          Pedidos
+                        </p>
+                        <p className="mt-1 font-bold text-lc-white">
+                          {coupon.totalOrders}
+                        </p>
+                        <p className="mt-1 text-xs text-lc-gray">
+                          {coupon.paidOrders} pagados
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-lc-border bg-lc-darker/60 p-3">
+                      <p className="text-xs uppercase tracking-wide text-lc-gray">
+                        Vigencia
+                      </p>
+                      <p className="mt-1 text-sm text-lc-white">
+                        {coupon.expiresAt
+                          ? `Expira ${new Date(coupon.expiresAt).toLocaleString("es-CO")}`
+                          : "Sin fecha de expiracion"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => openEditForm(coupon)}
+                      className="inline-flex items-center justify-center rounded-full border border-lc-cyan/20 bg-lc-cyan/10 px-3 py-2 text-sm font-semibold text-lc-cyan transition-colors hover:bg-lc-cyan/20"
+                    >
+                      <Edit size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleToggleActive(coupon)}
+                      className="inline-flex items-center justify-center rounded-full border border-lc-purple/20 bg-lc-purple/10 px-3 py-2 text-sm font-semibold text-lc-purple transition-colors hover:bg-lc-purple/20"
+                      disabled={isBusy}
+                    >
+                      {isBusy ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <Power size={16} />
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleDelete(coupon.id)}
+                      className="inline-flex items-center justify-center rounded-full border border-lc-error/20 bg-lc-error/10 px-3 py-2 text-sm font-semibold text-lc-error transition-colors hover:bg-lc-error/20"
+                      disabled={isBusy}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        ) : null}
+
+        <div className="overflow-hidden rounded-2xl border border-lc-border bg-lc-card lg:block">
+          <div className="hidden overflow-x-auto custom-scrollbar lg:block">
             <table className="w-full text-left whitespace-nowrap">
               <thead className="border-b border-lc-border bg-lc-darker">
                 <tr>

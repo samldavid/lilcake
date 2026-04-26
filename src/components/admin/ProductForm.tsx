@@ -642,8 +642,8 @@ export function ProductForm({
   }
 
   return (
-    <div className="max-w-5xl animate-fade-in pb-12">
-      <div className="mb-8 flex items-center gap-4">
+    <div className="max-w-6xl animate-fade-in pb-12">
+      <div className="mb-6 flex flex-col items-start gap-4 sm:mb-8 sm:flex-row sm:items-center">
         <Link
           href={`${basePath}/productos`}
           className="rounded-full border border-lc-border bg-lc-dark p-2 text-lc-gray transition-colors hover:text-lc-white"
@@ -651,7 +651,7 @@ export function ProductForm({
           <ArrowLeft size={20} />
         </Link>
         <div>
-          <h1 className="text-3xl font-heading font-bold text-lc-white">
+          <h1 className="text-2xl font-heading font-bold text-lc-white sm:text-3xl">
             {isEditing ? "Editar Producto" : "Nuevo Producto"}
           </h1>
           <p className="mt-1 text-sm text-lc-gray">
@@ -681,8 +681,8 @@ export function ProductForm({
         </div>
       ) : null}
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="col-span-1 space-y-8 lg:col-span-2">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
+        <div className="col-span-1 space-y-6 lg:col-span-2 lg:space-y-8">
           <Card>
             <CardBody className="space-y-6">
               <h2 className="mb-4 text-xl font-bold font-heading text-lc-white">
@@ -767,7 +767,7 @@ export function ProductForm({
                     variant="secondary"
                     onClick={handleAddImageByPath}
                     disabled={isBootstrapping || !imageInput.trim()}
-                    className="flex items-center gap-2"
+                    className="flex w-full items-center justify-center gap-2 sm:w-auto"
                   >
                     <Plus size={16} />
                     Anadir
@@ -781,7 +781,7 @@ export function ProductForm({
                   <code>/images/retro1999.png</code>.
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   {images.map((imageUrl, index) => (
                     <div
                       key={imageUrl}
@@ -830,7 +830,7 @@ export function ProductForm({
 
           <Card>
             <CardBody>
-              <div className="mb-6 flex items-center justify-between">
+              <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <h2 className="text-xl font-bold font-heading text-lc-white">
                   Variantes
                 </h2>
@@ -839,7 +839,7 @@ export function ProductForm({
                   variant="secondary"
                   size="sm"
                   onClick={addVariant}
-                  className="flex items-center gap-2"
+                  className="flex w-full items-center justify-center gap-2 sm:w-auto"
                   disabled={isBootstrapping}
                 >
                   <Plus size={16} /> Anadir Variante
@@ -850,7 +850,7 @@ export function ProductForm({
                 {variants.map((variant) => (
                   <div
                     key={variant.tempId}
-                    className="relative grid grid-cols-2 gap-4 rounded-xl border border-lc-border bg-lc-darker/50 p-4 md:grid-cols-4"
+                    className="relative grid grid-cols-1 gap-4 rounded-xl border border-lc-border bg-lc-darker/50 p-4 sm:grid-cols-2 xl:grid-cols-4"
                   >
                     <button
                       type="button"
@@ -921,7 +921,7 @@ export function ProductForm({
           </Card>
         </div>
 
-        <div className="col-span-1 space-y-8">
+        <div className="col-span-1 space-y-6 lg:space-y-8">
           <Card>
             <CardBody className="space-y-6">
               <h2 className="mb-4 text-xl font-bold font-heading text-lc-white">
@@ -1024,8 +1024,8 @@ export function ProductForm({
           </Card>
         </div>
 
-        <div className="mt-8 flex justify-end gap-4 border-t border-lc-border pt-8 lg:col-span-3">
-          <Link href={`${basePath}/productos`}>
+        <div className="mt-6 flex flex-col gap-3 border-t border-lc-border pt-6 sm:mt-8 sm:flex-row sm:justify-end sm:gap-4 sm:pt-8 lg:col-span-3">
+          <Link href={`${basePath}/productos`} className="w-full sm:w-auto">
             <Button type="button" variant="ghost">
               Cancelar
             </Button>
@@ -1033,7 +1033,7 @@ export function ProductForm({
           <Button
             type="submit"
             disabled={loading || uploadingImages || isBootstrapping}
-            className="w-48"
+            className="w-full sm:w-48"
           >
             {loading
               ? isDemo

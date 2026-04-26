@@ -45,9 +45,9 @@ export function ProductImageGallery({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       <div
-        className="bg-lc-dark rounded-3xl overflow-hidden border border-lc-border relative aspect-[4/5] md:aspect-auto md:h-[600px]"
+        className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-lc-border bg-lc-dark sm:aspect-[5/6] md:h-[600px] md:aspect-auto md:rounded-3xl"
         onMouseEnter={() => setIsZoomed(true)}
         onMouseLeave={() => {
           setIsZoomed(false)
@@ -64,24 +64,24 @@ export function ProductImageGallery({
         {discount > 0 && (
           <Badge
             variant="pink"
-            className="absolute top-4 left-4 text-base px-3 py-1 shadow-lg backdrop-blur-md"
+            className="absolute left-3 top-3 px-2.5 py-1 text-sm shadow-lg backdrop-blur-md sm:left-4 sm:top-4 sm:px-3 sm:text-base"
           >
             -{discount}% OFF
           </Badge>
         )}
-        <div className="absolute bottom-4 right-4 rounded-full bg-lc-black/70 px-3 py-1 text-xs font-semibold text-lc-white backdrop-blur-md">
+        <div className="absolute bottom-4 right-4 hidden rounded-full bg-lc-black/70 px-3 py-1 text-xs font-semibold text-lc-white backdrop-blur-md md:block">
           Pasa el mouse para zoom
         </div>
       </div>
 
       {galleryImages.length > 1 && (
-        <div className="grid grid-cols-4 gap-4">
+        <div className="flex gap-3 overflow-x-auto pb-1 md:grid md:grid-cols-4 md:gap-4 md:overflow-visible">
           {galleryImages.map((image, index) => (
             <button
               key={image.id}
               type="button"
               onClick={() => setSelectedImageIndex(index)}
-              className={`bg-lc-dark rounded-xl overflow-hidden border aspect-square cursor-pointer transition-all ${selectedImageIndex === index ? "border-lc-purple shadow-[0_0_0_1px_rgba(108,60,225,0.35)]" : "border-lc-border hover:border-lc-purple/60"}`}
+              className={`h-20 w-20 shrink-0 cursor-pointer overflow-hidden rounded-xl border bg-lc-dark transition-all md:h-auto md:w-auto md:aspect-square ${selectedImageIndex === index ? "border-lc-purple shadow-[0_0_0_1px_rgba(108,60,225,0.35)]" : "border-lc-border hover:border-lc-purple/60"}`}
             >
               <img
                 src={image.url}

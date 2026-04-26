@@ -32,7 +32,8 @@ export function AdminCustomersTable({ users }: AdminCustomersTableProps) {
   const filteredUsers = activeQuery
     ? users
         .map((user) => {
-          const displayName = user.name?.trim() || user.email?.split("@")[0] || "Cliente"
+          const displayName =
+            user.name?.trim() || user.email?.split("@")[0] || "Cliente"
           const accessMethods = [
             ...(user.password ? ["Correo"] : []),
             ...new Set(
@@ -81,53 +82,114 @@ export function AdminCustomersTable({ users }: AdminCustomersTableProps) {
 
   return (
     <div className="overflow-hidden rounded-2xl border border-lc-border bg-lc-card shadow-sm">
-      <div className="border-b border-lc-border p-4 space-y-3">
-        <div className="max-w-sm">
+      <div className="space-y-3 border-b border-lc-border p-4 sm:p-5">
+        <div className="max-w-xl">
           <AdminSearchInput
             value={query}
             onChange={setQuery}
-            placeholder="Buscar por nombre, email, teléfono o acceso..."
+            placeholder="Buscar por nombre, email, telefono o acceso..."
           />
         </div>
         <p className="text-xs text-lc-gray">
           {query.trim()
-            ? `${filteredUsers.length} clientes coinciden con tu búsqueda`
+            ? `${filteredUsers.length} clientes coinciden con tu busqueda`
             : `${users.length} clientes cargados`}
         </p>
       </div>
 
-      <div className="overflow-x-auto custom-scrollbar">
-        <table className="w-full whitespace-nowrap text-left">
-          <thead className="border-b border-lc-border bg-lc-darker">
-            <tr>
-              <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-lc-gray">
-                Cliente
-              </th>
-              <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-lc-gray">
-                Contacto
-              </th>
-              <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-lc-gray">
-                Acceso
-              </th>
-              <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-lc-gray">
-                Pedidos Completados
-              </th>
-              <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-lc-gray">
-                Fecha de Registro
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-lc-border">
-            {filteredUsers.length === 0 ? (
+      {filteredUsers.length === 0 ? (
+        <div className="px-6 py-12 text-center text-lc-gray">
+          {query.trim()
+            ? `No encontramos clientes que coincidan con "${query.trim()}".`
+            : "No hay clientes registrados aun."}
+        </div>
+      ) : null}
+
+      {filteredUsers.length > 0 ? (
+        <div className="grid gap-4 p-4 md:hidden">
+          {filteredUsers.map(({ user, displayName, accessMethods }) => {
+            const displayInitial = displayName.charAt(0).toUpperCase()
+
+            return (
+              <article
+                key={user.id}
+                className="rounded-2xl border border-lc-border bg-lc-darker/40 p-4"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-lc-purple to-lc-pink text-sm font-bold text-white shadow-lg">
+                    {displayInitial}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="truncate text-sm font-bold text-lc-white">
+                          {displayName}
+                        </h3>
+                        <p className="mt-1 truncate text-xs text-lc-gray">
+                          {user.email}
+                        </p>
+                      </div>
+                      <div className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-lc-purple/20 bg-lc-purple/10 px-3 text-sm font-bold text-lc-purple">
+                        {user._count.orders}
+                      </div>
+                    </div>
+
+                    {user.phone ? (
+                      <p className="mt-3 text-sm text-lc-white">{user.phone}</p>
+                    ) : null}
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {accessMethods.length === 0 ? (
+                        <span className="rounded-full border border-lc-border px-3 py-1 text-xs text-lc-gray">
+                          Sin acceso
+                        </span>
+                      ) : (
+                        accessMethods.map((method) => (
+                          <span
+                            key={method}
+                            className="rounded-full border border-lc-purple/20 bg-lc-purple/10 px-3 py-1 text-xs font-semibold text-lc-purple"
+                          >
+                            {method}
+                          </span>
+                        ))
+                      )}
+                    </div>
+
+                    <p className="mt-4 text-xs text-lc-gray">
+                      Registro: {new Date(user.createdAt).toLocaleDateString("es-CO")}
+                    </p>
+                  </div>
+                </div>
+              </article>
+            )
+          })}
+        </div>
+      ) : null}
+
+      {filteredUsers.length > 0 ? (
+        <div className="hidden overflow-x-auto custom-scrollbar md:block">
+          <table className="w-full whitespace-nowrap text-left">
+            <thead className="border-b border-lc-border bg-lc-darker">
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-lc-gray">
-                  {query.trim()
-                    ? `No encontramos clientes que coincidan con "${query.trim()}".`
-                    : "No hay clientes registrados aún."}
-                </td>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-lc-gray">
+                  Cliente
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-lc-gray">
+                  Contacto
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-lc-gray">
+                  Acceso
+                </th>
+                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-lc-gray">
+                  Pedidos Completados
+                </th>
+                <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-lc-gray">
+                  Fecha de Registro
+                </th>
               </tr>
-            ) : (
-              filteredUsers.map(({ user, displayName, accessMethods }) => {
+            </thead>
+            <tbody className="divide-y divide-lc-border">
+              {filteredUsers.map(({ user, displayName, accessMethods }) => {
                 const displayInitial = displayName.charAt(0).toUpperCase()
 
                 return (
@@ -178,11 +240,11 @@ export function AdminCustomersTable({ users }: AdminCustomersTableProps) {
                     </td>
                   </tr>
                 )
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+              })}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
     </div>
   )
 }

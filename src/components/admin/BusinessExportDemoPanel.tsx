@@ -135,7 +135,7 @@ export function BusinessExportDemoPanel() {
             <Button
               type="button"
               variant="secondary"
-              className="gap-2"
+              className="w-full gap-2 sm:w-auto"
               disabled={customRangeIncomplete || loadingExport !== null}
               onClick={() => void handleExport("xlsx")}
             >
@@ -148,7 +148,7 @@ export function BusinessExportDemoPanel() {
             </Button>
             <Button
               type="button"
-              className="gap-2"
+              className="w-full gap-2 sm:w-auto"
               disabled={customRangeIncomplete || loadingExport !== null}
               onClick={() => void handleExport("pdf")}
             >

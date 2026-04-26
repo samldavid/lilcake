@@ -1,16 +1,16 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeft, MailCheck, Package, Truck } from "lucide-react"
-import { prisma } from "@/lib/prisma"
-import { formatCOP } from "@/lib/utils"
-import { Badge } from "@/components/ui/Badge"
 import { AdminOrderStatusForm } from "@/components/orders/AdminOrderStatusForm"
+import { Badge } from "@/components/ui/Badge"
+import { prisma } from "@/lib/prisma"
 import {
   getOrderStatusBadgeVariant,
   getOrderStatusLabel,
   getPaymentStatusClasses,
   getPaymentStatusLabel,
 } from "@/lib/order-status"
+import { formatCOP } from "@/lib/utils"
 
 type AdminOrderItem = {
   id: string
@@ -136,16 +136,16 @@ export default async function AdminOrderDetailPage({
   }
 
   return (
-    <div className="animate-fade-in space-y-8">
-      <div className="flex items-center justify-between gap-4">
+    <div className="animate-fade-in space-y-6 sm:space-y-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <Link
           href="/admin/pedidos"
-          className="inline-flex items-center gap-2 text-sm text-lc-gray hover:text-lc-white transition-colors"
+          className="inline-flex items-center gap-2 text-sm text-lc-gray transition-colors hover:text-lc-white"
         >
           <ArrowLeft size={16} />
           Volver al listado
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Badge variant={getOrderStatusBadgeVariant(order.status)}>
             {getOrderStatusLabel(order.status)}
           </Badge>
@@ -157,21 +157,21 @@ export default async function AdminOrderDetailPage({
         </div>
       </div>
 
-      <section className="bg-lc-card rounded-2xl border border-lc-border p-6 lg:p-8">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <section className="rounded-2xl border border-lc-border bg-lc-card p-5 sm:p-6 lg:p-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-sm text-lc-purple font-bold tracking-widest mb-2">
+            <p className="mb-2 text-sm font-bold tracking-widest text-lc-purple">
               {order.orderNumber}
             </p>
-            <h1 className="text-3xl font-heading font-bold text-lc-white mb-2">
+            <h1 className="mb-2 text-2xl font-heading font-bold text-lc-white sm:text-3xl">
               Detalle del pedido
             </h1>
-            <p className="text-lc-gray">
+            <p className="text-sm text-lc-gray sm:text-base">
               Creado el {order.createdAt.toLocaleDateString("es-CO")}
             </p>
           </div>
           <div className="text-left lg:text-right">
-            <p className="text-sm text-lc-gray mb-1">Cliente</p>
+            <p className="mb-1 text-sm text-lc-gray">Cliente</p>
             <p className="text-lg font-bold text-lc-white">
               {order.shippingName || order.user.name || "Cliente"}
             </p>
@@ -182,12 +182,12 @@ export default async function AdminOrderDetailPage({
         </div>
       </section>
 
-      <section className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <div className="xl:col-span-2 space-y-6">
-          <div className="bg-lc-card rounded-2xl border border-lc-border p-6">
-            <div className="flex items-center gap-3 mb-6">
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-3 xl:gap-8">
+        <div className="space-y-6 xl:col-span-2">
+          <div className="rounded-2xl border border-lc-border bg-lc-card p-5 sm:p-6">
+            <div className="mb-6 flex items-center gap-3">
               <Package className="text-lc-purple" />
-              <h2 className="text-xl font-heading font-bold text-lc-white">
+              <h2 className="text-lg font-heading font-bold text-lc-white sm:text-xl">
                 Productos del pedido
               </h2>
             </div>
@@ -202,19 +202,24 @@ export default async function AdminOrderDetailPage({
                 return (
                   <div
                     key={item.id}
-                    className="flex flex-col sm:flex-row gap-4 rounded-2xl border border-lc-border bg-lc-darker/60 p-4"
+                    className="flex flex-col gap-4 rounded-2xl border border-lc-border bg-lc-darker/60 p-4 sm:flex-row"
                   >
-                    <div className="w-full sm:w-24 h-28 bg-lc-black rounded-xl overflow-hidden shrink-0">
+                    <div className="h-28 w-full shrink-0 overflow-hidden rounded-xl bg-lc-black sm:w-24">
                       {imageUrl ? (
-                        <img src={imageUrl} alt={item.productName} className="w-full h-full object-cover" />
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={imageUrl}
+                          alt={item.productName}
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-xs text-lc-gray">
+                        <div className="flex h-full w-full items-center justify-center text-xs text-lc-gray">
                           Sin imagen
                         </div>
                       )}
                     </div>
-                    <div className="flex-1 flex flex-col gap-2">
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                    <div className="flex flex-1 flex-col gap-2">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                           <p className="font-bold text-lc-white">{item.productName}</p>
                           <p className="text-sm text-lc-gray">
@@ -225,7 +230,7 @@ export default async function AdminOrderDetailPage({
                           {formatCOP(item.unitPrice * item.quantity)}
                         </p>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-lc-gray">
+                      <div className="flex flex-col gap-1 text-sm text-lc-gray sm:flex-row sm:items-center sm:gap-4">
                         <span>Cantidad: {item.quantity}</span>
                         <span>Unitario: {formatCOP(item.unitPrice)}</span>
                       </div>
@@ -236,38 +241,38 @@ export default async function AdminOrderDetailPage({
             </div>
           </div>
 
-          <div className="bg-lc-card rounded-2xl border border-lc-border p-6">
-            <div className="flex items-center gap-3 mb-6">
+          <div className="rounded-2xl border border-lc-border bg-lc-card p-5 sm:p-6">
+            <div className="mb-6 flex items-center gap-3">
               <Truck className="text-lc-cyan" />
-              <h2 className="text-xl font-heading font-bold text-lc-white">
+              <h2 className="text-lg font-heading font-bold text-lc-white sm:text-xl">
                 Seguimiento y envio
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
               <div className="rounded-2xl border border-lc-border bg-lc-darker/50 p-4">
-                <p className="text-lc-gray mb-1">Transportadora</p>
-                <p className="text-lc-white font-medium">
+                <p className="mb-1 text-lc-gray">Transportadora</p>
+                <p className="font-medium text-lc-white">
                   {order.shippingCarrier || "Pendiente por asignar"}
                 </p>
               </div>
               <div className="rounded-2xl border border-lc-border bg-lc-darker/50 p-4">
-                <p className="text-lc-gray mb-1">Numero de guia</p>
-                <p className="text-lc-white font-medium">
+                <p className="mb-1 text-lc-gray">Numero de guia</p>
+                <p className="font-medium text-lc-white">
                   {order.trackingNumber || "Aun no disponible"}
                 </p>
               </div>
               <div className="rounded-2xl border border-lc-border bg-lc-darker/50 p-4">
-                <p className="text-lc-gray mb-1">Pedido confirmado</p>
-                <p className="text-lc-white font-medium">
+                <p className="mb-1 text-lc-gray">Pedido confirmado</p>
+                <p className="font-medium text-lc-white">
                   {order.confirmedAt
                     ? order.confirmedAt.toLocaleString("es-CO")
                     : "Pendiente"}
                 </p>
               </div>
               <div className="rounded-2xl border border-lc-border bg-lc-darker/50 p-4">
-                <p className="text-lc-gray mb-1">Pedido enviado</p>
-                <p className="text-lc-white font-medium">
+                <p className="mb-1 text-lc-gray">Pedido enviado</p>
+                <p className="font-medium text-lc-white">
                   {order.shippedAt
                     ? order.shippedAt.toLocaleString("es-CO")
                     : "Pendiente"}
@@ -275,35 +280,35 @@ export default async function AdminOrderDetailPage({
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div className="mt-4 grid grid-cols-1 gap-4 text-sm lg:grid-cols-3">
               <div className="rounded-2xl border border-lc-border bg-lc-darker/50 p-4">
-                <div className="flex items-center gap-2 text-lc-gray mb-2">
+                <div className="mb-2 flex items-center gap-2 text-lc-gray">
                   <MailCheck size={15} />
                   <span>Correo de pedido</span>
                 </div>
-                <p className="text-lc-white font-medium">
+                <p className="font-medium text-lc-white">
                   {order.receiptEmailSentAt
                     ? order.receiptEmailSentAt.toLocaleString("es-CO")
                     : "Sin registro"}
                 </p>
               </div>
               <div className="rounded-2xl border border-lc-border bg-lc-darker/50 p-4">
-                <div className="flex items-center gap-2 text-lc-gray mb-2">
+                <div className="mb-2 flex items-center gap-2 text-lc-gray">
                   <MailCheck size={15} />
                   <span>Correo de confirmacion</span>
                 </div>
-                <p className="text-lc-white font-medium">
+                <p className="font-medium text-lc-white">
                   {order.confirmationEmailSentAt
                     ? order.confirmationEmailSentAt.toLocaleString("es-CO")
                     : "Sin registro"}
                 </p>
               </div>
               <div className="rounded-2xl border border-lc-border bg-lc-darker/50 p-4">
-                <div className="flex items-center gap-2 text-lc-gray mb-2">
+                <div className="mb-2 flex items-center gap-2 text-lc-gray">
                   <MailCheck size={15} />
                   <span>Correo de envio</span>
                 </div>
-                <p className="text-lc-white font-medium">
+                <p className="font-medium text-lc-white">
                   {order.shippingEmailSentAt
                     ? order.shippingEmailSentAt.toLocaleString("es-CO")
                     : "Sin registro"}
@@ -314,72 +319,72 @@ export default async function AdminOrderDetailPage({
         </div>
 
         <div className="space-y-6">
-          <div className="bg-lc-card rounded-2xl border border-lc-border p-6">
-            <h2 className="text-xl font-heading font-bold text-lc-white mb-4">
+          <div className="rounded-2xl border border-lc-border bg-lc-card p-5 sm:p-6">
+            <h2 className="mb-4 text-lg font-heading font-bold text-lc-white sm:text-xl">
               Resumen
             </h2>
             <div className="space-y-4 text-sm">
               <div>
-                <p className="text-lc-gray mb-1">Subtotal</p>
+                <p className="mb-1 text-lc-gray">Subtotal</p>
                 <p className="text-lg font-bold text-lc-white">
                   {formatCOP(order.subtotal)}
                 </p>
               </div>
               {order.discount > 0 ? (
                 <div>
-                  <p className="text-lc-gray mb-1">Descuento</p>
+                  <p className="mb-1 text-lc-gray">Descuento</p>
                   <p className="text-lg font-bold text-lc-success">
                     - {formatCOP(order.discount)}
                   </p>
                   {order.coupon ? (
-                    <p className="text-xs text-lc-gray mt-1">
+                    <p className="mt-1 text-xs text-lc-gray">
                       Cupon aplicado: {order.coupon.code}
                     </p>
                   ) : null}
                 </div>
               ) : null}
               <div>
-                <p className="text-lc-gray mb-1">Total</p>
+                <p className="mb-1 text-lc-gray">Total</p>
                 <p className="text-2xl font-heading font-bold text-lc-white">
                   {formatCOP(order.total)}
                 </p>
               </div>
               <div>
-                <p className="text-lc-gray mb-1">Direccion de envio</p>
+                <p className="mb-1 text-lc-gray">Direccion de envio</p>
                 <p className="text-lc-white">{order.shippingAddress}</p>
                 <p className="text-lc-gray">{order.shippingCity}</p>
               </div>
               <div>
-                <p className="text-lc-gray mb-1">Email del cliente</p>
+                <p className="mb-1 text-lc-gray">Email del cliente</p>
                 <p className="text-lc-white">
                   {order.customerEmail || order.user.email || "Sin email"}
                 </p>
               </div>
               <div>
-                <p className="text-lc-gray mb-1">Telefono</p>
+                <p className="mb-1 text-lc-gray">Telefono</p>
                 <p className="text-lc-white">{order.shippingPhone}</p>
               </div>
               <div>
-                <p className="text-lc-gray mb-1">Transportadora</p>
+                <p className="mb-1 text-lc-gray">Transportadora</p>
                 <p className="text-lc-white">
                   {order.shippingCarrier || "Pendiente"}
                 </p>
               </div>
               <div>
-                <p className="text-lc-gray mb-1">Numero de guia</p>
+                <p className="mb-1 text-lc-gray">Numero de guia</p>
                 <p className="text-lc-white">
                   {order.trackingNumber || "Pendiente"}
                 </p>
               </div>
               <div>
-                <p className="text-lc-gray mb-1">Metodo de pago</p>
+                <p className="mb-1 text-lc-gray">Metodo de pago</p>
                 <p className="text-lc-white">{order.paymentMethod}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-lc-card rounded-2xl border border-lc-border p-6">
-            <h2 className="text-xl font-heading font-bold text-lc-white mb-4">
+          <div className="rounded-2xl border border-lc-border bg-lc-card p-5 sm:p-6">
+            <h2 className="mb-4 text-lg font-heading font-bold text-lc-white sm:text-xl">
               Actualizar pedido
             </h2>
             <AdminOrderStatusForm

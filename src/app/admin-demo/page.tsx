@@ -1,14 +1,14 @@
-import { TrendingUp, ShoppingCart, Package, Users } from "lucide-react"
-import { Card, CardBody } from "@/components/ui/Card"
+import { Package, ShoppingCart, TrendingUp, Users } from "lucide-react"
 import { BusinessExportDemoPanel } from "@/components/admin/BusinessExportDemoPanel"
+import { Card, CardBody } from "@/components/ui/Card"
 import { adminDemoDashboardStats } from "@/lib/admin-demo-data"
 import { formatCOP } from "@/lib/utils"
 
 export default function AdminDemoDashboardPage() {
   return (
-    <div className="animate-fade-in space-y-8">
+    <div className="animate-fade-in space-y-6 sm:space-y-8">
       <div>
-        <h1 className="mb-2 text-3xl font-heading font-bold text-lc-white">
+        <h1 className="mb-2 text-2xl font-heading font-bold text-lc-white sm:text-3xl">
           Resumen General
         </h1>
         <p className="text-lc-gray-light">
@@ -16,10 +16,10 @@ export default function AdminDemoDashboardPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4">
         <Card glass>
-          <CardBody className="flex items-center p-6">
-            <div className="mr-4 shrink-0 rounded-2xl border border-lc-success/20 bg-lc-success/10 p-4 text-lc-success">
+          <CardBody className="flex flex-col items-start gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
+            <div className="rounded-2xl border border-lc-success/20 bg-lc-success/10 p-4 text-lc-success">
               <TrendingUp size={28} />
             </div>
             <div>
@@ -34,8 +34,8 @@ export default function AdminDemoDashboardPage() {
         </Card>
 
         <Card glass>
-          <CardBody className="flex items-center p-6">
-            <div className="mr-4 shrink-0 rounded-2xl border border-lc-cyan/20 bg-lc-cyan/10 p-4 text-lc-cyan">
+          <CardBody className="flex flex-col items-start gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
+            <div className="rounded-2xl border border-lc-cyan/20 bg-lc-cyan/10 p-4 text-lc-cyan">
               <ShoppingCart size={28} />
             </div>
             <div>
@@ -50,8 +50,8 @@ export default function AdminDemoDashboardPage() {
         </Card>
 
         <Card glass>
-          <CardBody className="flex items-center p-6">
-            <div className="mr-4 shrink-0 rounded-2xl border border-lc-purple/20 bg-lc-purple/10 p-4 text-lc-purple">
+          <CardBody className="flex flex-col items-start gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
+            <div className="rounded-2xl border border-lc-purple/20 bg-lc-purple/10 p-4 text-lc-purple">
               <Package size={28} />
             </div>
             <div>
@@ -66,8 +66,8 @@ export default function AdminDemoDashboardPage() {
         </Card>
 
         <Card glass>
-          <CardBody className="flex items-center p-6">
-            <div className="mr-4 shrink-0 rounded-2xl border border-lc-pink/20 bg-lc-pink/10 p-4 text-lc-pink">
+          <CardBody className="flex flex-col items-start gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
+            <div className="rounded-2xl border border-lc-pink/20 bg-lc-pink/10 p-4 text-lc-pink">
               <Users size={28} />
             </div>
             <div>

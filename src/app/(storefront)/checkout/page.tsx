@@ -435,11 +435,11 @@ function CheckoutPageContent() {
   const displayTotal = activeAppliedCoupon?.total ?? total
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in">
-      <h1 className="text-3xl font-heading font-bold text-lc-white mb-8">Checkout</h1>
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8 animate-fade-in">
+      <h1 className="mb-6 text-2xl font-heading font-bold text-lc-white sm:mb-8 sm:text-3xl">Checkout</h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-        <div className="lg:col-span-7 space-y-8">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
+        <div className="order-2 space-y-8 lg:order-1 lg:col-span-7">
           <form id="checkout-form" onSubmit={handleSubmit} className="space-y-8">
             {canceledParam && (
               <div className="rounded-2xl border border-lc-warning/30 bg-lc-warning/10 p-4 text-sm text-lc-warning">
@@ -459,7 +459,7 @@ function CheckoutPageContent() {
               </div>
             )}
 
-            <div className="bg-lc-dark rounded-2xl p-6 sm:p-8 border border-lc-border">
+            <div className="rounded-2xl border border-lc-border bg-lc-dark p-5 sm:p-8">
               <h2 className="text-xl font-heading font-bold text-lc-white mb-6">
                 1. Datos de envio
               </h2>
@@ -535,7 +535,7 @@ function CheckoutPageContent() {
               </div>
             </div>
 
-            <div className="bg-lc-dark rounded-2xl p-6 sm:p-8 border border-lc-border">
+            <div className="rounded-2xl border border-lc-border bg-lc-dark p-5 sm:p-8">
               <h2 className="text-xl font-heading font-bold text-lc-white mb-6">
                 2. Metodo de Pago
               </h2>
@@ -595,7 +595,7 @@ function CheckoutPageContent() {
               </div>
             </div>
 
-            <div className="bg-lc-dark rounded-2xl p-6 sm:p-8 border border-lc-border">
+            <div className="rounded-2xl border border-lc-border bg-lc-dark p-5 sm:p-8">
               <h2 className="text-xl font-heading font-bold text-lc-white mb-4">
                 3. Confirmacion legal
               </h2>
@@ -630,11 +630,11 @@ function CheckoutPageContent() {
           </form>
         </div>
 
-        <div className="lg:col-span-5">
-          <div className="bg-lc-darker border border-lc-border rounded-2xl p-6 sticky top-28">
+        <div className="order-1 lg:order-2 lg:col-span-5">
+          <div className="rounded-2xl border border-lc-border bg-lc-darker p-5 lg:sticky lg:top-28 lg:p-6">
             <h2 className="text-xl font-heading font-bold text-lc-white mb-6">Tu Pedido</h2>
 
-            <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="mb-6 max-h-[240px] space-y-4 overflow-y-auto pr-2 custom-scrollbar sm:max-h-[300px]">
               {items.map((item) => (
                 <div key={item.variantId} className="flex gap-4">
                   <div className="w-16 h-16 bg-lc-black border border-lc-border rounded-lg overflow-hidden shrink-0">
