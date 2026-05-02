@@ -2,13 +2,16 @@ import { NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import {
+  AdminProductConflictError,
   adminProductPayloadSchema,
   ensureUniqueProductSlug,
+  ensureVariantSkusAreAvailable,
 } from "@/lib/admin-products"
 import {
   adminNotFoundResponse,
   requireAdminApiSession,
 } from "@/lib/auth-guards"
+import { Prisma } from "@prisma/client"
 import { getPublicErrorMessage } from "@/lib/errors"
 
 export async function GET(
@@ -92,6 +95,7 @@ export async function PUT(
 
     const data = result.data
     const slug = await ensureUniqueProductSlug(data.name, id)
+    await ensureVariantSkusAreAvailable(data.variants)
 
     const updatedProduct = await prisma.$transaction(async (tx) => {
       await tx.product.update({
@@ -188,6 +192,17 @@ export async function PUT(
     return NextResponse.json(updatedProduct)
   } catch (error) {
     console.error("Admin product PUT error:", error)
+
+    if (error instanceof AdminProductConflictError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return NextResponse.json(
+        { error: "El nombre o uno de los SKU ya esta en uso." },
+        { status: 409 }
+      )
+    }
 
     return NextResponse.json(
       {
