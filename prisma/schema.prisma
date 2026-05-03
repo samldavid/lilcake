@@ -192,6 +192,7 @@ model Order {
   userId          String
   user            User        @relation(fields: [userId], references: [id])
   items           OrderItem[]
+  paymentTransactions PaymentTransaction[]
   customerEmail   String?
   subtotal        Float
   discount        Float       @default(0)
@@ -223,6 +224,29 @@ model Order {
   @@index([shippingCarrier])
   @@index([trackingNumber])
   @@index([stripeSessionId])
+}
+
+model PaymentTransaction {
+  id                    String   @id @default(cuid())
+  orderId               String
+  order                 Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  provider              String
+  providerReference     String
+  providerTransactionId String?
+  status                String   @default("PENDING")
+  rawStatus             String?
+  amountInCents         Int
+  currency              String   @default("COP")
+  checkoutUrl           String?
+  paymentMethodType     String?
+  payload               Json?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@unique([provider, providerReference])
+  @@index([orderId, createdAt])
+  @@index([provider, providerTransactionId])
+  @@index([status, updatedAt])
 }
 
 model OrderItem {

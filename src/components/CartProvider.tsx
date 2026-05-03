@@ -138,10 +138,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       ? new URLSearchParams(window.location.search)
       : null
 
-  const isStripeReturnFlow =
+  const isPaymentReturnFlow =
     pathname === "/checkout" &&
-    currentSearchParams?.get("success") === "true" &&
-    Boolean(currentSearchParams?.get("session_id"))
+    ((currentSearchParams?.get("success") === "true" &&
+      Boolean(currentSearchParams?.get("session_id"))) ||
+      (currentSearchParams?.get("provider") === "wompi" &&
+        Boolean(
+          currentSearchParams?.get("id") ||
+            currentSearchParams?.get("transaction_id")
+        )))
 
   const invalidatePendingHydration = useCallback(() => {
     hydrateRequestRef.current += 1
@@ -196,7 +201,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const userId = session?.user?.id
     const storageKey = getCartStorageKey(userId)
 
-    if (isStripeReturnFlow) {
+    if (isPaymentReturnFlow) {
       hydrateRequestRef.current += 1
       clearAllCartStorageKeys(storageKey)
       writePersistedCart(storageKey, [], cartVersionRef.current)
@@ -286,14 +291,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return () => {
       isActive = false
     }
-  }, [applyHydratedCart, isStripeReturnFlow, session?.user?.id, status])
+  }, [applyHydratedCart, isPaymentReturnFlow, session?.user?.id, status])
 
   useEffect(() => {
     if (cartVersion !== cartVersionRef.current) {
       return
     }
 
-    if (isStripeReturnFlow || !isLoaded || status === "loading") {
+    if (isPaymentReturnFlow || !isLoaded || status === "loading") {
       return
     }
 
@@ -314,7 +319,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [
     cartVersion,
     isLoaded,
-    isStripeReturnFlow,
+    isPaymentReturnFlow,
     items,
     session?.user?.id,
     status,

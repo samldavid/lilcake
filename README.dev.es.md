@@ -8,7 +8,7 @@ LilCake es una tienda construida con Next.js que incluye:
 - Next.js App Router
 - NextAuth con credenciales y Google OAuth
 - Prisma ORM
-- Flujos de checkout con Stripe y WhatsApp
+- Flujos de checkout con Stripe, Wompi y WhatsApp
 - Panel administrativo para catalogo y pedidos
 
 [Read this technical guide in English](./README.dev.md)
@@ -41,7 +41,7 @@ LilCake es una tienda construida con Next.js que incluye:
 | Base de datos | PostgreSQL (Supabase) | Persistencia productiva de usuarios, productos, pedidos, cupones y reportes |
 | ORM | Prisma 6 | Consultas tipadas, schema, migraciones e indices |
 | Auth | NextAuth + credenciales + Google OAuth | Acceso por roles, login de clientes y proteccion del admin |
-| Pagos | Stripe Checkout + fallback por WhatsApp | Flujo real de pago con cierre seguro de ordenes |
+| Pagos | Stripe Checkout + Wompi Colombia + fallback por WhatsApp | Flujo real de pago con cierre seguro de ordenes y soporte multipasarela |
 | Correos | SMTP mailer | Verificacion, recuperacion, notificaciones de pedido y envio |
 | Reportes | ExcelJS + pdf-lib | Exportaciones operativas de ventas, pedidos y clientes |
 | Deploy | Vercel | Hosting productivo, variables de entorno y rutas listas para webhooks |
@@ -58,7 +58,7 @@ graph TB
     F["Servicios de comercio (checkout, cupones, reportes, mail)"]
     G["Prisma ORM"]
     H["PostgreSQL / Supabase"]
-    I["Stripe"]
+    I["Stripe / Wompi"]
     J["Proveedor SMTP"]
 
     A --> D
@@ -79,7 +79,7 @@ graph TB
 | Identidad | `User`, `Account`, `Session`, `AccountSecurityToken` | Credenciales, Google OAuth, sesiones, verificacion y recuperacion |
 | Catalogo | `Category`, `Product`, `ProductImage`, `ProductVariant` | Organizacion de productos, galeria, stock y SKUs |
 | Carrito | `CartItem` | Carrito autenticado persistido con sincronizacion mas segura |
-| Pedidos | `Order`, `OrderItem` | Snapshots de checkout, totales, envio, estado de pago y trazabilidad |
+| Pedidos | `Order`, `OrderItem`, `PaymentTransaction` | Snapshots de checkout, totales, envio, estado de pago y trazabilidad multipasarela |
 | Promociones | `Coupon`, `CouponCustomerUsage` | Control de descuentos globales y por cliente desde backend |
 | Operacion | servicios de reportes/exportacion + correos transaccionales | Reportes, comunicacion con clientes, envios y visibilidad del negocio |
 
@@ -87,7 +87,7 @@ graph TB
 
 | Acceso | Rutas ejemplo | Uso |
 | --- | --- | --- |
-| Publico | `/api/products`, `/api/categories`, `/api/auth/register`, `/api/checkout/stripe`, `/api/webhooks/stripe` | Lecturas del storefront, entrada de auth, bootstrap de checkout y webhook de Stripe |
+| Publico | `/api/products`, `/api/categories`, `/api/auth/register`, `/api/checkout/stripe`, `/api/checkout/wompi`, `/api/webhooks/stripe`, `/api/webhooks/wompi` | Lecturas del storefront, entrada de auth, bootstrap de checkout y webhooks de pasarelas |
 | Cliente autenticado | `/api/cart/sync`, `/api/orders/[id]/resume`, `/api/orders/[id]/cancel`, `/api/checkout/coupon` | Sync del carrito, reintento/cancelacion de pedidos y vista previa de cupones |
 | Admin protegido | `/api/admin/products`, `/api/admin/orders/[id]`, `/api/admin/coupons`, `/api/admin/reports/export` | Operacion de catalogo, pedidos, cupones y reportes bajo checks de admin |
 
@@ -97,6 +97,17 @@ graph TB
 - `CLAUDE.md` puede quedarse como nota privada en la maquina, pero ya no hace falta como documento versionado del proyecto.
 
 ## Historial de cambios
+
+### 2026-05-03
+
+- Se preparo la integracion segura de Wompi Colombia sin reemplazar Stripe:
+  - se agrego el modelo `PaymentTransaction` para registrar intentos de pago por proveedor, referencia, estado, metodo usado, monto en centavos y payload de auditoria
+  - el checkout ahora puede crear pagos Wompi con referencia unica, monto calculado desde backend y firma de integridad generada en servidor
+  - se anadio `/api/webhooks/wompi` para recibir `transaction.updated`, validar checksum dinamico y finalizar ordenes solo cuando Wompi confirme `APPROVED`
+  - se anadio `/api/checkout/wompi` para iniciar pagos y consultar el estado de regreso sin confiar en datos del frontend
+  - los reintentos de pedidos pendientes ahora contemplan `WOMPI`, igual que Stripe y WhatsApp
+  - el admin muestra trazabilidad de transacciones asociadas al pedido y los reportes usan etiquetas legibles de metodo de pago
+  - `NEXT_PUBLIC_WOMPI_ENABLED` queda como feature flag para mantener Wompi oculto hasta validar Vercel y sandbox
 
 ### 2026-04-25
 
@@ -359,6 +370,12 @@ npm run dev
 - `STRIPE_PUBLISHABLE_KEY`: llave publica de Stripe.
 - `STRIPE_WEBHOOK_SECRET`: secreto del webhook de Stripe. Se vuelve obligatorio cuando registres el endpoint real del webhook en Stripe.
 - `NEXT_PUBLIC_STRIPE_ENABLED`: define `true` solo en los entornos donde quieras mostrar la opcion de checkout con Stripe.
+- `NEXT_PUBLIC_WOMPI_ENABLED`: define `true` solo cuando el checkout de Wompi ya este validado en el entorno.
+- `WOMPI_ENVIRONMENT`: `sandbox` o `production`.
+- `NEXT_PUBLIC_WOMPI_PUBLIC_KEY`: llave publica de comercio Wompi.
+- `WOMPI_PRIVATE_KEY`: llave privada de Wompi, reservada para integraciones API directas.
+- `WOMPI_EVENTS_SECRET`: secreto de eventos usado para verificar `X-Event-Checksum` o `signature.checksum`.
+- `WOMPI_INTEGRITY_SECRET`: secreto de integridad usado para firmar `reference + amount + currency`.
 - `NEXT_PUBLIC_WHATSAPP_NUMBER`: numero de destino de WhatsApp.
 - `NEXT_PUBLIC_APP_URL`: URL publica usada por flujos del cliente.
 - `NEXT_PUBLIC_APP_NAME`: nombre visible de la app.
@@ -544,11 +561,14 @@ Notas importantes de conexion:
   - `https://lilcake.vercel.app/api/auth/callback/google`
 - Endpoint productivo del webhook de Stripe:
   - `https://lilcake.vercel.app/api/webhooks/stripe`
+- Endpoint productivo del webhook de Wompi:
+  - `https://lilcake.vercel.app/api/webhooks/wompi`
 
 Notas operativas:
 
 - Google OAuth ya esta activo en produccion tras cargar `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` en Vercel.
 - Stripe esta activo en produccion en modo test usando llaves de prueba.
+- Wompi debe cargarse en Vercel con llaves sandbox y mantenerse con `NEXT_PUBLIC_WOMPI_ENABLED=false` hasta completar pruebas controladas.
 - El despliegue productivo se verifico con rutas publicas reales en Vercel y con una conexion directa Prisma/PostgreSQL contra Supabase.
 - Las subidas de imagenes del admin usan Vercel Blob en produccion cuando `BLOB_READ_WRITE_TOKEN` esta configurado, y mantienen fallback local al filesystem para desarrollo.
 
@@ -587,6 +607,31 @@ El endpoint de estado usado por la pagina de regreso es:
 ```
 
 Ahora exige al propietario autenticado de la orden y puede devolver `pending`, `processing`, `paid` o `failed` mientras el webhook termina de ponerse al dia.
+
+## Flujo de Wompi Colombia
+
+Wompi queda integrado como proveedor paralelo y se activa solo si `NEXT_PUBLIC_WOMPI_ENABLED=true`:
+
+1. El cliente elige Wompi en checkout.
+2. El backend valida carrito, precios, stock, cupones y terminos antes de crear la `Order`.
+3. Se crea una `PaymentTransaction` con proveedor `WOMPI`, referencia unica y monto en centavos.
+4. La URL de Wompi se firma en servidor con `WOMPI_INTEGRITY_SECRET`; el frontend nunca recibe secretos.
+5. Wompi redirige de vuelta a `/checkout?provider=wompi&id=...`, donde el backend consulta el estado real.
+6. Wompi llama a `POST /api/webhooks/wompi`; el endpoint valida el checksum dinamico con `WOMPI_EVENTS_SECRET`.
+7. Solo `APPROVED` finaliza la orden con `finalizePaidOrder`; `DECLINED`, `VOIDED` o `ERROR` marcan el pago como fallido y permiten reintento.
+
+Endpoint de eventos configurado en Wompi:
+
+```text
+https://lilcake.vercel.app/api/webhooks/wompi
+```
+
+Notas de seguridad:
+
+- El total cobrado se calcula desde la orden creada en backend, no desde el navegador.
+- La moneda debe ser `COP` y el monto debe coincidir exactamente con `amount_in_cents`.
+- La firma del evento usa las propiedades enviadas por Wompi en cada payload; no se asume una lista fija.
+- Para rollout seguro, primero carga secretos en Vercel, deja `NEXT_PUBLIC_WOMPI_ENABLED=false`, valida el webhook y luego activa el boton.
 
 ## Seguimiento de envios y correos de pedidos
 

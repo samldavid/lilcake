@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 
 const stripeEnabled = process.env.NEXT_PUBLIC_STRIPE_ENABLED === "true"
+const wompiEnabled = process.env.NEXT_PUBLIC_WOMPI_ENABLED === "true"
 const CHECKOUT_DETAILS_STORAGE_KEY = "lilcake-checkout-details"
 
 type AppliedCoupon = {
@@ -86,7 +87,7 @@ function CheckoutPageContent() {
     shippingAddress: "",
     shippingCity: "",
     shippingPhone: "",
-    paymentMethod: stripeEnabled ? "STRIPE" : "WHATSAPP",
+    paymentMethod: stripeEnabled ? "STRIPE" : wompiEnabled ? "WOMPI" : "WHATSAPP",
   })
 
   React.useEffect(() => {
@@ -112,6 +113,11 @@ function CheckoutPageContent() {
   const successParam = searchParams.get("success") === "true"
   const canceledParam = searchParams.get("canceled") === "true"
   const sessionId = searchParams.get("session_id")
+  const providerParam = searchParams.get("provider")
+  const wompiTransactionId =
+    providerParam === "wompi"
+      ? searchParams.get("id") || searchParams.get("transaction_id")
+      : null
 
   React.useEffect(() => {
     if (!detailsLoaded) {
@@ -157,7 +163,10 @@ function CheckoutPageContent() {
   }, [detailsLoaded, formData, rememberDetails])
 
   React.useEffect(() => {
-    if (status === "loading" || !successParam || !sessionId || success) {
+    const isStripeReturn = successParam && Boolean(sessionId)
+    const isWompiReturn = Boolean(wompiTransactionId)
+
+    if (status === "loading" || (!isStripeReturn && !isWompiReturn) || success) {
       return
     }
 
@@ -173,12 +182,12 @@ function CheckoutPageContent() {
         setError("")
 
         for (let attempt = 0; attempt < 10; attempt += 1) {
-          const response = await fetch(
-            `/api/checkout/stripe?session_id=${encodeURIComponent(sessionId)}`,
-            {
-              cache: "no-store",
-            }
-          )
+          const statusUrl = isWompiReturn
+            ? `/api/checkout/wompi?id=${encodeURIComponent(wompiTransactionId || "")}`
+            : `/api/checkout/stripe?session_id=${encodeURIComponent(sessionId || "")}`
+          const response = await fetch(statusUrl, {
+            cache: "no-store",
+          })
           const data = await response.json()
 
           if (!response.ok) {
@@ -206,7 +215,9 @@ function CheckoutPageContent() {
         }
 
         throw new Error(
-          "Stripe ya recibio el pago, pero aun estamos terminando de confirmarlo. Recarga esta pagina en unos segundos."
+          isWompiReturn
+            ? "Wompi recibio la transaccion, pero aun estamos terminando de confirmarla. Recarga esta pagina en unos segundos."
+            : "Stripe ya recibio el pago, pero aun estamos terminando de confirmarlo. Recarga esta pagina en unos segundos."
         )
       } catch (checkoutError) {
         if (!isActive) {
@@ -230,7 +241,7 @@ function CheckoutPageContent() {
     return () => {
       isActive = false
     }
-  }, [clearCart, sessionId, status, success, successParam])
+  }, [clearCart, sessionId, status, success, successParam, wompiTransactionId])
 
   React.useEffect(() => {
     if (
@@ -238,11 +249,12 @@ function CheckoutPageContent() {
       items.length === 0 &&
       !success &&
       !isFinalizing &&
-      !successParam
+      !successParam &&
+      !wompiTransactionId
     ) {
       router.push("/carrito")
     }
-  }, [isFinalizing, items.length, router, status, success, successParam])
+  }, [isFinalizing, items.length, router, status, success, successParam, wompiTransactionId])
 
   const validateCoupon = React.useCallback(
     async (codeOverride?: string) => {
@@ -350,7 +362,9 @@ function CheckoutPageContent() {
       const endpoint =
         formData.paymentMethod === "STRIPE"
           ? "/api/checkout/stripe"
-          : "/api/checkout/whatsapp"
+          : formData.paymentMethod === "WOMPI"
+            ? "/api/checkout/wompi"
+            : "/api/checkout/whatsapp"
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -390,7 +404,7 @@ function CheckoutPageContent() {
           Confirmando tu pago
         </h1>
         <p className="text-lc-gray text-lg">
-          Estamos validando la sesion de Stripe para registrar tu pedido.
+          Estamos validando la pasarela de pago para registrar tu pedido.
         </p>
       </div>
     )
@@ -561,6 +575,31 @@ function CheckoutPageContent() {
                     </div>
                     <p className="ml-9 mt-1 text-sm text-lc-gray">
                       Pago seguro e inmediato.
+                    </p>
+                  </label>
+                )}
+
+                {wompiEnabled && (
+                  <label
+                    className={`block p-4 border rounded-xl cursor-pointer transition-colors ${formData.paymentMethod === "WOMPI" ? "border-lc-cyan bg-lc-cyan/10" : "border-lc-border bg-lc-darker hover:border-lc-gray"}`}
+                  >
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        name="payment"
+                        value="WOMPI"
+                        checked={formData.paymentMethod === "WOMPI"}
+                        onChange={() =>
+                          setFormData({ ...formData, paymentMethod: "WOMPI" })
+                        }
+                        className="w-5 h-5 text-lc-cyan bg-lc-black border-lc-gray focus:ring-lc-cyan focus:ring-offset-lc-black"
+                      />
+                      <span className="ml-4 font-bold text-lc-white">
+                        Wompi Colombia
+                      </span>
+                    </div>
+                    <p className="ml-9 mt-1 text-sm text-lc-gray">
+                      Paga con PSE, tarjeta, Nequi u otros metodos disponibles en Wompi.
                     </p>
                   </label>
                 )}
@@ -751,6 +790,8 @@ function CheckoutPageContent() {
                   ? "Inicia sesion para continuar"
                   : formData.paymentMethod === "STRIPE"
                     ? "Pagar con Stripe"
+                    : formData.paymentMethod === "WOMPI"
+                      ? "Pagar con Wompi"
                     : "Confirmar via WhatsApp"}
             </Button>
           </div>

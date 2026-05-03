@@ -2,6 +2,7 @@ import ExcelJS from "exceljs"
 import { PDFDocument, PageSizes, StandardFonts, rgb } from "pdf-lib"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
+import { getPaymentMethodLabel } from "@/lib/order-status"
 import { formatCOP } from "@/lib/utils"
 
 export const reportKindSchema = z.enum(["sales", "orders", "customers"])
@@ -337,7 +338,7 @@ async function buildSalesReport(range: ResolvedRange): Promise<ReportExportPaylo
     shippingName: order.shippingName,
     customerEmail: order.customerEmail || order.user.email || "",
     shippingCity: order.shippingCity,
-    paymentMethod: order.paymentMethod,
+    paymentMethod: getPaymentMethodLabel(order.paymentMethod),
     status: order.status,
     shippingCarrier: order.shippingCarrier || "",
     trackingNumber: order.trackingNumber || "",
@@ -436,7 +437,7 @@ async function buildOrdersReport(range: ResolvedRange): Promise<ReportExportPayl
     createdAt: order.createdAt,
     shippingName: order.shippingName,
     customerEmail: order.customerEmail || order.user.email || "",
-    paymentMethod: order.paymentMethod,
+    paymentMethod: getPaymentMethodLabel(order.paymentMethod),
     paymentStatus: order.paymentStatus,
     status: order.status,
     shippingCarrier: order.shippingCarrier || "",

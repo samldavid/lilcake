@@ -10,6 +10,7 @@ import { CustomerOrderActions } from "@/components/orders/CustomerOrderActions"
 import {
   getOrderStatusBadgeVariant,
   getOrderStatusLabel,
+  getPaymentMethodLabel,
   getPaymentStatusClasses,
   getPaymentStatusLabel,
 } from "@/lib/order-status"
@@ -338,7 +339,9 @@ export default async function CustomerOrderDetailPage({
               </div>
               <div>
                 <p className="text-lc-gray mb-1">Metodo de pago</p>
-                <p className="text-lc-white font-medium">{order.paymentMethod}</p>
+                <p className="text-lc-white font-medium">
+                  {getPaymentMethodLabel(order.paymentMethod)}
+                </p>
               </div>
               <div>
                 <p className="text-lc-gray mb-1">Transportadora</p>

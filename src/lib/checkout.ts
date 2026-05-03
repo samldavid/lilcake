@@ -20,7 +20,7 @@ export const checkoutRequestSchema = z.object({
   shippingAddress: z.string().min(5, "Direccion requerida"),
   shippingCity: z.string().min(2, "Ciudad requerida"),
   shippingPhone: z.string().min(7, "Telefono requerido"),
-  paymentMethod: z.enum(["STRIPE", "WHATSAPP"]),
+  paymentMethod: z.enum(["STRIPE", "WOMPI", "WHATSAPP"]),
   couponCode: z.string().trim().min(3, "Ingresa un codigo valido").optional(),
   notes: z.string().trim().optional(),
   acceptedTerms: z

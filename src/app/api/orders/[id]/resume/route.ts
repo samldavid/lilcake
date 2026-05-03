@@ -12,6 +12,8 @@ import { buildOrderWhatsAppLink, type PreparedCheckoutItem } from "@/lib/checkou
 import { canCustomerResumeOrder } from "@/lib/order-status"
 import { createStripeDiscountCoupon } from "@/lib/coupons"
 import { getPublicErrorMessage } from "@/lib/errors"
+import { createOrReuseWompiCheckout } from "@/lib/wompi-payments"
+import { isWompiCheckoutEnabled } from "@/lib/wompi"
 
 export async function POST(
   req: Request,
@@ -84,6 +86,38 @@ export async function POST(
       return NextResponse.json({
         url: buildOrderWhatsAppLink(order, preparedItems),
         orderNumber: order.orderNumber,
+      })
+    }
+
+    if (order.paymentMethod === "WOMPI") {
+      if (!isWompiCheckoutEnabled()) {
+        return NextResponse.json(
+          { error: "Wompi no esta disponible en este entorno todavia." },
+          { status: 503 }
+        )
+      }
+
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { paymentStatus: "PENDING" },
+      })
+
+      const { url, reference } = await createOrReuseWompiCheckout({
+        order: {
+          id: order.id,
+          orderNumber: order.orderNumber,
+          total: order.total,
+          customerEmail: order.customerEmail,
+          shippingName: order.shippingName,
+          shippingPhone: order.shippingPhone,
+        },
+        origin: new URL(req.url).origin,
+      })
+
+      return NextResponse.json({
+        url,
+        orderNumber: order.orderNumber,
+        reference,
       })
     }
 

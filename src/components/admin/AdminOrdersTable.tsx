@@ -11,6 +11,7 @@ import { formatCOP } from "@/lib/utils"
 import {
   getOrderStatusBadgeVariant,
   getOrderStatusLabel,
+  getPaymentMethodLabel,
   getPaymentStatusClasses,
   getPaymentStatusLabel,
 } from "@/lib/order-status"
@@ -61,6 +62,7 @@ export function AdminOrdersTable({
             order.user.name,
             order.user.email,
             order.paymentMethod,
+            getPaymentMethodLabel(order.paymentMethod),
             getPaymentStatusLabel(order.paymentStatus),
             getOrderStatusLabel(order.status),
           ])
@@ -153,7 +155,7 @@ export function AdminOrdersTable({
                       {getPaymentStatusLabel(order.paymentStatus)}
                     </span>
                     <p className="mt-2 text-xs text-lc-gray uppercase">
-                      {order.paymentMethod}
+                      {getPaymentMethodLabel(order.paymentMethod)}
                     </p>
                   </div>
 
@@ -260,7 +262,7 @@ export function AdminOrdersTable({
                           {getPaymentStatusLabel(order.paymentStatus)}
                         </span>
                         <span className="text-xs uppercase text-lc-gray">
-                          {order.paymentMethod}
+                          {getPaymentMethodLabel(order.paymentMethod)}
                         </span>
                       </div>
                     </div>

@@ -52,6 +52,19 @@ export function getPaymentStatusClasses(status: string) {
   }
 }
 
+export function getPaymentMethodLabel(paymentMethod: string) {
+  switch (paymentMethod) {
+    case "STRIPE":
+      return "Tarjeta con Stripe"
+    case "WOMPI":
+      return "Wompi"
+    case "WHATSAPP":
+      return "WhatsApp / transferencia"
+    default:
+      return paymentMethod
+  }
+}
+
 export function canCustomerResumeOrder(order: {
   status: string
   paymentStatus: string
@@ -60,7 +73,9 @@ export function canCustomerResumeOrder(order: {
   return (
     order.status === "PENDING" &&
     order.paymentStatus !== "PAID" &&
-    (order.paymentMethod === "STRIPE" || order.paymentMethod === "WHATSAPP")
+    (order.paymentMethod === "STRIPE" ||
+      order.paymentMethod === "WOMPI" ||
+      order.paymentMethod === "WHATSAPP")
   )
 }
 

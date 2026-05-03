@@ -8,7 +8,7 @@ LilCake is a Next.js storefront with:
 - Next.js App Router
 - NextAuth credentials + Google OAuth
 - Prisma ORM
-- Stripe and WhatsApp checkout flows
+- Stripe, Wompi, and WhatsApp checkout flows
 - Admin panel for catalog and orders
 
 [Leer esta guia tecnica en espanol](./README.dev.es.md)
@@ -41,7 +41,7 @@ LilCake is a Next.js storefront with:
 | Database | PostgreSQL (Supabase) | Production persistence for users, products, orders, coupons and reports |
 | ORM | Prisma 6 | Typed queries, schema management, migrations and indexing |
 | Auth | NextAuth + credentials + Google OAuth | Role-based access, customer auth, protected admin |
-| Payments | Stripe Checkout + WhatsApp fallback | Real payment flow with safe backend order finalization |
+| Payments | Stripe Checkout + Wompi Colombia + WhatsApp fallback | Real payment flow with safe backend order finalization and multi-gateway tracing |
 | Emails | SMTP mailer | Verification, password recovery, order and shipping notifications |
 | Reports | ExcelJS + pdf-lib | Operational exports for sales, orders and customers |
 | Deploy | Vercel | Production hosting, env handling and webhook-ready routes |
@@ -58,7 +58,7 @@ graph TB
     F["Commerce Services (checkout, coupons, reports, mail)"]
     G["Prisma ORM"]
     H["PostgreSQL / Supabase"]
-    I["Stripe"]
+    I["Stripe / Wompi"]
     J["SMTP Provider"]
 
     A --> D
@@ -79,7 +79,7 @@ graph TB
 | Identity | `User`, `Account`, `Session`, `AccountSecurityToken` | Credentials, Google OAuth, sessions, verification and recovery flows |
 | Catalog | `Category`, `Product`, `ProductImage`, `ProductVariant` | Product organization, media gallery, stock and SKU management |
 | Cart | `CartItem` | Persisted authenticated cart with safer sync behavior |
-| Orders | `Order`, `OrderItem` | Checkout snapshots, totals, shipping data, payment state and audit trail |
+| Orders | `Order`, `OrderItem`, `PaymentTransaction` | Checkout snapshots, totals, shipping data, payment state and multi-gateway audit trail |
 | Promotions | `Coupon`, `CouponCustomerUsage` | Global and per-customer discount control with safe backend usage tracking |
 | Operations | report/export services + transactional emails | Admin exports, order comms, shipping updates and business visibility |
 
@@ -87,7 +87,7 @@ graph TB
 
 | Access | Example routes | Notes |
 | --- | --- | --- |
-| Public | `/api/products`, `/api/categories`, `/api/auth/register`, `/api/checkout/stripe`, `/api/webhooks/stripe` | Storefront reads, auth entry points, checkout bootstrap and Stripe webhook |
+| Public | `/api/products`, `/api/categories`, `/api/auth/register`, `/api/checkout/stripe`, `/api/checkout/wompi`, `/api/webhooks/stripe`, `/api/webhooks/wompi` | Storefront reads, auth entry points, checkout bootstrap and payment webhooks |
 | Authenticated customer | `/api/cart/sync`, `/api/orders/[id]/resume`, `/api/orders/[id]/cancel`, `/api/checkout/coupon` | Cart sync, order recovery/cancellation and coupon preview/validation |
 | Protected admin | `/api/admin/products`, `/api/admin/orders/[id]`, `/api/admin/coupons`, `/api/admin/reports/export` | Catalog, order, coupon and reporting operations guarded by admin checks |
 
@@ -97,6 +97,17 @@ graph TB
 - `CLAUDE.md` can stay on the machine as a private workspace note, but it is no longer needed as a tracked source of truth for the project.
 
 ## Changelog
+
+### 2026-05-03
+
+- Prepared a safe Wompi Colombia integration without replacing Stripe:
+  - added the `PaymentTransaction` model to track provider attempts, references, statuses, payment method type, cent-based amounts, and audit payloads
+  - checkout can now create Wompi payments with a unique reference, backend-calculated amount, and server-generated integrity signature
+  - added `/api/webhooks/wompi` to receive `transaction.updated`, validate the dynamic checksum, and finalize orders only when Wompi confirms `APPROVED`
+  - added `/api/checkout/wompi` to start payments and check return status without trusting frontend data
+  - pending order retries now include `WOMPI`, alongside Stripe and WhatsApp
+  - admin order detail shows payment transaction traceability and reports use readable payment method labels
+  - `NEXT_PUBLIC_WOMPI_ENABLED` remains the feature flag so Wompi can stay hidden until Vercel and sandbox checks pass
 
 ### 2026-04-25
 
@@ -359,6 +370,12 @@ npm run dev
 - `STRIPE_PUBLISHABLE_KEY`: Stripe public key.
 - `STRIPE_WEBHOOK_SECRET`: Stripe webhook secret. Required once your Stripe webhook endpoint is registered.
 - `NEXT_PUBLIC_STRIPE_ENABLED`: set to `true` only in environments where you want the Stripe checkout option to be visible.
+- `NEXT_PUBLIC_WOMPI_ENABLED`: set to `true` only after the Wompi checkout has been validated in that environment.
+- `WOMPI_ENVIRONMENT`: `sandbox` or `production`.
+- `NEXT_PUBLIC_WOMPI_PUBLIC_KEY`: Wompi merchant public key.
+- `WOMPI_PRIVATE_KEY`: Wompi private key, reserved for direct API integrations.
+- `WOMPI_EVENTS_SECRET`: event secret used to verify `X-Event-Checksum` or `signature.checksum`.
+- `WOMPI_INTEGRITY_SECRET`: integrity secret used to sign `reference + amount + currency`.
 - `NEXT_PUBLIC_WHATSAPP_NUMBER`: WhatsApp destination number.
 - `NEXT_PUBLIC_APP_URL`: public app URL used by client flows.
 - `NEXT_PUBLIC_APP_NAME`: display name.
@@ -543,11 +560,14 @@ Important connection notes:
   - `https://lilcake.vercel.app/api/auth/callback/google`
 - Stripe webhook production endpoint:
   - `https://lilcake.vercel.app/api/webhooks/stripe`
+- Wompi webhook production endpoint:
+  - `https://lilcake.vercel.app/api/webhooks/wompi`
 
 Operational notes:
 
 - Google OAuth is enabled in production after loading `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` into Vercel.
 - Stripe is currently enabled in production in test mode using test publishable and secret keys.
+- Wompi should be loaded in Vercel with sandbox keys and kept behind `NEXT_PUBLIC_WOMPI_ENABLED=false` until controlled checks pass.
 - The production deployment was verified with live product routes on Vercel and a direct Prisma/PostgreSQL connection against Supabase.
 - Admin image uploads use Vercel Blob in production when `BLOB_READ_WRITE_TOKEN` is configured, and keep a local filesystem fallback for development.
 
@@ -586,6 +606,31 @@ The checkout status endpoint used by the return page is:
 ```
 
 It now requires the signed-in order owner and may return `pending`, `processing`, `paid`, or `failed` while the webhook catches up.
+
+## Wompi Colombia flow
+
+Wompi is integrated as a parallel provider and is visible only when `NEXT_PUBLIC_WOMPI_ENABLED=true`:
+
+1. The customer chooses Wompi at checkout.
+2. The backend validates cart items, prices, stock, coupons, and legal acceptance before creating the `Order`.
+3. A `PaymentTransaction` is created with provider `WOMPI`, a unique reference, and a cent-based amount.
+4. The Wompi checkout URL is signed server-side with `WOMPI_INTEGRITY_SECRET`; secrets never reach the frontend.
+5. Wompi redirects back to `/checkout?provider=wompi&id=...`, where the backend checks the real transaction state.
+6. Wompi calls `POST /api/webhooks/wompi`; the endpoint verifies the dynamic checksum with `WOMPI_EVENTS_SECRET`.
+7. Only `APPROVED` finalizes the order through `finalizePaidOrder`; `DECLINED`, `VOIDED`, or `ERROR` mark the payment as failed and allow retry.
+
+Configured Wompi events endpoint:
+
+```text
+https://lilcake.vercel.app/api/webhooks/wompi
+```
+
+Security notes:
+
+- The charged total is calculated from the backend order, not from the browser.
+- Currency must be `COP`, and the amount must match `amount_in_cents` exactly.
+- Event signature validation uses the properties sent by Wompi in each payload; the code does not assume a fixed list.
+- For a safe rollout, load secrets in Vercel first, keep `NEXT_PUBLIC_WOMPI_ENABLED=false`, validate the webhook, then enable the button.
 
 ## Shipping tracking and order emails
 

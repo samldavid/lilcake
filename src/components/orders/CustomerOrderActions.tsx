@@ -110,6 +110,10 @@ export function CustomerOrderActions({
                   ? paymentStatus === "FAILED"
                     ? "Reintentar pago"
                     : "Continuar pago"
+                  : paymentMethod === "WOMPI"
+                    ? paymentStatus === "FAILED"
+                      ? "Reintentar con Wompi"
+                      : "Continuar con Wompi"
                   : "Abrir WhatsApp"}
             </Button>
           )}

@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma"
 import {
   getOrderStatusBadgeVariant,
   getOrderStatusLabel,
+  getPaymentMethodLabel,
   getPaymentStatusClasses,
   getPaymentStatusLabel,
 } from "@/lib/order-status"
@@ -58,6 +59,19 @@ type AdminOrder = {
     name: string | null
     email: string | null
   }
+  paymentTransactions: Array<{
+    id: string
+    provider: string
+    providerReference: string
+    providerTransactionId: string | null
+    status: string
+    rawStatus: string | null
+    amountInCents: number
+    currency: string
+    paymentMethodType: string | null
+    createdAt: Date
+    updatedAt: Date
+  }>
   items: AdminOrderItem[]
 }
 
@@ -102,6 +116,22 @@ export default async function AdminOrderDetailPage({
           name: true,
           email: true,
         },
+      },
+      paymentTransactions: {
+        select: {
+          id: true,
+          provider: true,
+          providerReference: true,
+          providerTransactionId: true,
+          status: true,
+          rawStatus: true,
+          amountInCents: true,
+          currency: true,
+          paymentMethodType: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: { createdAt: "desc" },
       },
       items: {
         select: {
@@ -378,10 +408,58 @@ export default async function AdminOrderDetailPage({
               </div>
               <div>
                 <p className="mb-1 text-lc-gray">Metodo de pago</p>
-                <p className="text-lc-white">{order.paymentMethod}</p>
+                <p className="text-lc-white">
+                  {getPaymentMethodLabel(order.paymentMethod)}
+                </p>
               </div>
             </div>
           </div>
+
+          {order.paymentTransactions.length > 0 ? (
+            <div className="rounded-2xl border border-lc-border bg-lc-card p-5 sm:p-6">
+              <h2 className="mb-4 text-lg font-heading font-bold text-lc-white sm:text-xl">
+                Transacciones de pago
+              </h2>
+              <div className="space-y-3">
+                {order.paymentTransactions.map((transaction) => (
+                  <div
+                    key={transaction.id}
+                    className="rounded-2xl border border-lc-border bg-lc-darker/60 p-4 text-sm"
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <p className="font-semibold text-lc-white">
+                          {transaction.provider}
+                          {transaction.paymentMethodType
+                            ? ` / ${transaction.paymentMethodType}`
+                            : ""}
+                        </p>
+                        <p className="mt-1 text-xs text-lc-gray">
+                          Ref: {transaction.providerReference}
+                        </p>
+                        {transaction.providerTransactionId ? (
+                          <p className="mt-1 text-xs text-lc-gray">
+                            ID proveedor: {transaction.providerTransactionId}
+                          </p>
+                        ) : null}
+                      </div>
+                      <div className="text-left sm:text-right">
+                        <p className="font-semibold text-lc-white">
+                          {formatCOP(transaction.amountInCents / 100)}
+                        </p>
+                        <p className="mt-1 text-xs uppercase tracking-wide text-lc-gray">
+                          {transaction.rawStatus || transaction.status}
+                        </p>
+                        <p className="mt-1 text-xs text-lc-gray">
+                          {transaction.createdAt.toLocaleString("es-CO")}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           <div className="rounded-2xl border border-lc-border bg-lc-card p-5 sm:p-6">
             <h2 className="mb-4 text-lg font-heading font-bold text-lc-white sm:text-xl">

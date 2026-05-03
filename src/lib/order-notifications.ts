@@ -4,6 +4,7 @@ import {
   sendBrandedMail,
 } from "@/lib/mail"
 import { prisma } from "@/lib/prisma"
+import { getPaymentMethodLabel } from "@/lib/order-status"
 import { formatCOP } from "@/lib/utils"
 
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || "LilCake"
@@ -83,17 +84,6 @@ function getItemSummary(order: OrderNotificationRecord) {
   const itemCount = order.items.reduce((total, item) => total + item.quantity, 0)
 
   return `${itemCount} ${itemCount === 1 ? "articulo" : "articulos"}`
-}
-
-function getPaymentMethodLabel(paymentMethod: string) {
-  switch (paymentMethod) {
-    case "STRIPE":
-      return "Tarjeta con Stripe"
-    case "WHATSAPP":
-      return "WhatsApp / transferencia"
-    default:
-      return paymentMethod
-  }
 }
 
 function buildEmailText({
