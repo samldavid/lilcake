@@ -34,7 +34,7 @@ Inside the demo you can explore:
 - 🛍️ Storefront ready to sell with catalog, product pages, cart, search, and checkout flow
 - 🖼️ Persistent product media storage for production uploads through Vercel Blob
 - 🔐 Flexible authentication with email/password and Google sign-in
-- 💳 Real checkout experience with Stripe, Wompi-ready payments, and order-safe backend validation
+- 💳 Real checkout experience with Wompi, Stripe, PSE, Nequi, and order-safe backend validation
 - 📦 Complete order lifecycle with payment states, shipment tracking, and customer visibility
 - 🎟️ Advanced coupon engine with global limits, per-customer limits, and admin control
 - 🧾 Excel and PDF exports for sales, orders, and customer data

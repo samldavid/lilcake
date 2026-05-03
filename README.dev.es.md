@@ -108,6 +108,13 @@ graph TB
   - los reintentos de pedidos pendientes ahora contemplan `WOMPI`, igual que Stripe y WhatsApp
   - el admin muestra trazabilidad de transacciones asociadas al pedido y los reportes usan etiquetas legibles de metodo de pago
   - `NEXT_PUBLIC_WOMPI_ENABLED` queda como feature flag para mantener Wompi oculto hasta validar Vercel y sandbox
+- Se corrigio el retorno del checkout despues de pagos con Stripe/Wompi:
+  - la pantalla de confirmacion ya no queda "pegada" al volver a `/checkout` para una compra nueva
+  - el carrito ya no se limpia solo por visitar una URL antigua con parametros de retorno de pago
+  - despues de confirmar un pago se limpia la URL visible para evitar reutilizar `session_id` o `id` de Wompi en la siguiente navegacion
+- Se mejoro la presentacion de metodos de pago en checkout:
+  - Wompi queda como primera opcion y seleccionado por defecto cuando esta activo
+  - los metodos muestran badges visuales para Wompi, PSE, Nequi, Visa, Stripe, Mastercard, WhatsApp y banco
 
 ### 2026-04-25
 

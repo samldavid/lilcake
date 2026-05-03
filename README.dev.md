@@ -108,6 +108,13 @@ graph TB
   - pending order retries now include `WOMPI`, alongside Stripe and WhatsApp
   - admin order detail shows payment transaction traceability and reports use readable payment method labels
   - `NEXT_PUBLIC_WOMPI_ENABLED` remains the feature flag so Wompi can stay hidden until Vercel and sandbox checks pass
+- Fixed checkout return handling after Stripe/Wompi payments:
+  - the confirmation screen no longer stays "stuck" when returning to `/checkout` for a new purchase
+  - the cart is no longer cleared just because the browser visits an old payment-return URL
+  - after a payment is confirmed, the visible URL is cleaned so old `session_id` or Wompi `id` parameters are not reused on the next visit
+- Improved checkout payment-method presentation:
+  - Wompi is now the first option and the default selection when enabled
+  - payment methods now show visual badges for Wompi, PSE, Nequi, Visa, Stripe, Mastercard, WhatsApp, and bank transfer
 
 ### 2026-04-25
 

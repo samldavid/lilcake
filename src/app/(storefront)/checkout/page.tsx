@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/Input"
 const stripeEnabled = process.env.NEXT_PUBLIC_STRIPE_ENABLED === "true"
 const wompiEnabled = process.env.NEXT_PUBLIC_WOMPI_ENABLED === "true"
 const CHECKOUT_DETAILS_STORAGE_KEY = "lilcake-checkout-details"
+const CHECKOUT_RETURN_STORAGE_PREFIX = "lilcake-checkout-return"
 
 type AppliedCoupon = {
   code: string
@@ -30,6 +31,26 @@ type SavedCheckoutDetails = {
   shippingAddress: string
   shippingCity: string
   shippingPhone: string
+}
+
+function PaymentBrandBadge({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode
+  className?: string
+}) {
+  return (
+    <span
+      className={`inline-flex h-7 min-w-10 items-center justify-center rounded-lg border px-2 text-[11px] font-black uppercase tracking-wide ${className}`}
+    >
+      {children}
+    </span>
+  )
+}
+
+function getProcessedReturnKey(returnKey: string) {
+  return `${CHECKOUT_RETURN_STORAGE_PREFIX}:${returnKey}`
 }
 
 function parseSavedCheckoutDetails(rawValue: string | null): SavedCheckoutDetails | null {
@@ -87,7 +108,7 @@ function CheckoutPageContent() {
     shippingAddress: "",
     shippingCity: "",
     shippingPhone: "",
-    paymentMethod: stripeEnabled ? "STRIPE" : wompiEnabled ? "WOMPI" : "WHATSAPP",
+    paymentMethod: wompiEnabled ? "WOMPI" : stripeEnabled ? "STRIPE" : "WHATSAPP",
   })
 
   React.useEffect(() => {
@@ -117,6 +138,11 @@ function CheckoutPageContent() {
   const wompiTransactionId =
     providerParam === "wompi"
       ? searchParams.get("id") || searchParams.get("transaction_id")
+      : null
+  const paymentReturnKey = wompiTransactionId
+    ? `wompi:${wompiTransactionId}`
+    : sessionId
+      ? `stripe:${sessionId}`
       : null
 
   React.useEffect(() => {
@@ -170,6 +196,15 @@ function CheckoutPageContent() {
       return
     }
 
+    if (
+      paymentReturnKey &&
+      typeof window !== "undefined" &&
+      window.sessionStorage.getItem(getProcessedReturnKey(paymentReturnKey))
+    ) {
+      router.replace("/checkout", { scroll: false })
+      return
+    }
+
     let isActive = true
     const wait = (ms: number) =>
       new Promise((resolve) => {
@@ -200,8 +235,15 @@ function CheckoutPageContent() {
             }
 
             clearCart()
+            if (paymentReturnKey && typeof window !== "undefined") {
+              window.sessionStorage.setItem(
+                getProcessedReturnKey(paymentReturnKey),
+                "completed"
+              )
+            }
             setOrderNumber(data.orderNumber || "")
             setSuccess(true)
+            router.replace("/checkout", { scroll: false })
             return
           }
 
@@ -241,7 +283,27 @@ function CheckoutPageContent() {
     return () => {
       isActive = false
     }
-  }, [clearCart, sessionId, status, success, successParam, wompiTransactionId])
+  }, [
+    clearCart,
+    paymentReturnKey,
+    router,
+    sessionId,
+    status,
+    success,
+    successParam,
+    wompiTransactionId,
+  ])
+
+  React.useEffect(() => {
+    if (!success || paymentReturnKey || items.length === 0) {
+      return
+    }
+
+    setSuccess(false)
+    setOrderNumber("")
+    setError("")
+    setLoading(false)
+  }, [items.length, paymentReturnKey, success])
 
   React.useEffect(() => {
     if (
@@ -554,49 +616,40 @@ function CheckoutPageContent() {
                 2. Metodo de Pago
               </h2>
               <div className="space-y-4">
-                {stripeEnabled && (
-                  <label
-                    className={`block p-4 border rounded-xl cursor-pointer transition-colors ${formData.paymentMethod === "STRIPE" ? "border-lc-purple bg-lc-purple/10" : "border-lc-border bg-lc-darker hover:border-lc-gray"}`}
-                  >
-                    <div className="flex items-center">
-                      <input
-                        type="radio"
-                        name="payment"
-                        value="STRIPE"
-                        checked={formData.paymentMethod === "STRIPE"}
-                        onChange={() =>
-                          setFormData({ ...formData, paymentMethod: "STRIPE" })
-                        }
-                        className="w-5 h-5 text-lc-purple bg-lc-black border-lc-gray focus:ring-lc-purple focus:ring-offset-lc-black"
-                      />
-                      <span className="ml-4 font-bold text-lc-white">
-                        Tarjeta de Credito / Debito (Stripe)
-                      </span>
-                    </div>
-                    <p className="ml-9 mt-1 text-sm text-lc-gray">
-                      Pago seguro e inmediato.
-                    </p>
-                  </label>
-                )}
-
                 {wompiEnabled && (
                   <label
                     className={`block p-4 border rounded-xl cursor-pointer transition-colors ${formData.paymentMethod === "WOMPI" ? "border-lc-cyan bg-lc-cyan/10" : "border-lc-border bg-lc-darker hover:border-lc-gray"}`}
                   >
-                    <div className="flex items-center">
-                      <input
-                        type="radio"
-                        name="payment"
-                        value="WOMPI"
-                        checked={formData.paymentMethod === "WOMPI"}
-                        onChange={() =>
-                          setFormData({ ...formData, paymentMethod: "WOMPI" })
-                        }
-                        className="w-5 h-5 text-lc-cyan bg-lc-black border-lc-gray focus:ring-lc-cyan focus:ring-offset-lc-black"
-                      />
-                      <span className="ml-4 font-bold text-lc-white">
-                        Wompi Colombia
-                      </span>
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex items-center">
+                        <input
+                          type="radio"
+                          name="payment"
+                          value="WOMPI"
+                          checked={formData.paymentMethod === "WOMPI"}
+                          onChange={() =>
+                            setFormData({ ...formData, paymentMethod: "WOMPI" })
+                          }
+                          className="w-5 h-5 text-lc-cyan bg-lc-black border-lc-gray focus:ring-lc-cyan focus:ring-offset-lc-black"
+                        />
+                        <span className="ml-4 font-bold text-lc-white">
+                          Wompi Colombia
+                        </span>
+                      </div>
+                      <div className="ml-9 flex flex-wrap gap-2 sm:ml-0">
+                        <PaymentBrandBadge className="border-lc-cyan/30 bg-lc-cyan/10 text-lc-cyan">
+                          Wompi
+                        </PaymentBrandBadge>
+                        <PaymentBrandBadge className="border-lc-purple/30 bg-lc-purple/10 text-lc-purple">
+                          PSE
+                        </PaymentBrandBadge>
+                        <PaymentBrandBadge className="border-lc-success/30 bg-lc-success/10 text-lc-success">
+                          Nequi
+                        </PaymentBrandBadge>
+                        <PaymentBrandBadge className="border-lc-border bg-lc-black/40 text-lc-white">
+                          Visa
+                        </PaymentBrandBadge>
+                      </div>
                     </div>
                     <p className="ml-9 mt-1 text-sm text-lc-gray">
                       Paga con PSE, tarjeta, Nequi u otros metodos disponibles en Wompi.
@@ -604,23 +657,71 @@ function CheckoutPageContent() {
                   </label>
                 )}
 
+                {stripeEnabled && (
+                  <label
+                    className={`block p-4 border rounded-xl cursor-pointer transition-colors ${formData.paymentMethod === "STRIPE" ? "border-lc-purple bg-lc-purple/10" : "border-lc-border bg-lc-darker hover:border-lc-gray"}`}
+                  >
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex items-center">
+                        <input
+                          type="radio"
+                          name="payment"
+                          value="STRIPE"
+                          checked={formData.paymentMethod === "STRIPE"}
+                          onChange={() =>
+                            setFormData({ ...formData, paymentMethod: "STRIPE" })
+                          }
+                          className="w-5 h-5 text-lc-purple bg-lc-black border-lc-gray focus:ring-lc-purple focus:ring-offset-lc-black"
+                        />
+                        <span className="ml-4 font-bold text-lc-white">
+                          Tarjeta de Credito / Debito
+                        </span>
+                      </div>
+                      <div className="ml-9 flex flex-wrap gap-2 sm:ml-0">
+                        <PaymentBrandBadge className="border-lc-purple/30 bg-lc-purple/10 text-lc-purple">
+                          Stripe
+                        </PaymentBrandBadge>
+                        <PaymentBrandBadge className="border-lc-border bg-lc-black/40 text-lc-white">
+                          Visa
+                        </PaymentBrandBadge>
+                        <PaymentBrandBadge className="border-lc-border bg-lc-black/40 text-lc-white">
+                          MC
+                        </PaymentBrandBadge>
+                      </div>
+                    </div>
+                    <p className="ml-9 mt-1 text-sm text-lc-gray">
+                      Pago seguro e inmediato con Stripe.
+                    </p>
+                  </label>
+                )}
+
                 <label
                   className={`block p-4 border rounded-xl cursor-pointer transition-colors ${formData.paymentMethod === "WHATSAPP" ? "border-lc-success bg-lc-success/10" : "border-lc-border bg-lc-darker hover:border-lc-gray"}`}
                 >
-                  <div className="flex items-center">
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="WHATSAPP"
-                      checked={formData.paymentMethod === "WHATSAPP"}
-                      onChange={() =>
-                        setFormData({ ...formData, paymentMethod: "WHATSAPP" })
-                      }
-                      className="w-5 h-5 text-lc-success bg-lc-black border-lc-gray focus:ring-lc-success focus:ring-offset-lc-black"
-                    />
-                    <span className="ml-4 font-bold text-lc-white">
-                      WhatsApp / Transferencia Bancaria
-                    </span>
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        name="payment"
+                        value="WHATSAPP"
+                        checked={formData.paymentMethod === "WHATSAPP"}
+                        onChange={() =>
+                          setFormData({ ...formData, paymentMethod: "WHATSAPP" })
+                        }
+                        className="w-5 h-5 text-lc-success bg-lc-black border-lc-gray focus:ring-lc-success focus:ring-offset-lc-black"
+                      />
+                      <span className="ml-4 font-bold text-lc-white">
+                        WhatsApp / Transferencia Bancaria
+                      </span>
+                    </div>
+                    <div className="ml-9 flex flex-wrap gap-2 sm:ml-0">
+                      <PaymentBrandBadge className="border-lc-success/30 bg-lc-success/10 text-lc-success">
+                        WA
+                      </PaymentBrandBadge>
+                      <PaymentBrandBadge className="border-lc-border bg-lc-black/40 text-lc-white">
+                        Banco
+                      </PaymentBrandBadge>
+                    </div>
                   </div>
                   <p className="ml-9 mt-1 text-sm text-lc-gray">
                     Registramos la orden y te llevamos al chat para coordinar el pago.

@@ -34,7 +34,7 @@ Dentro del demo puedes explorar:
 - 🛍️ Tienda online lista para vender con catálogo, páginas de producto, carrito, búsqueda y checkout
 - 🖼️ Almacenamiento persistente de imágenes de producto en producción con Vercel Blob
 - 🔐 Autenticación flexible con email/contraseña y acceso con Google
-- 💳 Checkout real con Stripe, integración Wompi preparada y validación segura desde backend
+- 💳 Checkout real con Wompi, Stripe, PSE, Nequi y validación segura desde backend
 - 📦 Ciclo completo de pedidos con estados de pago, seguimiento de envío y visibilidad para el cliente
 - 🎟️ Sistema avanzado de cupones con límites globales, por cliente y control administrativo
 - 🧾 Exportación de ventas, pedidos y clientes en Excel y PDF

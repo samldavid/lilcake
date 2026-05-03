@@ -202,10 +202,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const storageKey = getCartStorageKey(userId)
 
     if (isPaymentReturnFlow) {
-      hydrateRequestRef.current += 1
-      clearAllCartStorageKeys(storageKey)
-      writePersistedCart(storageKey, [], cartVersionRef.current)
-      applyHydratedCart([], cartVersionRef.current, storageKey)
+      const savedSnapshot = parsePersistedCart(localStorage.getItem(storageKey))
+      applyHydratedCart(savedSnapshot.items, savedSnapshot.version, storageKey)
       setIsLoaded(true)
       return
     }
