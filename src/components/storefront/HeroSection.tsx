@@ -3,9 +3,13 @@ import { ArrowRight, Flame, Layers, Sparkles } from "lucide-react"
 
 export function HeroSection() {
   return (
-    <div className="relative overflow-hidden bg-lc-black pb-16 pt-10 sm:pb-24 sm:pt-16 lg:pb-32 lg:pt-24">
+    <div className="relative isolate overflow-hidden bg-lc-black pb-16 pt-10 sm:pb-24 sm:pt-16 lg:pb-32 lg:pt-24">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(108,60,225,0.22),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(233,30,140,0.16),transparent_32%)]" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(245,245,247,0.6)_1px,transparent_1px),linear-gradient(90deg,rgba(245,245,247,0.6)_1px,transparent_1px)] [background-size:72px_72px]" />
       <div className="pointer-events-none absolute left-[-10%] top-[-10%] h-[40%] w-[40%] rounded-full bg-lc-purple/20 blur-[120px]" />
       <div className="pointer-events-none absolute bottom-[-10%] right-[-10%] h-[40%] w-[30%] rounded-full bg-lc-pink/20 blur-[120px]" />
+      <div className="pointer-events-none absolute left-1/2 top-20 hidden h-20 w-20 rounded-full border border-lc-purple/20 bg-lc-purple/10 blur-sm animate-drift lg:block" />
+      <div className="pointer-events-none absolute bottom-24 left-[8%] hidden h-12 w-12 rounded-2xl border border-lc-cyan/20 bg-lc-cyan/10 rotate-12 animate-drift-delayed lg:block" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-12">
@@ -31,8 +35,9 @@ export function HeroSection() {
             <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
               <Link
                 href="/productos"
-                className="btn-primary group inline-flex items-center justify-center gap-2 px-6 py-3.5 text-base sm:px-8 sm:py-4 sm:text-lg"
+                className="btn-primary group relative inline-flex items-center justify-center gap-2 overflow-hidden px-6 py-3.5 text-base sm:px-8 sm:py-4 sm:text-lg"
               >
+                <span className="button-shine" />
                 Ver Coleccion
                 <ArrowRight
                   size={20}
@@ -69,9 +74,17 @@ export function HeroSection() {
                 <p className="mt-1 text-xs text-lc-gray sm:text-sm">Garantia</p>
               </div>
             </div>
+
+            <div className="mt-10 hidden items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-lc-gray sm:flex">
+              <span className="h-px w-10 bg-lc-border" />
+              Baja y descubre el drop
+              <span className="h-8 w-4 rounded-full border border-lc-border p-1">
+                <span className="block h-1.5 w-1.5 rounded-full bg-lc-purple animate-scroll-dot" />
+              </span>
+            </div>
           </div>
 
-          <div className="hidden h-[600px] grid-cols-2 gap-4 animate-fade-in delay-200 lg:grid">
+          <div className="hero-collage hidden h-[600px] grid-cols-2 gap-4 animate-fade-in delay-200 lg:grid">
             <div className="mt-12 flex flex-col gap-4">
               <div className="relative h-2/5 overflow-hidden rounded-3xl border border-lc-border bg-lc-dark group">
                 {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -100,6 +100,12 @@ graph TB
 
 ### 2026-05-03
 
+- Improved the storefront homepage visual experience without touching backend or checkout logic:
+  - added `ScrollReveal` with `IntersectionObserver` for lightweight reusable scroll animations
+  - the hero now includes glow layers, a subtle grid, floating accents, and a shine effect on the main CTA
+  - featured products and categories reveal in staggered motion for a more polished and sellable experience
+  - added a narrative LilCake experience section to guide customers from inspiration to purchase
+  - animations respect `prefers-reduced-motion` for accessibility
 - Prepared a safe Wompi Colombia integration without replacing Stripe:
   - added the `PaymentTransaction` model to track provider attempts, references, statuses, payment method type, cent-based amounts, and audit payloads
   - checkout can now create Wompi payments with a unique reference, backend-calculated amount, and server-generated integrity signature

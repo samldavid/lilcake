@@ -5,6 +5,7 @@ import {
   ProductCard,
   type ProductCardProduct,
 } from "@/components/storefront/ProductCard"
+import { ScrollReveal } from "@/components/storefront/ScrollReveal"
 import { getFeaturedProducts } from "@/lib/storefront-data"
 
 export const revalidate = 60
@@ -85,17 +86,22 @@ export default async function HomePage() {
     featuredProducts.length > 0 ? featuredProducts : dummyProducts
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in overflow-hidden">
       <HeroSection />
 
-      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
-        <div className="mb-8 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
+      <section className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+        <div className="pointer-events-none absolute -right-24 top-10 h-72 w-72 rounded-full bg-lc-purple/10 blur-[90px]" />
+        <ScrollReveal className="mb-8 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
           <div>
+            <p className="mb-3 text-xs font-bold uppercase tracking-[0.28em] text-lc-purple-light">
+              Drop activo
+            </p>
             <h2 className="mb-2 text-2xl font-heading font-bold text-lc-white sm:text-4xl">
               Nuevos Lanzamientos
             </h2>
             <p className="max-w-2xl text-sm text-lc-gray-light sm:text-base">
-              Lo mas fresh de la temporada. Ediciones limitadas.
+              Lo mas fresh de la temporada. Ediciones limitadas, outfits urbanos
+              y piezas listas para rotar tu estilo.
             </p>
           </div>
           <Link
@@ -108,44 +114,115 @@ export default async function HomePage() {
               className="ml-2 transition-transform group-hover:translate-x-1"
             />
           </Link>
-        </div>
+        </ScrollReveal>
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
-          {productsToDisplay.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {productsToDisplay.map((product, index) => (
+            <ScrollReveal key={product.id} delay={index * 90}>
+              <ProductCard product={product} />
+            </ScrollReveal>
           ))}
         </div>
       </section>
 
-      <section className="border-t border-lc-border bg-lc-darker/50 py-14 sm:py-20">
-        <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-          <h2 className="mb-8 text-2xl font-heading font-bold text-lc-white sm:mb-12 sm:text-4xl">
-            Explora por Categoria
-          </h2>
+      <section className="relative border-y border-lc-border bg-lc-darker/50 py-14 sm:py-20">
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,transparent,rgba(108,60,225,0.08),transparent)]" />
+        <div className="relative mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+          <ScrollReveal>
+            <p className="mb-3 text-xs font-bold uppercase tracking-[0.28em] text-lc-gray">
+              Navega a tu manera
+            </p>
+            <h2 className="mb-8 text-2xl font-heading font-bold text-lc-white sm:mb-12 sm:text-4xl">
+              Explora por Categoria
+            </h2>
+          </ScrollReveal>
 
           <div className="grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-3 md:gap-8">
             {[
               { title: "Ropa", slug: "ropa", img: "/images/ropa.png" },
               { title: "Zapatos", slug: "zapatos", img: "/images/zapatos.png" },
               { title: "Accesorios", slug: "accesorios", img: "/images/accesorios.png" },
-            ].map((cat) => (
-              <Link
-                key={cat.slug}
-                href={`/productos?categoria=${cat.slug}`}
-                className="group relative block h-52 overflow-hidden rounded-3xl border border-lc-border sm:h-64 md:h-80"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={cat.img}
-                  alt={cat.title}
-                  className="h-full w-full object-cover opacity-60 transition-opacity duration-500 group-hover:scale-105 group-hover:opacity-40"
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <h3 className="text-2xl font-heading font-bold uppercase tracking-[0.22em] text-white transition-transform duration-300 drop-shadow-2xl group-hover:scale-110 sm:text-3xl">
-                    {cat.title}
-                  </h3>
+            ].map((cat, index) => (
+              <ScrollReveal key={cat.slug} delay={index * 120}>
+                <Link
+                  href={`/productos?categoria=${cat.slug}`}
+                  className="group category-card relative block h-52 overflow-hidden rounded-3xl border border-lc-border sm:h-64 md:h-80"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={cat.img}
+                    alt={cat.title}
+                    className="h-full w-full object-cover opacity-60 transition-all duration-700 group-hover:scale-110 group-hover:opacity-40"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-lc-black/75 via-lc-black/10 to-transparent" />
+                  <div className="absolute inset-x-6 bottom-6 text-left">
+                    <span className="mb-3 inline-flex rounded-full border border-white/15 bg-lc-black/40 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-lc-gray-light backdrop-blur-md">
+                      Categoria 0{index + 1}
+                    </span>
+                    <h3 className="text-2xl font-heading font-bold uppercase tracking-[0.22em] text-white transition-transform duration-300 drop-shadow-2xl group-hover:translate-x-2 sm:text-3xl">
+                      {cat.title}
+                    </h3>
+                  </div>
+                </Link>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="relative bg-lc-black py-16 sm:py-24">
+        <div className="pointer-events-none absolute left-[-12rem] top-10 h-96 w-96 rounded-full bg-lc-pink/10 blur-[120px]" />
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
+          <ScrollReveal className="lg:sticky lg:top-28 lg:self-start">
+            <p className="mb-3 text-xs font-bold uppercase tracking-[0.28em] text-lc-purple-light">
+              Experiencia LilCake
+            </p>
+            <h2 className="text-3xl font-heading font-bold leading-tight text-lc-white sm:text-5xl">
+              Baja, elige y arma tu outfit sin perder el ritmo.
+            </h2>
+            <p className="mt-5 max-w-xl text-base leading-8 text-lc-gray-light">
+              La tienda ahora acompana el recorrido como una vitrina: cada bloque
+              aparece con intención para guiar al cliente desde inspiración hasta
+              compra.
+            </p>
+          </ScrollReveal>
+
+          <div className="space-y-4 sm:space-y-5">
+            {[
+              {
+                step: "01",
+                title: "Descubre el drop",
+                text: "Productos destacados, categorias y fotos con movimiento suave para que la exploracion se sienta viva.",
+              },
+              {
+                step: "02",
+                title: "Encuentra la pieza",
+                text: "Cards con entrada escalonada, hover mas premium y jerarquia clara para precio, categoria y novedades.",
+              },
+              {
+                step: "03",
+                title: "Compra con confianza",
+                text: "El flujo mantiene Wompi, Stripe y asesoria por WhatsApp sin tocar la logica segura del checkout.",
+              },
+            ].map((item, index) => (
+              <ScrollReveal key={item.step} delay={index * 120}>
+                <div className="group relative overflow-hidden rounded-3xl border border-lc-border bg-lc-card/80 p-5 transition-all duration-500 hover:border-lc-purple/60 hover:bg-lc-card sm:p-7">
+                  <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-lc-white/5 to-transparent transition-transform duration-700 group-hover:translate-x-[100%]" />
+                  <div className="relative flex flex-col gap-5 sm:flex-row sm:items-start">
+                    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-lc-purple/30 bg-lc-purple/10 font-heading text-lg font-bold text-lc-purple-light">
+                      {item.step}
+                    </span>
+                    <div>
+                      <h3 className="text-xl font-heading font-bold text-lc-white sm:text-2xl">
+                        {item.title}
+                      </h3>
+                      <p className="mt-2 text-sm leading-7 text-lc-gray-light sm:text-base">
+                        {item.text}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </Link>
+              </ScrollReveal>
             ))}
           </div>
         </div>
