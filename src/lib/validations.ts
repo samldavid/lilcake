@@ -148,7 +148,7 @@ export const createOrderSchema = z.object({
   shippingAddress: z.string().min(5, "Direccion requerida"),
   shippingCity: z.string().min(2, "Ciudad requerida"),
   shippingPhone: z.string().min(7, "Telefono requerido"),
-  paymentMethod: z.enum(["STRIPE", "WOMPI", "TRANSFER", "ADDI", "WHATSAPP"]),
+  paymentMethod: z.enum(["STRIPE", "WOMPI", "ADDI", "WHATSAPP"]),
   couponCode: z.string().optional(),
   notes: z.string().optional(),
 })

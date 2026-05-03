@@ -363,7 +363,9 @@ export function buildOrderWhatsAppLink(
     discount?: number | null
     total: number
     shippingName: string
+    shippingAddress?: string
     shippingCity: string
+    shippingPhone?: string
   },
   items: PreparedCheckoutItem[]
 ) {
@@ -376,9 +378,12 @@ export function buildOrderWhatsAppLink(
   })
 
   const message = [
-    `Hola, quiero confirmar el pedido ${order.orderNumber}.`,
+    `Hola, quiero coordinar el pedido ${order.orderNumber}.`,
+    "Metodo solicitado: contraentrega o asesoria para Addi/otro metodo.",
     `Nombre: ${order.shippingName}`,
+    ...(order.shippingAddress ? [`Direccion: ${order.shippingAddress}`] : []),
     `Ciudad: ${order.shippingCity}`,
+    ...(order.shippingPhone ? [`Telefono: ${order.shippingPhone}`] : []),
     ...(order.discount && order.discount > 0
       ? [`Descuento aplicado: ${formatCOP(order.discount)}`]
       : []),

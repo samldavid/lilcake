@@ -309,7 +309,7 @@ export async function sendOrderReceivedEmail(orderId: string) {
 
       return {
         subject: `${APP_NAME}: recibimos tu pedido ${order.orderNumber}`,
-        textIntro: "Ya registramos tu pedido y dejamos listo el resumen para que sigas con la coordinacion del pago.",
+        textIntro: "Ya registramos tu pedido y dejamos listo el resumen para coordinarlo por WhatsApp.",
         textBody: [
           `Pedido: ${order.orderNumber}`,
           `Resumen: ${getItemSummary(order)} por ${formatCOP(order.total)}.`,
@@ -325,7 +325,7 @@ export async function sendOrderReceivedEmail(orderId: string) {
           intro: `Hola ${recipientName}, ya registramos tu pedido y dejamos listos los datos para continuar con la compra.`,
           body: [
             `Resumen: ${getItemSummary(order)} por ${formatCOP(order.total)}.`,
-            "Elegiste coordinacion por WhatsApp o transferencia, asi que puedes retomar el pedido cuando quieras desde tu cuenta.",
+            "Elegiste contraentrega o asesoria por WhatsApp, asi que puedes retomar el pedido cuando quieras desde tu cuenta.",
             `Destino registrado: ${order.shippingAddress}, ${order.shippingCity}.`,
           ],
           action: {

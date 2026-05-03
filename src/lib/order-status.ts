@@ -59,7 +59,7 @@ export function getPaymentMethodLabel(paymentMethod: string) {
     case "WOMPI":
       return "Wompi"
     case "WHATSAPP":
-      return "WhatsApp / transferencia"
+      return "Contraentrega / asesor WhatsApp"
     default:
       return paymentMethod
   }

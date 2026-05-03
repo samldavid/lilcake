@@ -10,6 +10,7 @@ import {
 import {
   getOrderStatusBadgeVariant,
   getOrderStatusLabel,
+  getPaymentMethodLabel,
   getPaymentStatusClasses,
   getPaymentStatusLabel,
 } from "@/lib/order-status"
@@ -258,7 +259,7 @@ export default async function AdminDemoOrderDetailPage({
               </div>
               <div>
                 <p className="mb-1 text-lc-gray">Metodo de pago</p>
-                <p className="text-lc-white">{order.paymentMethod}</p>
+                <p className="text-lc-white">{getPaymentMethodLabel(order.paymentMethod)}</p>
               </div>
             </div>
           </div>

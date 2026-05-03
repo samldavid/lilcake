@@ -8,7 +8,7 @@ LilCake es una tienda construida con Next.js que incluye:
 - Next.js App Router
 - NextAuth con credenciales y Google OAuth
 - Prisma ORM
-- Flujos de checkout con Stripe, Wompi y WhatsApp
+- Flujos de checkout con Stripe, Wompi y WhatsApp para contraentrega/asesor
 - Panel administrativo para catalogo y pedidos
 
 [Read this technical guide in English](./README.dev.md)
@@ -41,7 +41,7 @@ LilCake es una tienda construida con Next.js que incluye:
 | Base de datos | PostgreSQL (Supabase) | Persistencia productiva de usuarios, productos, pedidos, cupones y reportes |
 | ORM | Prisma 6 | Consultas tipadas, schema, migraciones e indices |
 | Auth | NextAuth + credenciales + Google OAuth | Acceso por roles, login de clientes y proteccion del admin |
-| Pagos | Stripe Checkout + Wompi Colombia + fallback por WhatsApp | Flujo real de pago con cierre seguro de ordenes y soporte multipasarela |
+| Pagos | Stripe Checkout + Wompi Colombia + fallback por WhatsApp | Flujo real de pago con cierre seguro de ordenes, Wompi para pagos electronicos y asesor para contraentrega/Addi |
 | Correos | SMTP mailer | Verificacion, recuperacion, notificaciones de pedido y envio |
 | Reportes | ExcelJS + pdf-lib | Exportaciones operativas de ventas, pedidos y clientes |
 | Deploy | Vercel | Hosting productivo, variables de entorno y rutas listas para webhooks |
@@ -114,7 +114,8 @@ graph TB
   - despues de confirmar un pago se limpia la URL visible para evitar reutilizar `session_id` o `id` de Wompi en la siguiente navegacion
 - Se mejoro la presentacion de metodos de pago en checkout:
   - Wompi queda como primera opcion y seleccionado por defecto cuando esta activo
-  - los metodos muestran badges visuales para Wompi, PSE, Nequi, Visa, Stripe, Mastercard, WhatsApp y banco
+  - los metodos muestran badges visuales para Wompi, PSE, Nequi, Visa, Stripe, Mastercard, contraentrega, Addi y asesor
+  - el fallback `WHATSAPP` dejo de presentarse como transferencia y ahora comunica contraentrega u otros metodos coordinados con asesor
 
 ### 2026-04-25
 
@@ -200,7 +201,7 @@ graph TB
 - Se anadio consentimiento legal obligatorio para registro y checkout:
   - el registro con correo y contrasena ahora exige aceptar terminos y politica de privacidad
   - la creacion de cuenta con Google tambien queda protegida del lado del servidor si no hubo consentimiento previo
-  - el checkout ahora obliga a aceptar los documentos legales antes de crear cualquier orden con Stripe o WhatsApp
+  - el checkout ahora obliga a aceptar los documentos legales antes de crear cualquier orden con Stripe, Wompi o WhatsApp
   - el backend rechaza intentos de saltarse ese checkbox manipulando el frontend
 - Se mejoro la confiabilidad del cierre de pago con Stripe:
   - el endpoint de regreso desde Stripe ahora puede finalizar la orden de forma segura si Stripe ya marco la sesion como pagada pero el webhook local todavia no entro
@@ -215,7 +216,7 @@ graph TB
   - un pedido no puede marcarse como enviado si no tiene transportadora y numero de guia
   - la busqueda de pedidos en admin ahora encuentra resultados por guia y transportadora
 - Se anadieron correos transaccionales de pedidos:
-  - los pedidos por WhatsApp envian un correo de “pedido recibido” al crearse
+- los pedidos por WhatsApp/contraentrega envian un correo de “pedido recibido” al crearse
   - los pedidos confirmados o pagados envian un correo de “pedido confirmado”
   - los pedidos enviados mandan automaticamente un correo de “pedido enviado” con transportadora y guia
   - la orden guarda la fecha exacta de cada correo enviado para auditoria y soporte
@@ -306,7 +307,7 @@ graph TB
   - transiciones mas seguras entre invitado y autenticado
   - menor riesgo de sobrescribir datos locales viejos
 - Stripe paso a ser opcional por entorno:
-  - el checkout puede caer a WhatsApp
+- el checkout puede caer a WhatsApp para contraentrega o asesoria comercial
   - el SDK de Stripe se inicializa de forma lazy
   - los endpoints pueden quedar desactivados hasta tener llaves
 - Las consultas del storefront se movieron a helpers cacheados con `unstable_cache`
@@ -664,7 +665,7 @@ La logistica del pedido ahora forma parte del flujo real tanto en admin como en 
 
 ### Comportamiento de los correos de pedidos
 
-- Los pedidos `WHATSAPP` envian un correo de recibido al crearse.
+- Los pedidos `WHATSAPP` corresponden al flujo de contraentrega/asesor y envian un correo de recibido al crearse.
 - Los pedidos confirmados por pago o por cambio de estado envian un correo de confirmacion.
 - Los pedidos marcados como `SHIPPED` envian un correo de envio con transportadora y guia.
 - El correo de envio solo sale cuando existen tanto `shippingCarrier` como `trackingNumber`.

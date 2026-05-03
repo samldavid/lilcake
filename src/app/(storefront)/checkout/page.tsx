@@ -711,20 +711,23 @@ function CheckoutPageContent() {
                         className="w-5 h-5 text-lc-success bg-lc-black border-lc-gray focus:ring-lc-success focus:ring-offset-lc-black"
                       />
                       <span className="ml-4 font-bold text-lc-white">
-                        WhatsApp / Transferencia Bancaria
+                        Contraentrega / asesor por WhatsApp
                       </span>
                     </div>
                     <div className="ml-9 flex flex-wrap gap-2 sm:ml-0">
                       <PaymentBrandBadge className="border-lc-success/30 bg-lc-success/10 text-lc-success">
-                        WA
+                        Contraentrega
+                      </PaymentBrandBadge>
+                      <PaymentBrandBadge className="border-lc-purple/30 bg-lc-purple/10 text-lc-purple">
+                        Addi
                       </PaymentBrandBadge>
                       <PaymentBrandBadge className="border-lc-border bg-lc-black/40 text-lc-white">
-                        Banco
+                        Asesor
                       </PaymentBrandBadge>
                     </div>
                   </div>
                   <p className="ml-9 mt-1 text-sm text-lc-gray">
-                    Registramos la orden y te llevamos al chat para coordinar el pago.
+                    Ideal para pagar contraentrega o revisar opciones asistidas como Addi directamente con un asesor.
                   </p>
                 </label>
                 {!stripeEnabled && (
@@ -893,7 +896,7 @@ function CheckoutPageContent() {
                     ? "Pagar con Stripe"
                     : formData.paymentMethod === "WOMPI"
                       ? "Pagar con Wompi"
-                    : "Confirmar via WhatsApp"}
+                      : "Coordinar por WhatsApp"}
             </Button>
           </div>
         </div>

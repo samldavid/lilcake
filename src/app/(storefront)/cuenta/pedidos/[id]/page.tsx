@@ -369,11 +369,11 @@ export default async function CustomerOrderDetailPage({
               <div className="flex items-center gap-3 mb-3">
                 <MessageCircle className="text-lc-success" />
                 <h2 className="text-xl font-heading font-bold text-lc-white">
-                  Continuar por WhatsApp
+                  Coordinar por WhatsApp
                 </h2>
               </div>
               <p className="text-sm text-lc-gray">
-                Abrimos el chat con el resumen del pedido para que puedas terminar la compra con el asesor.
+                Abrimos el chat con el resumen del pedido para que puedas coordinar contraentrega u otra opcion asistida con el asesor.
               </p>
             </div>
           )}

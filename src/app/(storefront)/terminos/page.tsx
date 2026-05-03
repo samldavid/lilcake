@@ -63,7 +63,7 @@ const termsSections = [
     id: "pagos",
     title: "Pagos",
     paragraphs: [
-      "Los pagos se realizan a través de pasarelas externas o mediante transferencias coordinadas por canales como WhatsApp. LilCake no almacena información financiera sensible del usuario.",
+      "Los pagos se realizan a través de pasarelas externas o mediante coordinación asistida por WhatsApp para opciones como contraentrega u otros métodos revisados con un asesor. LilCake no almacena información financiera sensible del usuario.",
     ],
   },
   {

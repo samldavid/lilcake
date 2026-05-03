@@ -204,7 +204,7 @@ model Order {
   shippingPhone   String
   shippingCarrier String?
   trackingNumber  String?     // Manual tracking
-  paymentMethod   String      // STRIPE | TRANSFER | ADDI | WHATSAPP
+  paymentMethod   String      // STRIPE | WOMPI | ADDI | WHATSAPP (manual advisor/COD)
   paymentStatus   PaymentStatus @default(PENDING)
   stripeSessionId String?
   couponId        String?

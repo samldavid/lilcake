@@ -114,7 +114,7 @@ export function CustomerOrderActions({
                     ? paymentStatus === "FAILED"
                       ? "Reintentar con Wompi"
                       : "Continuar con Wompi"
-                  : "Abrir WhatsApp"}
+                  : "Coordinar por WhatsApp"}
             </Button>
           )}
           {canCancel && (

@@ -50,7 +50,7 @@ const privacySections = [
     id: "pagos",
     title: "Medios de pago",
     paragraphs: [
-      "Los pagos se procesan mediante terceros especializados, como Stripe, o a través de coordinaciones realizadas por WhatsApp y transferencias. LilCake no almacena directamente números completos de tarjetas de crédito o débito ni otra información financiera sensible del usuario.",
+      "Los pagos se procesan mediante terceros especializados, como Stripe o Wompi, o a través de coordinaciones asistidas por WhatsApp para opciones como contraentrega. LilCake no almacena directamente números completos de tarjetas de crédito o débito ni otra información financiera sensible del usuario.",
     ],
   },
   {

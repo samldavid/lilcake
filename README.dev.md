@@ -8,7 +8,7 @@ LilCake is a Next.js storefront with:
 - Next.js App Router
 - NextAuth credentials + Google OAuth
 - Prisma ORM
-- Stripe, Wompi, and WhatsApp checkout flows
+- Stripe, Wompi, and WhatsApp-assisted cash-on-delivery/advisor checkout flows
 - Admin panel for catalog and orders
 
 [Leer esta guia tecnica en espanol](./README.dev.es.md)
@@ -41,7 +41,7 @@ LilCake is a Next.js storefront with:
 | Database | PostgreSQL (Supabase) | Production persistence for users, products, orders, coupons and reports |
 | ORM | Prisma 6 | Typed queries, schema management, migrations and indexing |
 | Auth | NextAuth + credentials + Google OAuth | Role-based access, customer auth, protected admin |
-| Payments | Stripe Checkout + Wompi Colombia + WhatsApp fallback | Real payment flow with safe backend order finalization and multi-gateway tracing |
+| Payments | Stripe Checkout + Wompi Colombia + WhatsApp fallback | Real payment flow with safe backend finalization, Wompi electronic payments, and advisor-assisted cash-on-delivery/Addi |
 | Emails | SMTP mailer | Verification, password recovery, order and shipping notifications |
 | Reports | ExcelJS + pdf-lib | Operational exports for sales, orders and customers |
 | Deploy | Vercel | Production hosting, env handling and webhook-ready routes |
@@ -114,7 +114,8 @@ graph TB
   - after a payment is confirmed, the visible URL is cleaned so old `session_id` or Wompi `id` parameters are not reused on the next visit
 - Improved checkout payment-method presentation:
   - Wompi is now the first option and the default selection when enabled
-  - payment methods now show visual badges for Wompi, PSE, Nequi, Visa, Stripe, Mastercard, WhatsApp, and bank transfer
+  - payment methods now show visual badges for Wompi, PSE, Nequi, Visa, Stripe, Mastercard, cash on delivery, Addi, and advisor support
+  - the `WHATSAPP` fallback is no longer presented as bank transfer; it now communicates cash-on-delivery or advisor-coordinated payment options
 
 ### 2026-04-25
 
@@ -200,7 +201,7 @@ graph TB
 - Added mandatory legal consent for account creation and checkout:
   - email/password registration now requires accepting terms and privacy policy
   - Google account creation is blocked server-side unless consent was captured first
-  - checkout now requires legal acceptance before any Stripe or WhatsApp order can be created
+  - checkout now requires legal acceptance before any Stripe, Wompi, or WhatsApp order can be created
   - backend validation now rejects attempts to bypass that checkbox from the frontend
 - Improved Stripe checkout confirmation reliability:
   - the return endpoint now safely finalizes the paid order if Stripe already marked the session as paid but the webhook has not reached the local environment yet
@@ -215,7 +216,7 @@ graph TB
   - an order cannot be marked as shipped until both carrier and guide number exist
   - admin order search now also matches carrier and tracking guide values
 - Added transactional order notification emails:
-  - WhatsApp/manual orders now send a “pedido recibido” email when the order is created
+- WhatsApp/cash-on-delivery manual orders now send a “pedido recibido” email when the order is created
   - paid or confirmed orders now send a “pedido confirmado” email
   - shipped orders now send a “pedido enviado” email with carrier and guide details
   - notification timestamps are stored on the order so there is an auditable record of what was sent
@@ -306,7 +307,7 @@ graph TB
   - guest/authenticated cart transitions are safer
   - stale local overwrites are reduced
 - Made Stripe optional per environment:
-  - checkout falls back to WhatsApp
+- checkout falls back to WhatsApp for cash-on-delivery or sales-advisor coordination
   - Stripe SDK initialization is lazy
   - payment endpoints can stay disabled until keys exist
 - Extracted storefront data queries into cached helpers with `unstable_cache`
@@ -663,7 +664,7 @@ Order logistics are now part of the real admin and customer experience.
 
 ### Order email behavior
 
-- `WHATSAPP` orders send a receipt email when the order is created.
+- `WHATSAPP` orders represent the cash-on-delivery/advisor flow and send a receipt email when the order is created.
 - Orders confirmed by payment or by admin state transitions send a confirmation email.
 - Orders marked as `SHIPPED` send a shipment email with carrier and tracking details.
 - Shipment emails only go out once both `shippingCarrier` and `trackingNumber` are present.
