@@ -102,9 +102,10 @@ graph TB
 
 - Se mejoro la experiencia visual de la pagina principal sin tocar backend ni flujo de compra:
   - se agrego `ScrollReveal` con `IntersectionObserver` para animaciones por scroll ligeras y reutilizables
+  - se instalo `motion` para animaciones React mas expresivas en la seccion de experiencia de la home
   - el hero ahora tiene capas de brillo, grilla sutil, elementos flotantes y efecto shine en el CTA principal
   - productos destacados y categorias aparecen con revelado escalonado para una sensacion mas profesional y vendible
-  - se anadio una seccion narrativa de experiencia LilCake para guiar al cliente desde inspiracion hasta compra
+  - se redisenó la seccion narrativa de experiencia LilCake con tarjetas mas coloridas, iconos, brillos animados y hover premium
   - las animaciones respetan `prefers-reduced-motion` para accesibilidad
 - Se preparo la integracion segura de Wompi Colombia sin reemplazar Stripe:
   - se agrego el modelo `PaymentTransaction` para registrar intentos de pago por proveedor, referencia, estado, metodo usado, monto en centavos y payload de auditoria

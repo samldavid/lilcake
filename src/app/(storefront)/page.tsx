@@ -6,6 +6,7 @@ import {
   type ProductCardProduct,
 } from "@/components/storefront/ProductCard"
 import { ScrollReveal } from "@/components/storefront/ScrollReveal"
+import { StorefrontExperienceSection } from "@/components/storefront/StorefrontExperienceSection"
 import { getFeaturedProducts } from "@/lib/storefront-data"
 
 export const revalidate = 60
@@ -170,63 +171,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="relative bg-lc-black py-16 sm:py-24">
-        <div className="pointer-events-none absolute left-[-12rem] top-10 h-96 w-96 rounded-full bg-lc-pink/10 blur-[120px]" />
-        <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
-          <ScrollReveal className="lg:sticky lg:top-28 lg:self-start">
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.28em] text-lc-purple-light">
-              Experiencia LilCake
-            </p>
-            <h2 className="text-3xl font-heading font-bold leading-tight text-lc-white sm:text-5xl">
-              Baja, elige y arma tu outfit sin perder el ritmo.
-            </h2>
-            <p className="mt-5 max-w-xl text-base leading-8 text-lc-gray-light">
-              La tienda ahora acompana el recorrido como una vitrina: cada bloque
-              aparece con intención para guiar al cliente desde inspiración hasta
-              compra.
-            </p>
-          </ScrollReveal>
-
-          <div className="space-y-4 sm:space-y-5">
-            {[
-              {
-                step: "01",
-                title: "Descubre el drop",
-                text: "Productos destacados, categorias y fotos con movimiento suave para que la exploracion se sienta viva.",
-              },
-              {
-                step: "02",
-                title: "Encuentra la pieza",
-                text: "Cards con entrada escalonada, hover mas premium y jerarquia clara para precio, categoria y novedades.",
-              },
-              {
-                step: "03",
-                title: "Compra con confianza",
-                text: "El flujo mantiene Wompi, Stripe y asesoria por WhatsApp sin tocar la logica segura del checkout.",
-              },
-            ].map((item, index) => (
-              <ScrollReveal key={item.step} delay={index * 120}>
-                <div className="group relative overflow-hidden rounded-3xl border border-lc-border bg-lc-card/80 p-5 transition-all duration-500 hover:border-lc-purple/60 hover:bg-lc-card sm:p-7">
-                  <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-lc-white/5 to-transparent transition-transform duration-700 group-hover:translate-x-[100%]" />
-                  <div className="relative flex flex-col gap-5 sm:flex-row sm:items-start">
-                    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-lc-purple/30 bg-lc-purple/10 font-heading text-lg font-bold text-lc-purple-light">
-                      {item.step}
-                    </span>
-                    <div>
-                      <h3 className="text-xl font-heading font-bold text-lc-white sm:text-2xl">
-                        {item.title}
-                      </h3>
-                      <p className="mt-2 text-sm leading-7 text-lc-gray-light sm:text-base">
-                        {item.text}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-      </section>
+      <StorefrontExperienceSection />
     </div>
   )
 }
