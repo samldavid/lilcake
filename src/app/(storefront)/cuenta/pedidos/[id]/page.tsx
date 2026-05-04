@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { getServerSession } from "next-auth"
 import { notFound, redirect } from "next/navigation"
-import { ArrowLeft, MessageCircle, Package, Truck } from "lucide-react"
+import { ArrowLeft, Download, FileText, MessageCircle, Package, Truck } from "lucide-react"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { formatCOP } from "@/lib/utils"
@@ -288,6 +288,26 @@ export default async function CustomerOrderDetailPage({
               status={order.status}
               paymentStatus={order.paymentStatus}
             />
+          </div>
+
+          <div className="bg-lc-dark border border-lc-border rounded-2xl p-6">
+            <div className="mb-4 flex items-center gap-3">
+              <FileText className="text-lc-purple" />
+              <h2 className="text-xl font-heading font-bold text-lc-white">
+                Nota de venta
+              </h2>
+            </div>
+            <p className="mb-4 text-sm leading-relaxed text-lc-gray">
+              Descarga el comprobante interno de tu pedido. Este documento no
+              reemplaza factura electronica ni documento equivalente DIAN.
+            </p>
+            <a
+              href={`/api/orders/${order.id}/sales-note`}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-lc-purple/30 bg-lc-purple/10 px-4 py-3 text-sm font-bold text-lc-purple transition-colors hover:bg-lc-purple hover:text-white"
+            >
+              <Download size={16} />
+              Descargar PDF
+            </a>
           </div>
         </div>
 

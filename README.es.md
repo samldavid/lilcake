@@ -32,6 +32,8 @@ Dentro del demo puedes explorar:
 
 ## Funcionalidades
 
+- Notas de venta PDF por pedido para soporte interno, descarga desde admin/cliente y adjunto en correos
+
 - 🛍️ Tienda online lista para vender con catálogo, páginas de producto, carrito, búsqueda y checkout
 - 🖼️ Almacenamiento persistente de imágenes con galerías múltiples, portada, orden personalizado y soporte de Vercel Blob
 - 🔐 Autenticación flexible con email/contraseña y acceso con Google
@@ -81,6 +83,9 @@ Existe un panel administrativo demo disponible en:
 - El admin real se mantiene protegido con control por roles, sesiones seguras, APIs de escritura protegidas, rate limits y validacion backend.
 
 ## Mejoras Recientes
+
+- A fecha de 2026-05-04, los pedidos ya pueden generar notas de venta PDF como comprobante interno, descargables desde admin, cuenta cliente y admin demo.
+- Los correos de confirmacion y envio ahora pueden adjuntar la nota de venta del pedido, dejando claro que no reemplaza factura electronica ni documento equivalente DIAN.
 
 - A fecha de 2026-05-03, el admin real y el admin demo ya permiten reordenar galerías de imágenes por producto, para que el operador controle el orden visual que verá el cliente y no solo la portada.
 - Los productos del demo ahora incluyen galerías con varias imágenes, haciendo más útil el sandbox público para evaluar una gestión real de catálogo.

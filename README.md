@@ -32,6 +32,8 @@ Inside the demo you can explore:
 
 ## Features
 
+- Per-order PDF sales notes for internal proof, admin/customer downloads, and email attachments
+
 - 🛍️ Storefront ready to sell with catalog, product pages, cart, search, and checkout flow
 - 🖼️ Persistent product media storage with multi-image galleries, cover selection, custom ordering, and Vercel Blob support
 - 🔐 Flexible authentication with email/password and Google sign-in
@@ -80,6 +82,9 @@ A safe admin sandbox is available at:
 - The real admin remains protected with role-based access, secured sessions, protected write APIs, rate limits, and backend validation.
 
 ## Recent Improvements
+
+- As of 2026-05-04, real orders can generate internal PDF sales notes downloadable from the admin, customer account, and admin demo.
+- Confirmation and shipping emails can now attach the order sales note while clearly stating that it does not replace official Colombian e-invoicing documents.
 
 - As of 2026-05-03, the real admin and admin demo now support reorderable product image galleries, so operators can control the visual order shown to customers instead of only choosing a cover image.
 - Demo products now include richer multi-image galleries, making the public admin sandbox more useful for evaluating real catalog management workflows.

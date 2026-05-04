@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, MailCheck, Package, Truck } from "lucide-react"
+import { ArrowLeft, Download, FileText, MailCheck, Package, Truck } from "lucide-react"
 import { AdminOrderStatusForm } from "@/components/orders/AdminOrderStatusForm"
 import { Badge } from "@/components/ui/Badge"
 import { prisma } from "@/lib/prisma"
@@ -460,6 +460,26 @@ export default async function AdminOrderDetailPage({
               </div>
             </div>
           ) : null}
+
+          <div className="rounded-2xl border border-lc-border bg-lc-card p-5 sm:p-6">
+            <div className="mb-4 flex items-center gap-3">
+              <FileText className="text-lc-purple" />
+              <h2 className="text-lg font-heading font-bold text-lc-white sm:text-xl">
+                Nota de venta
+              </h2>
+            </div>
+            <p className="mb-4 text-sm leading-relaxed text-lc-gray">
+              Descarga el comprobante interno del pedido para soporte comercial.
+              No reemplaza factura electronica ni documento equivalente DIAN.
+            </p>
+            <a
+              href={`/api/admin/orders/${order.id}/sales-note`}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-lc-purple/30 bg-lc-purple/10 px-4 py-3 text-sm font-bold text-lc-purple transition-colors hover:bg-lc-purple hover:text-white"
+            >
+              <Download size={16} />
+              Descargar PDF
+            </a>
+          </div>
 
           <div className="rounded-2xl border border-lc-border bg-lc-card p-5 sm:p-6">
             <h2 className="mb-4 text-lg font-heading font-bold text-lc-white sm:text-xl">

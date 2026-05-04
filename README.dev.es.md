@@ -98,6 +98,16 @@ graph TB
 
 ## Historial de cambios
 
+### 2026-05-04
+
+- Se implementaron notas de venta PDF como comprobantes internos no fiscales:
+  - `src/lib/sales-note.ts` centraliza la generacion del PDF, numeracion `NV-{orderNumber}`, datos de negocio por variables de entorno y aviso de no reemplazo de factura electronica DIAN
+  - `/api/admin/orders/[id]/sales-note` permite al admin real descargar la nota del pedido con guard de rol administrativo
+  - `/api/orders/[id]/sales-note` permite al cliente descargar solo sus propios comprobantes autenticados
+  - `/api/admin-demo/orders/[id]/sales-note` genera comprobantes de muestra para el sandbox publico sin tocar datos reales
+  - los correos de confirmacion y envio adjuntan automaticamente la nota de venta del pedido cuando se disparan
+  - no se agrego migracion de base de datos porque el PDF se genera desde el snapshot actual de `Order` y `OrderItem`
+
 ### 2026-05-03
 
 - Se agrego ordenamiento de imagenes de producto en el admin real y en el admin demo publico:

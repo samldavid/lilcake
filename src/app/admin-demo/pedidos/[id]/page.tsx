@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, MailCheck, Package, Truck } from "lucide-react"
+import { ArrowLeft, Download, FileText, MailCheck, Package, Truck } from "lucide-react"
 import { AdminOrderStatusForm } from "@/components/orders/AdminOrderStatusForm"
 import { Badge } from "@/components/ui/Badge"
 import {
@@ -262,6 +262,26 @@ export default async function AdminDemoOrderDetailPage({
                 <p className="text-lc-white">{getPaymentMethodLabel(order.paymentMethod)}</p>
               </div>
             </div>
+          </div>
+
+          <div className="rounded-2xl border border-lc-border bg-lc-card p-5 sm:p-6">
+            <div className="mb-4 flex items-center gap-3">
+              <FileText className="text-lc-purple" />
+              <h2 className="text-lg font-heading font-bold text-lc-white sm:text-xl">
+                Nota de venta demo
+              </h2>
+            </div>
+            <p className="mb-4 text-sm leading-relaxed text-lc-gray">
+              Exporta un comprobante de muestra para que el cliente vea como se
+              entrega el soporte interno del pedido.
+            </p>
+            <a
+              href={`/api/admin-demo/orders/${order.id}/sales-note`}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-lc-purple/30 bg-lc-purple/10 px-4 py-3 text-sm font-bold text-lc-purple transition-colors hover:bg-lc-purple hover:text-white"
+            >
+              <Download size={16} />
+              Descargar PDF demo
+            </a>
           </div>
 
           <div className="rounded-2xl border border-lc-border bg-lc-card p-5 sm:p-6">

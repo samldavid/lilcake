@@ -98,6 +98,16 @@ graph TB
 
 ## Changelog
 
+### 2026-05-04
+
+- Added PDF sales notes as internal, non-fiscal order documents:
+  - `src/lib/sales-note.ts` centralizes PDF generation, `NV-{orderNumber}` numbering, business details from environment variables, and the disclaimer that the document does not replace DIAN e-invoicing
+  - `/api/admin/orders/[id]/sales-note` lets the real admin download an order sales note behind the existing admin role guard
+  - `/api/orders/[id]/sales-note` lets authenticated customers download only their own order documents
+  - `/api/admin-demo/orders/[id]/sales-note` generates sample documents for the public sandbox without touching production data
+  - confirmation and shipping emails now attach the generated sales note automatically
+  - no database migration was required because the PDF is generated from the existing `Order` and `OrderItem` snapshot
+
 ### 2026-05-03
 
 - Added product image ordering to the real admin and public admin demo:

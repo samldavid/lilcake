@@ -5,6 +5,10 @@ import {
 } from "@/lib/mail"
 import { prisma } from "@/lib/prisma"
 import { getPaymentMethodLabel } from "@/lib/order-status"
+import {
+  buildSalesNoteFileName,
+  generateSalesNotePdf,
+} from "@/lib/sales-note"
 import { formatCOP } from "@/lib/utils"
 
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || "LilCake"
@@ -213,10 +217,12 @@ async function sendClaimedOrderEmail({
   claim,
   rollback,
   buildMessage,
+  attachSalesNote = false,
 }: {
   orderId: string
   claim: (orderId: string) => Promise<Date | null>
   rollback: (orderId: string, claimedAt: Date) => Promise<void>
+  attachSalesNote?: boolean
   buildMessage: (order: OrderNotificationRecord) => {
     subject: string
     textIntro: string
@@ -271,6 +277,14 @@ async function sendClaimedOrderEmail({
 
     const orderUrl = buildOrderUrl(order.id)
     const recipientName = getRecipientName(order)
+    const attachments = attachSalesNote
+      ? [
+          {
+            filename: buildSalesNoteFileName(order.orderNumber),
+            content: await generateSalesNotePdf(order),
+          },
+        ]
+      : []
 
     await sendBrandedMail({
       to: recipientEmail,
@@ -285,6 +299,7 @@ async function sendClaimedOrderEmail({
       }),
       html: buildBrandedEmailHtml(message.branded),
       branded: message.branded,
+      attachments,
     })
 
     return { sent: true as const }
@@ -346,6 +361,7 @@ export async function sendOrderConfirmationEmail(orderId: string) {
     orderId,
     claim: claimConfirmationNotification,
     rollback: rollbackConfirmationNotification,
+    attachSalesNote: true,
     buildMessage: (order) => {
       const recipientName = getRecipientName(order)
       const orderUrl = buildOrderUrl(order.id)
@@ -400,6 +416,7 @@ export async function sendOrderShippedEmail(orderId: string) {
     orderId,
     claim: claimShippingNotification,
     rollback: rollbackShippingNotification,
+    attachSalesNote: true,
     buildMessage: (order) => {
       if (!order.shippingCarrier?.trim() || !order.trackingNumber?.trim()) {
         return null
