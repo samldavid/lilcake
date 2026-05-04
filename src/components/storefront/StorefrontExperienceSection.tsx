@@ -1,7 +1,8 @@
 "use client"
 
 import { motion, useReducedMotion } from "motion/react"
-import { ArrowRight, CheckCircle2, Sparkles, Truck } from "lucide-react"
+import * as React from "react"
+import { ArrowRight, Camera, CheckCircle2, Sparkles, Truck } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -27,13 +28,45 @@ const experienceSteps = [
     accent: "from-lc-cyan/30 via-lc-cyan/10 to-transparent",
     icon: Truck,
   },
+  {
+    step: "04",
+    title: "Disfruta y presume tu outfit",
+    text: "Cierra la compra, recibe tu pedido y comparte un look listo para la calle, el parche o el siguiente drop.",
+    accent: "from-lc-warning/25 via-lc-pink/10 to-transparent",
+    icon: Camera,
+  },
 ] as const
 
-export function StorefrontExperienceSection() {
-  const shouldReduceMotion = useReducedMotion()
+function useCompactMotion() {
+  const [isCompact, setIsCompact] = React.useState(false)
 
-  const sectionInitial = shouldReduceMotion ? false : { opacity: 0, y: 24 }
+  React.useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 640px), (pointer: coarse)")
+    const updateMotionMode = () => setIsCompact(mediaQuery.matches)
+
+    updateMotionMode()
+    mediaQuery.addEventListener("change", updateMotionMode)
+
+    return () => mediaQuery.removeEventListener("change", updateMotionMode)
+  }, [])
+
+  return isCompact
+}
+
+export function StorefrontExperienceSection() {
+  const shouldReduceMotion = Boolean(useReducedMotion())
+  const isCompactMotion = useCompactMotion()
+  const shouldLimitMotion = shouldReduceMotion || isCompactMotion
+
+  const sectionInitial = shouldReduceMotion
+    ? false
+    : { opacity: 0, y: shouldLimitMotion ? 14 : 24 }
   const sectionVisible = shouldReduceMotion ? undefined : { opacity: 1, y: 0 }
+  const revealViewport = {
+    once: false,
+    amount: shouldLimitMotion ? 0.22 : 0.35,
+    margin: "0px 0px -8% 0px",
+  } as const
 
   return (
     <section
@@ -44,7 +77,7 @@ export function StorefrontExperienceSection() {
         aria-hidden="true"
         className="pointer-events-none absolute left-[-12rem] top-10 h-96 w-96 rounded-full bg-lc-pink/10 blur-[120px]"
         animate={
-          shouldReduceMotion
+          shouldLimitMotion
             ? undefined
             : {
                 x: [0, 28, -12, 0],
@@ -58,7 +91,7 @@ export function StorefrontExperienceSection() {
         aria-hidden="true"
         className="pointer-events-none absolute right-[-8rem] bottom-6 h-80 w-80 rounded-full bg-lc-purple/15 blur-[110px]"
         animate={
-          shouldReduceMotion
+          shouldLimitMotion
             ? undefined
             : {
                 x: [0, -24, 18, 0],
@@ -74,7 +107,7 @@ export function StorefrontExperienceSection() {
           className="lg:sticky lg:top-28 lg:self-start"
           initial={sectionInitial}
           whileInView={sectionVisible}
-          viewport={{ once: true, amount: 0.35 }}
+          viewport={revealViewport}
           transition={{ duration: 0.7, ease: "easeOut" }}
         >
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-lc-purple/30 bg-lc-purple/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.28em] text-lc-purple-light shadow-[0_0_40px_rgba(108,60,225,0.12)]">
@@ -112,9 +145,13 @@ export function StorefrontExperienceSection() {
 
           <motion.div
             className="group relative mt-8 overflow-hidden rounded-[2rem] border border-lc-border bg-lc-card/70 shadow-[0_30px_90px_rgba(0,0,0,0.22)]"
-            initial={shouldReduceMotion ? false : { opacity: 0, y: 22 }}
+            initial={
+              shouldReduceMotion
+                ? false
+                : { opacity: 0, y: shouldLimitMotion ? 14 : 22 }
+            }
             whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.35 }}
+            viewport={revealViewport}
             transition={{ duration: 0.7, delay: 0.12, ease: "easeOut" }}
           >
             <div className="relative h-56 sm:h-72">
@@ -139,7 +176,7 @@ export function StorefrontExperienceSection() {
 
           <div className="mt-8 grid grid-cols-3 overflow-hidden rounded-3xl border border-lc-border bg-lc-card/60 text-center backdrop-blur">
             {[
-              ["3", "pasos"],
+              ["4", "momentos"],
               ["24/7", "vitrina"],
               ["0", "fricción"],
             ].map(([value, label]) => (
@@ -171,19 +208,25 @@ export function StorefrontExperienceSection() {
               <motion.div
                 key={item.step}
                 initial={
-                  shouldReduceMotion ? false : { opacity: 0, x: 48, scale: 0.96 }
+                  shouldReduceMotion
+                    ? false
+                    : shouldLimitMotion
+                      ? { opacity: 0, y: 18, scale: 0.99 }
+                      : { opacity: 0, x: 48, scale: 0.96 }
                 }
                 whileInView={
-                  shouldReduceMotion ? undefined : { opacity: 1, x: 0, scale: 1 }
+                  shouldReduceMotion
+                    ? undefined
+                    : { opacity: 1, x: 0, y: 0, scale: 1 }
                 }
-                viewport={{ once: true, amount: 0.35 }}
+                viewport={revealViewport}
                 transition={{
-                  duration: 0.65,
-                  delay: index * 0.12,
+                  duration: shouldLimitMotion ? 0.45 : 0.65,
+                  delay: shouldLimitMotion ? index * 0.05 : index * 0.12,
                   ease: [0.22, 1, 0.36, 1],
                 }}
                 whileHover={
-                  shouldReduceMotion
+                  shouldLimitMotion
                     ? undefined
                     : {
                         y: -6,
@@ -196,7 +239,7 @@ export function StorefrontExperienceSection() {
                   aria-hidden="true"
                   className={`absolute inset-0 bg-gradient-to-br ${item.accent} opacity-70`}
                   animate={
-                    shouldReduceMotion
+                    shouldLimitMotion
                       ? undefined
                       : {
                           opacity: [0.45, 0.85, 0.55],
@@ -213,7 +256,7 @@ export function StorefrontExperienceSection() {
                   <motion.span
                     className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-lc-purple/35 bg-lc-black/35 font-heading text-xl font-bold text-lc-purple-light shadow-[0_0_35px_rgba(108,60,225,0.18)] backdrop-blur"
                     animate={
-                      shouldReduceMotion
+                      shouldLimitMotion
                         ? undefined
                         : {
                             boxShadow: [

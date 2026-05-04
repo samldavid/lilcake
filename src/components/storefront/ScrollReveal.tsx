@@ -11,7 +11,7 @@ export function ScrollReveal({
   children,
   className = "",
   delay = 0,
-  once = true,
+  once = false,
   style,
   ...props
 }: ScrollRevealProps) {

@@ -352,6 +352,27 @@ h1, h2, h3, h4, h5, h6 {
   filter: blur(0);
 }
 
+@media (max-width: 640px), (pointer: coarse) {
+  .scroll-reveal {
+    transform: translate3d(0, 18px, 0) scale(0.99);
+    filter: none;
+    transition:
+      opacity 0.45s ease,
+      transform 0.45s ease;
+    will-change: opacity, transform;
+  }
+
+  .scroll-reveal.is-visible {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  .hero-collage > div > div,
+  .category-card,
+  .category-card:hover {
+    transform: translateZ(0);
+  }
+}
+
 .hero-collage > div > div {
   transition:
     transform 0.6s ease,
