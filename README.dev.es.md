@@ -9,7 +9,7 @@ LilCake es una tienda construida con Next.js que incluye:
 - NextAuth con credenciales y Google OAuth
 - Prisma ORM
 - Flujos de checkout con Stripe, Wompi y WhatsApp para contraentrega/asesor
-- Panel administrativo para catalogo y pedidos
+- Panel administrativo para catalogo, imagenes, pedidos, cupones, clientes y reportes
 
 [Read this technical guide in English](./README.dev.md)
 
@@ -77,7 +77,7 @@ graph TB
 | Dominio | Modelos principales | Responsabilidad |
 | --- | --- | --- |
 | Identidad | `User`, `Account`, `Session`, `AccountSecurityToken` | Credenciales, Google OAuth, sesiones, verificacion y recuperacion |
-| Catalogo | `Category`, `Product`, `ProductImage`, `ProductVariant` | Organizacion de productos, galeria, stock y SKUs |
+| Catalogo | `Category`, `Product`, `ProductImage`, `ProductVariant` | Organizacion de productos, galeria ordenable, stock y SKUs |
 | Carrito | `CartItem` | Carrito autenticado persistido con sincronizacion mas segura |
 | Pedidos | `Order`, `OrderItem`, `PaymentTransaction` | Snapshots de checkout, totales, envio, estado de pago y trazabilidad multipasarela |
 | Promociones | `Coupon`, `CouponCustomerUsage` | Control de descuentos globales y por cliente desde backend |
@@ -100,6 +100,12 @@ graph TB
 
 ### 2026-05-03
 
+- Se agrego ordenamiento de imagenes de producto en el admin real y en el admin demo publico:
+  - `ProductForm` ahora permite subir o bajar imagenes dentro de la galeria, manteniendo la accion de portada y la accion de eliminar
+  - el orden se conserva en el arreglo enviado por el formulario y sigue usando el campo existente `ProductImage.sortOrder`, por lo que no hizo falta una migracion de schema
+  - `/api/admin/products` y `/api/admin/products/[id]` ahora devuelven imagenes ordenadas por `sortOrder` despues de listar, crear y actualizar productos
+  - los productos semilla de `/admin-demo` ahora incluyen galerias con varias imagenes para probar orden y portada de forma segura
+  - las ediciones demo conservan el orden simulado sin llamar endpoints reales de escritura ni tocar PostgreSQL
 - Se pulió el storefront después de la mejora de animaciones:
   - se corrigieron textos visibles con tildes, eñes y signos de apertura en home, catálogo, carrito, checkout, cuenta, registro, login, detalle de producto y página 404
   - la sección `Experiencia LilCake` ahora incluye imagen editorial, CTA hacia catálogo, acceso rápido a ropa y copy más claro
@@ -557,6 +563,15 @@ Configuracion en produccion:
 4. Prueba una subida desde `/admin/productos/[id]/editar`.
 
 Si el token falta en Vercel, el endpoint de subida devuelve un error claro de configuracion en vez de fingir que el archivo quedo guardado.
+
+Comportamiento del orden de galeria:
+
+- El formulario admin toma el orden del arreglo de imagenes como el orden visual deseado para la tienda.
+- La primera imagen funciona como portada y es la que se muestra primero en cards y paginas de producto.
+- El admin puede subir o bajar imagenes antes de guardar, o usar "Hacer principal" para mover una imagen directamente al inicio.
+- Al guardar, la API reescribe las imagenes del producto con valores secuenciales de `sortOrder`.
+- Las lecturas de las APIs admin devuelven imagenes ordenadas por `sortOrder` para mantener consistente el formulario, las tablas y el storefront.
+- El `/admin-demo` publico usa los mismos controles visuales, pero guarda el orden simulado solo en el estado/session storage del demo.
 
 ## Despliegue en Vercel
 

@@ -174,7 +174,9 @@ export async function PUT(
         include: {
           category: true,
           variants: true,
-          images: true,
+          images: {
+            orderBy: { sortOrder: "asc" },
+          },
         },
       })
     })

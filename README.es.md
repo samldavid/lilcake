@@ -23,6 +23,7 @@ Si quieres evaluar primero la parte operativa del sistema, entra directo al sand
 Dentro del demo puedes explorar:
 
 - gestión de productos y catálogo
+- galerías de producto con varias imágenes, portada y controles de orden
 - seguimiento de pedidos y visibilidad de clientes
 - control de cupones, exportaciones y flujos operativos
 
@@ -32,7 +33,7 @@ Dentro del demo puedes explorar:
 ## Funcionalidades
 
 - 🛍️ Tienda online lista para vender con catálogo, páginas de producto, carrito, búsqueda y checkout
-- 🖼️ Almacenamiento persistente de imágenes de producto en producción con Vercel Blob
+- 🖼️ Almacenamiento persistente de imágenes con galerías múltiples, portada, orden personalizado y soporte de Vercel Blob
 - 🔐 Autenticación flexible con email/contraseña y acceso con Google
 - 💳 Checkout real con Wompi, Stripe, PSE, Nequi y opción asistida por WhatsApp para contraentrega o Addi
 - 📦 Ciclo completo de pedidos con estados de pago, seguimiento de envío y visibilidad para el cliente
@@ -74,12 +75,15 @@ Existe un panel administrativo demo disponible en:
 - Muestra la experiencia del admin sin exponer el panel administrativo real.
 - Está aislado de la operación productiva y no escribe sobre los datos reales del negocio.
 - Las acciones de crear, editar, eliminar y exportar se simulan para enseñar el flujo completo.
+- Las acciones sobre imágenes también son seguras en demo, así que se puede probar el orden de galería y la portada sin tocar el catálogo real.
 - Un banner visible deja claro que ningún cambio se guarda de forma permanente.
 
 - El admin real se mantiene protegido con control por roles, sesiones seguras, APIs de escritura protegidas, rate limits y validacion backend.
 
 ## Mejoras Recientes
 
+- A fecha de 2026-05-03, el admin real y el admin demo ya permiten reordenar galerías de imágenes por producto, para que el operador controle el orden visual que verá el cliente y no solo la portada.
+- Los productos del demo ahora incluyen galerías con varias imágenes, haciendo más útil el sandbox público para evaluar una gestión real de catálogo.
 - A fecha de 2026-05-03, el storefront recibió una mejora visual adicional en la experiencia de inicio, con animaciones más expresivas, una sección editorial con imagen y botones directos hacia el catálogo.
 - También se corrigió la navegación por categorías para que la barra superior y los filtros laterales trabajen sincronizados, además de una pasada de textos visibles para mejorar la presentación en español.
 - A fecha de 2026-04-25, el storefront, el admin real y el admin demo recibieron una pasada completa de UX responsive enfocada en telefonos y tablets.
@@ -111,6 +115,7 @@ Existe un panel administrativo demo disponible en:
 - Negocios boutique que necesitan control de catálogo, checkout seguro y trazabilidad de pedidos
 - Empresas que trabajan con promociones y necesitan reglas de cupones que protejan el margen
 - Equipos que necesitan visibilidad sobre clientes, pedidos, envíos y exportación de datos
+- Equipos de merchandising que necesitan controlar galerías, portadas y orden visual de productos
 - Agencias o desarrolladores que buscan una base de comercio adaptable para distintos clientes
 - Negocios que quieren lanzar rápido sin construir toda la arquitectura comercial desde cero
 
@@ -144,7 +149,7 @@ Muchos repositorios de e-commerce se ven bien por fuera, pero se quedan cortos c
 LilCake destaca porque ya incluye lo que normalmente se deja para “después”:
 
 - validación backend real para checkout, descuentos y precios
-- almacenamiento persistente de imágenes en producción, separado de los archivos locales de desarrollo
+- almacenamiento persistente de imágenes y galerías reordenables, separado de los archivos locales de desarrollo
 - un panel admin que sí sirve para operar el negocio
 - reglas de cupones pensadas para proteger ingresos, no solo para mostrar un campo promocional
 - reportes exportables útiles para operación, control y seguimiento

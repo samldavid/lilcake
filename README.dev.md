@@ -9,7 +9,7 @@ LilCake is a Next.js storefront with:
 - NextAuth credentials + Google OAuth
 - Prisma ORM
 - Stripe, Wompi, and WhatsApp-assisted cash-on-delivery/advisor checkout flows
-- Admin panel for catalog and orders
+- Admin panel for catalog, media, orders, coupons, customers and reports
 
 [Leer esta guia tecnica en espanol](./README.dev.es.md)
 
@@ -77,7 +77,7 @@ graph TB
 | Domain | Main models | Responsibility |
 | --- | --- | --- |
 | Identity | `User`, `Account`, `Session`, `AccountSecurityToken` | Credentials, Google OAuth, sessions, verification and recovery flows |
-| Catalog | `Category`, `Product`, `ProductImage`, `ProductVariant` | Product organization, media gallery, stock and SKU management |
+| Catalog | `Category`, `Product`, `ProductImage`, `ProductVariant` | Product organization, sortable media gallery, stock and SKU management |
 | Cart | `CartItem` | Persisted authenticated cart with safer sync behavior |
 | Orders | `Order`, `OrderItem`, `PaymentTransaction` | Checkout snapshots, totals, shipping data, payment state and multi-gateway audit trail |
 | Promotions | `Coupon`, `CouponCustomerUsage` | Global and per-customer discount control with safe backend usage tracking |
@@ -100,6 +100,12 @@ graph TB
 
 ### 2026-05-03
 
+- Added product image ordering to the real admin and public admin demo:
+  - `ProductForm` now supports moving product images up or down, keeping the existing cover-image action and delete action
+  - image order is preserved in the submitted gallery array and continues to map to the existing `ProductImage.sortOrder` field, so no schema migration was needed
+  - `/api/admin/products` and `/api/admin/products/[id]` now return product images ordered by `sortOrder` after list, create and update operations
+  - `/admin-demo` product seeds now include multi-image galleries so visitors can test ordering and cover selection safely
+  - demo edits preserve the simulated image order without calling real admin write endpoints or touching PostgreSQL
 - Polished the storefront after the animation pass:
   - fixed visible Spanish copy with accents, ñ characters, and opening punctuation across home, catalog, cart, checkout, account, registration, login, product detail, and 404 screens
   - the `Experiencia LilCake` section now includes an editorial image, catalog CTA, quick clothing link, and clearer copy
@@ -556,6 +562,15 @@ Production setup:
 4. Test an admin product upload from `/admin/productos/[id]/editar`.
 
 If the token is missing in Vercel, the upload endpoint returns a clear configuration error instead of silently pretending the file was saved.
+
+Gallery ordering behavior:
+
+- The admin form treats the image array order as the desired storefront order.
+- The first image is the cover image shown first in product cards and product pages.
+- Admins can move images up or down before saving, or use "Make primary" to move one image directly to the front.
+- On save, the API rewrites image records for that product with sequential `sortOrder` values.
+- Reads from admin APIs return images ordered by `sortOrder` so the edit form, tables and storefront stay consistent.
+- The public `/admin-demo` uses the same UI controls but stores the simulated order only in demo state/session storage.
 
 ## Deploying to Vercel
 

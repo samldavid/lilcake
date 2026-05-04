@@ -27,7 +27,11 @@ export const adminDemoProducts: AdminProductRow[] = [
     isActive: true,
     category: { name: "Ropa" },
     variants: [{ stock: 14 }, { stock: 9 }],
-    images: [{ url: "/images/retro1999.png" }],
+    images: [
+      { url: "/images/retro1999.png" },
+      { url: "/images/ropa.png" },
+      { url: "/images/accesorios.png" },
+    ],
   },
   {
     id: "demo-cap-drop",
@@ -37,7 +41,11 @@ export const adminDemoProducts: AdminProductRow[] = [
     isActive: true,
     category: { name: "Accesorios" },
     variants: [{ stock: 16 }],
-    images: [{ url: "/images/accesorios.png" }],
+    images: [
+      { url: "/images/accesorios.png" },
+      { url: "/images/retro1999.png" },
+      { url: "/images/zapatos.png" },
+    ],
   },
   {
     id: "demo-jordan-1",
@@ -47,7 +55,11 @@ export const adminDemoProducts: AdminProductRow[] = [
     isActive: true,
     category: { name: "Zapatos" },
     variants: [{ stock: 3 }, { stock: 5 }],
-    images: [{ url: "/images/zapatos.png" }],
+    images: [
+      { url: "/images/zapatos.png" },
+      { url: "/images/ropa.png" },
+      { url: "/images/accesorios.png" },
+    ],
   },
   {
     id: "demo-sweater-ny",
@@ -57,7 +69,11 @@ export const adminDemoProducts: AdminProductRow[] = [
     isActive: true,
     category: { name: "Ropa" },
     variants: [{ stock: 8 }, { stock: 8 }],
-    images: [{ url: "/images/ropa.png" }],
+    images: [
+      { url: "/images/ropa.png" },
+      { url: "/images/retro1999.png" },
+      { url: "/images/zapatos.png" },
+    ],
   },
 ]
 
@@ -72,7 +88,11 @@ export const adminDemoProductSeeds: Record<string, ProductFormSeed> = {
     categoryId: "cat-apparel",
     isActive: true,
     isFeatured: true,
-    images: [{ url: "/images/retro1999.png" }],
+    images: [
+      { url: "/images/retro1999.png" },
+      { url: "/images/ropa.png" },
+      { url: "/images/accesorios.png" },
+    ],
     variants: [
       {
         id: "demo-retro-1999-s",
@@ -100,7 +120,11 @@ export const adminDemoProductSeeds: Record<string, ProductFormSeed> = {
     categoryId: "cat-accessories",
     isActive: true,
     isFeatured: false,
-    images: [{ url: "/images/accesorios.png" }],
+    images: [
+      { url: "/images/accesorios.png" },
+      { url: "/images/retro1999.png" },
+      { url: "/images/zapatos.png" },
+    ],
     variants: [
       {
         id: "demo-cap-drop-u",
@@ -121,7 +145,11 @@ export const adminDemoProductSeeds: Record<string, ProductFormSeed> = {
     categoryId: "cat-shoes",
     isActive: true,
     isFeatured: true,
-    images: [{ url: "/images/zapatos.png" }],
+    images: [
+      { url: "/images/zapatos.png" },
+      { url: "/images/ropa.png" },
+      { url: "/images/accesorios.png" },
+    ],
     variants: [
       {
         id: "demo-jordan-1-8",
@@ -149,7 +177,11 @@ export const adminDemoProductSeeds: Record<string, ProductFormSeed> = {
     categoryId: "cat-apparel",
     isActive: true,
     isFeatured: true,
-    images: [{ url: "/images/ropa.png" }],
+    images: [
+      { url: "/images/ropa.png" },
+      { url: "/images/retro1999.png" },
+      { url: "/images/zapatos.png" },
+    ],
     variants: [
       {
         id: "demo-sweater-ny-m",

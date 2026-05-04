@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation"
 import { upload } from "@vercel/blob/client"
 import {
   ArrowLeft,
+  ArrowDown,
+  ArrowUp,
   ImagePlus,
   Plus,
   Star,
@@ -557,6 +559,27 @@ export function ProductForm({
     ])
   }
 
+  const moveImage = (fromIndex: number, direction: -1 | 1) => {
+    setImages((current) => {
+      const toIndex = fromIndex + direction
+
+      if (toIndex < 0 || toIndex >= current.length) {
+        return current
+      }
+
+      const nextImages = [...current]
+      const [movedImage] = nextImages.splice(fromIndex, 1)
+
+      if (!movedImage) {
+        return current
+      }
+
+      nextImages.splice(toIndex, 0, movedImage)
+
+      return nextImages
+    })
+  }
+
   const removeImage = (imageUrl: string) => {
     if (imageUrl.startsWith("blob:")) {
       URL.revokeObjectURL(imageUrl)
@@ -722,10 +745,10 @@ export function ProductForm({
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="text-xl font-bold font-heading text-lc-white">
-                    Galeria de Imagenes
+                    Galería de Imágenes
                   </h2>
                   <p className="mt-1 text-sm text-lc-gray">
-                    La primera imagen sera la portada del producto.
+                    La primera imagen será la portada. Puedes cambiar el orden antes de guardar.
                   </p>
                 </div>
                 <Button
@@ -736,7 +759,7 @@ export function ProductForm({
                   className="flex items-center gap-2"
                 >
                   {uploadingImages ? <Upload size={16} /> : <ImagePlus size={16} />}
-                  {uploadingImages ? "Subiendo..." : "Anadir imagenes"}
+                  {uploadingImages ? "Subiendo..." : "Añadir imágenes"}
                 </Button>
               </div>
 
@@ -751,7 +774,7 @@ export function ProductForm({
 
               <div className="rounded-2xl border border-dashed border-lc-border bg-lc-darker/40 p-4">
                 <label className="mb-2 block text-sm font-medium text-lc-gray-light">
-                  Anadir por ruta publica o URL
+                  Añadir por ruta pública o URL
                 </label>
                 <div className="flex flex-col gap-3 sm:flex-row">
                   <input
@@ -770,14 +793,14 @@ export function ProductForm({
                     className="flex w-full items-center justify-center gap-2 sm:w-auto"
                   >
                     <Plus size={16} />
-                    Anadir
+                    Añadir
                   </Button>
                 </div>
               </div>
 
               {images.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-lc-border bg-lc-darker/40 p-8 text-center text-sm text-lc-gray">
-                  Sube una o varias imagenes, o usa una ruta publica como{" "}
+                  Sube una o varias imágenes, o usa una ruta pública como{" "}
                   <code>/images/retro1999.png</code>.
                 </div>
               ) : (
@@ -797,29 +820,55 @@ export function ProductForm({
                           <span className="text-xs font-bold uppercase tracking-wide text-lc-white">
                             {index === 0 ? "Portada" : `Imagen ${index + 1}`}
                           </span>
+                          <span className="mt-1 block text-[11px] font-medium text-lc-gray-light">
+                            Posición {index + 1} de {images.length}
+                          </span>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between gap-2 p-3">
+                      <div className="space-y-3 p-3">
                         <Button
                           type="button"
                           size="sm"
                           variant={index === 0 ? "primary" : "secondary"}
                           onClick={() => moveImageToFront(imageUrl)}
                           disabled={index === 0}
-                          className="flex-1"
+                          className="w-full"
                         >
                           <Star size={14} className="mr-2" />
                           {index === 0 ? "Principal" : "Hacer principal"}
                         </Button>
-                        <button
-                          type="button"
-                          onClick={() => removeImage(imageUrl)}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-lc-border text-lc-gray transition-colors hover:border-lc-error/40 hover:text-lc-error"
-                          aria-label="Eliminar imagen"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+
+                        <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
+                          <button
+                            type="button"
+                            onClick={() => moveImage(index, -1)}
+                            disabled={index === 0}
+                            className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl border border-lc-border px-3 text-xs font-semibold text-lc-gray-light transition-colors hover:border-lc-purple/50 hover:text-lc-white disabled:cursor-not-allowed disabled:opacity-40"
+                            aria-label={`Mover imagen ${index + 1} antes`}
+                          >
+                            <ArrowUp size={14} />
+                            Subir
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveImage(index, 1)}
+                            disabled={index === images.length - 1}
+                            className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl border border-lc-border px-3 text-xs font-semibold text-lc-gray-light transition-colors hover:border-lc-purple/50 hover:text-lc-white disabled:cursor-not-allowed disabled:opacity-40"
+                            aria-label={`Mover imagen ${index + 1} después`}
+                          >
+                            <ArrowDown size={14} />
+                            Bajar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeImage(imageUrl)}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-lc-border text-lc-gray transition-colors hover:border-lc-error/40 hover:text-lc-error"
+                            aria-label="Eliminar imagen"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}

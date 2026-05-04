@@ -23,6 +23,7 @@ If you want to evaluate the operational side of the product first, go straight t
 Inside the demo you can explore:
 
 - product and catalog management
+- multi-image product galleries with cover selection and ordering controls
 - order monitoring and customer visibility
 - coupon controls, exports, and operational workflows
 
@@ -32,7 +33,7 @@ Inside the demo you can explore:
 ## Features
 
 - 🛍️ Storefront ready to sell with catalog, product pages, cart, search, and checkout flow
-- 🖼️ Persistent product media storage for production uploads through Vercel Blob
+- 🖼️ Persistent product media storage with multi-image galleries, cover selection, custom ordering, and Vercel Blob support
 - 🔐 Flexible authentication with email/password and Google sign-in
 - 💳 Real checkout experience with Wompi, Stripe, PSE, Nequi, and WhatsApp-assisted cash-on-delivery or Addi options
 - 📦 Complete order lifecycle with payment states, shipment tracking, and customer visibility
@@ -74,11 +75,14 @@ A safe admin sandbox is available at:
 - It exposes the admin experience without requiring access to the real admin panel.
 - It is isolated from production operations and does not write to the real business data.
 - Create, edit, delete, and export actions are simulated to demonstrate the workflow.
+- Product media actions are also demo-safe, so visitors can test image ordering and cover selection without touching real catalog data.
 - A visible demo banner makes it clear that nothing is permanently stored.
 - The real admin remains protected with role-based access, secured sessions, protected write APIs, rate limits, and backend validation.
 
 ## Recent Improvements
 
+- As of 2026-05-03, the real admin and admin demo now support reorderable product image galleries, so operators can control the visual order shown to customers instead of only choosing a cover image.
+- Demo products now include richer multi-image galleries, making the public admin sandbox more useful for evaluating real catalog management workflows.
 - As of 2026-05-03, the storefront received an additional visual polish pass on the home experience, with more expressive animations, an editorial image section, and direct catalog CTAs.
 - Category navigation was also fixed so the top navbar and catalog sidebar stay synchronized, alongside a visible Spanish-copy cleanup for a more polished presentation.
 - As of 2026-04-25, the storefront, real admin, and admin demo received a full responsive UX pass focused on phones and tablets.
@@ -110,6 +114,7 @@ A safe admin sandbox is available at:
 - Boutique retailers that need catalog control, secure checkout, and order traceability
 - Businesses that run promotions and need coupon rules that do not break margins
 - Teams that need admin visibility over customers, orders, shipping, and exports
+- Merchandising teams that need control over product galleries, cover images, and visual order
 - Agencies or developers who want a customizable commerce base for multiple clients
 - Brands that want to launch fast without starting the entire commerce architecture from zero
 
@@ -143,7 +148,7 @@ Most commerce repos look good on the surface but fall apart in the real business
 LilCake stands out because it already includes the parts that usually get skipped:
 
 - real backend validation for checkout, discounts, and pricing
-- persistent production media storage for product images, separate from local development files
+- persistent production media storage and reorderable product galleries, separate from local development files
 - an admin panel that actually helps operate the business
 - coupon rules designed to protect revenue, not just display a promo field
 - reporting exports that are useful for operations, accounting, and daily control

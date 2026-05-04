@@ -26,7 +26,9 @@ export async function GET() {
       include: {
         category: true,
         variants: true,
-        images: true,
+        images: {
+          orderBy: { sortOrder: "asc" },
+        },
       },
       orderBy: { createdAt: "desc" },
     })
@@ -86,7 +88,9 @@ export async function POST(req: Request) {
       include: {
         category: true,
         variants: true,
-        images: true,
+        images: {
+          orderBy: { sortOrder: "asc" },
+        },
       },
     })
 
