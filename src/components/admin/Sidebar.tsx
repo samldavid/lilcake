@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   LogOut,
   Package,
+  Settings,
   ShoppingCart,
   TicketPercent,
   Users,
@@ -42,6 +43,7 @@ export function Sidebar({
     { href: `${basePath}/pedidos`, label: "Pedidos", icon: ShoppingCart },
     { href: `${basePath}/clientes`, label: "Clientes", icon: Users },
     { href: `${basePath}/cupones`, label: "Cupones", icon: TicketPercent },
+    { href: `${basePath}/configuracion`, label: "Configuracion", icon: Settings },
   ]
 
   React.useEffect(() => {

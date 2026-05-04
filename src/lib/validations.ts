@@ -193,3 +193,76 @@ export const validateCouponSchema = z.object({
   code: z.string().min(1, "Codigo requerido"),
   subtotal: z.number().positive(),
 })
+
+// BUSINESS SETTINGS
+
+const nullableTrimmedString = (max: number, message: string) =>
+  z.preprocess(
+    (value) => {
+      if (typeof value !== "string") {
+        return value ?? null
+      }
+
+      const trimmed = value.trim()
+      return trimmed.length > 0 ? trimmed : null
+    },
+    z.string().max(max, message).nullable()
+  )
+
+export const businessSettingsSchema = z.object({
+  businessName: z
+    .string()
+    .trim()
+    .min(2, "El nombre del negocio es obligatorio")
+    .max(120, "El nombre del negocio es demasiado largo"),
+  businessId: nullableTrimmedString(
+    80,
+    "La identificacion del negocio es demasiado larga"
+  ),
+  businessEmail: z.preprocess(
+    (value) => {
+      if (typeof value !== "string") {
+        return value ?? null
+      }
+
+      const trimmed = value.trim()
+      return trimmed.length > 0 ? trimmed : null
+    },
+    z
+      .string()
+      .email("Ingresa un correo valido para el negocio")
+      .max(160, "El correo del negocio es demasiado largo")
+      .nullable()
+  ),
+  businessPhone: nullableTrimmedString(
+    40,
+    "El telefono del negocio es demasiado largo"
+  ),
+  businessAddress: nullableTrimmedString(
+    180,
+    "La direccion del negocio es demasiado larga"
+  ),
+  businessCity: nullableTrimmedString(
+    80,
+    "La ciudad del negocio es demasiado larga"
+  ),
+  logoUrl: z.preprocess(
+    (value) => {
+      if (typeof value !== "string") {
+        return value ?? null
+      }
+
+      const trimmed = value.trim()
+      return trimmed.length > 0 ? trimmed : null
+    },
+    z
+      .string()
+      .url("La URL del logo no es valida")
+      .max(500, "La URL del logo es demasiado larga")
+      .nullable()
+  ),
+  salesNoteDisclaimer: nullableTrimmedString(
+    700,
+    "El texto legal de la nota de venta es demasiado largo"
+  ),
+})

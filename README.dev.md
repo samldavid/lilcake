@@ -106,7 +106,14 @@ graph TB
   - `/api/orders/[id]/sales-note` lets authenticated customers download only their own order documents
   - `/api/admin-demo/orders/[id]/sales-note` generates sample documents for the public sandbox without touching production data
   - confirmation and shipping emails now attach the generated sales note automatically
-  - no database migration was required because the PDF is generated from the existing `Order` and `OrderItem` snapshot
+  - each PDF is generated from the existing `Order` and `OrderItem` snapshot, without creating one database row per document
+- Added editable business settings in the admin panel:
+  - new Prisma model `BusinessSettings` and migration `20260504100000_add_business_settings`
+  - new protected route `/api/admin/business-settings` with the admin guard and Zod validation
+  - new `/admin/configuracion` page for editing the business details used by sales notes
+  - new `/admin-demo/configuracion` page with the same workflow in sandbox mode and no real writes
+  - `src/lib/business-settings.ts` centralizes defaults, safe reads, saving, and demo mock data
+  - sales note generation now reads database settings first and only falls back to environment variables when nothing has been configured
 
 ### 2026-05-03
 

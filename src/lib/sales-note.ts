@@ -11,6 +11,7 @@ import {
   getPaymentMethodLabel,
   getPaymentStatusLabel,
 } from "@/lib/order-status"
+import type { SalesNoteBusinessDetails } from "@/lib/business-settings"
 import { formatCOP } from "@/lib/utils"
 
 export const salesNoteOrderSelect = {
@@ -105,20 +106,28 @@ const MUTED = rgb(0.43, 0.45, 0.55)
 const LIGHT_BG = rgb(0.96, 0.96, 0.99)
 const BORDER = rgb(0.84, 0.84, 0.9)
 
-function getIssuer() {
+function getIssuer(businessDetails?: SalesNoteBusinessDetails) {
   return {
     name:
+      businessDetails?.name ||
       process.env.SALES_NOTE_BUSINESS_NAME ||
       process.env.NEXT_PUBLIC_APP_NAME ||
       "LilCake",
     identification:
+      businessDetails?.identification ||
       process.env.SALES_NOTE_BUSINESS_ID || "Identificacion no configurada",
     email:
+      businessDetails?.email ||
       process.env.SALES_NOTE_BUSINESS_EMAIL ||
       process.env.SMTP_USER ||
       "correo no configurado",
-    phone: process.env.SALES_NOTE_BUSINESS_PHONE || "",
-    address: process.env.SALES_NOTE_BUSINESS_ADDRESS || "",
+    phone: businessDetails?.phone || process.env.SALES_NOTE_BUSINESS_PHONE || "",
+    address:
+      businessDetails?.address || process.env.SALES_NOTE_BUSINESS_ADDRESS || "",
+    logoUrl: businessDetails?.logoUrl || "",
+    disclaimer:
+      businessDetails?.disclaimer ||
+      "Esta nota de venta es un comprobante interno del pedido. No reemplaza factura electronica de venta ni documento equivalente DIAN. Si el negocio esta obligado a facturar, debe emitir la factura electronica por el medio autorizado correspondiente.",
   }
 }
 
@@ -250,8 +259,13 @@ function drawLabelValue({
   })
 }
 
-function drawHeader(page: PDFPage, fonts: PdfFonts, order: SalesNoteOrderLike) {
-  const issuer = getIssuer()
+function drawHeader(
+  page: PDFPage,
+  fonts: PdfFonts,
+  order: SalesNoteOrderLike,
+  businessDetails?: SalesNoteBusinessDetails
+) {
+  const issuer = getIssuer(businessDetails)
   const width = page.getWidth()
   const top = page.getHeight() - MARGIN
 
@@ -347,9 +361,15 @@ function drawFooter(page: PDFPage, fonts: PdfFonts, pageNumber: number) {
   )
 }
 
-function addPage(pdfDoc: PDFDocument, fonts: PdfFonts, order: SalesNoteOrderLike, pageNumber: number) {
+function addPage(
+  pdfDoc: PDFDocument,
+  fonts: PdfFonts,
+  order: SalesNoteOrderLike,
+  pageNumber: number,
+  businessDetails?: SalesNoteBusinessDetails
+) {
   const page = pdfDoc.addPage(PAGE_SIZE)
-  drawHeader(page, fonts, order)
+  drawHeader(page, fonts, order, businessDetails)
   drawFooter(page, fonts, pageNumber)
 
   return page
@@ -363,18 +383,21 @@ export function buildSalesNoteFileName(orderNumber: string) {
   return `nota-venta-${cleanFileToken(orderNumber)}.pdf`
 }
 
-export async function generateSalesNotePdf(order: SalesNoteOrderLike) {
+export async function generateSalesNotePdf(
+  order: SalesNoteOrderLike,
+  businessDetails?: SalesNoteBusinessDetails
+) {
   const pdfDoc = await PDFDocument.create()
   const fonts: PdfFonts = {
     regular: await pdfDoc.embedFont(StandardFonts.Helvetica),
     bold: await pdfDoc.embedFont(StandardFonts.HelveticaBold),
   }
   let pageNumber = 1
-  let page = addPage(pdfDoc, fonts, order, pageNumber)
+  let page = addPage(pdfDoc, fonts, order, pageNumber, businessDetails)
   let y = page.getHeight() - 166
   const contentWidth = page.getWidth() - MARGIN * 2
   const halfWidth = (contentWidth - 18) / 2
-  const issuer = getIssuer()
+  const issuer = getIssuer(businessDetails)
   const customerEmail = order.customerEmail || order.user.email || "Sin email"
 
   page.drawRectangle({
@@ -475,7 +498,7 @@ export async function generateSalesNotePdf(order: SalesNoteOrderLike) {
   for (const item of order.items) {
     if (y < 118) {
       pageNumber += 1
-      page = addPage(pdfDoc, fonts, order, pageNumber)
+      page = addPage(pdfDoc, fonts, order, pageNumber, businessDetails)
       y = page.getHeight() - 166
     }
 
@@ -521,7 +544,7 @@ export async function generateSalesNotePdf(order: SalesNoteOrderLike) {
 
   if (y < 240) {
     pageNumber += 1
-    page = addPage(pdfDoc, fonts, order, pageNumber)
+    page = addPage(pdfDoc, fonts, order, pageNumber, businessDetails)
     y = page.getHeight() - 166
   }
 
@@ -569,8 +592,7 @@ export async function generateSalesNotePdf(order: SalesNoteOrderLike) {
   drawText(page, "Importante", MARGIN + 18, disclaimerY - 20, fonts.bold, 11, rgb(0.48, 0.31, 0.02))
   drawWrappedText({
     page,
-    text:
-      "Esta nota de venta es un comprobante interno del pedido. No reemplaza factura electronica de venta ni documento equivalente DIAN. Si el negocio esta obligado a facturar, debe emitir la factura electronica por el medio autorizado correspondiente.",
+    text: issuer.disclaimer,
     x: MARGIN + 18,
     y: disclaimerY - 37,
     font: fonts.regular,

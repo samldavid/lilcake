@@ -4,6 +4,7 @@ import {
   buildSalesNoteFileName,
   generateSalesNotePdf,
 } from "@/lib/sales-note"
+import { getDemoSalesNoteBusinessDetails } from "@/lib/business-settings"
 
 export async function GET(
   _req: Request,
@@ -19,7 +20,7 @@ export async function GET(
     )
   }
 
-  const pdf = await generateSalesNotePdf(order)
+  const pdf = await generateSalesNotePdf(order, getDemoSalesNoteBusinessDetails())
 
   return new NextResponse(pdf, {
     headers: {

@@ -106,7 +106,14 @@ graph TB
   - `/api/orders/[id]/sales-note` permite al cliente descargar solo sus propios comprobantes autenticados
   - `/api/admin-demo/orders/[id]/sales-note` genera comprobantes de muestra para el sandbox publico sin tocar datos reales
   - los correos de confirmacion y envio adjuntan automaticamente la nota de venta del pedido cuando se disparan
-  - no se agrego migracion de base de datos porque el PDF se genera desde el snapshot actual de `Order` y `OrderItem`
+  - el PDF se genera desde el snapshot actual de `Order` y `OrderItem`, sin crear tablas adicionales por comprobante
+- Se agrego configuracion editable del negocio desde el panel administrativo:
+  - nuevo modelo Prisma `BusinessSettings` y migracion `20260504100000_add_business_settings`
+  - nueva ruta protegida `/api/admin/business-settings` con guard administrativo y validacion Zod
+  - nueva pagina `/admin/configuracion` para editar datos comerciales usados por las notas de venta
+  - nueva pagina `/admin-demo/configuracion` con el mismo flujo en modo sandbox sin escritura real
+  - `src/lib/business-settings.ts` centraliza defaults, lectura segura, guardado y datos mock del demo
+  - la generacion de notas de venta ahora lee primero la configuracion de base de datos y solo usa variables de entorno como respaldo
 
 ### 2026-05-03
 

@@ -9,6 +9,7 @@ import {
   buildSalesNoteFileName,
   generateSalesNotePdf,
 } from "@/lib/sales-note"
+import { getSalesNoteBusinessDetails } from "@/lib/business-settings"
 import { formatCOP } from "@/lib/utils"
 
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || "LilCake"
@@ -277,11 +278,14 @@ async function sendClaimedOrderEmail({
 
     const orderUrl = buildOrderUrl(order.id)
     const recipientName = getRecipientName(order)
+    const businessDetails = attachSalesNote
+      ? await getSalesNoteBusinessDetails()
+      : null
     const attachments = attachSalesNote
       ? [
           {
             filename: buildSalesNoteFileName(order.orderNumber),
-            content: await generateSalesNotePdf(order),
+            content: await generateSalesNotePdf(order, businessDetails ?? undefined),
           },
         ]
       : []
