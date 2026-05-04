@@ -17,7 +17,7 @@ export function HeroSection() {
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-lc-border bg-lc-dark px-3 py-1.5 sm:mb-8">
               <Sparkles size={14} className="text-lc-warning sm:size-4" />
               <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-lc-gray-light sm:text-sm">
-                Nueva Coleccion Drop #04
+                Nueva Colección Drop #04
               </span>
             </div>
 
@@ -28,7 +28,7 @@ export function HeroSection() {
 
             <p className="mb-8 max-w-xl text-base leading-7 text-lc-gray-light sm:mb-10 sm:text-lg sm:leading-relaxed">
               Descubre la nueva ola del streetwear en Colombia. Piezas
-              exclusivas, disenos que rompen el molde y la mejor calidad para
+              exclusivas, diseños que rompen el molde y la mejor calidad para
               los que no siguen tendencias, las crean.
             </p>
 
@@ -38,7 +38,7 @@ export function HeroSection() {
                 className="btn-primary group relative inline-flex items-center justify-center gap-2 overflow-hidden px-6 py-3.5 text-base sm:px-8 sm:py-4 sm:text-lg"
               >
                 <span className="button-shine" />
-                Ver Coleccion
+                Ver Colección
                 <ArrowRight
                   size={20}
                   className="transition-transform group-hover:translate-x-1"
@@ -64,14 +64,14 @@ export function HeroSection() {
                   24h
                 </p>
                 <p className="mt-1 text-xs text-lc-gray sm:text-sm">
-                  Envios rapidos
+                  Envíos rápidos
                 </p>
               </div>
               <div>
                 <p className="text-2xl font-heading font-bold text-lc-white sm:text-3xl">
                   100%
                 </p>
-                <p className="mt-1 text-xs text-lc-gray sm:text-sm">Garantia</p>
+                <p className="mt-1 text-xs text-lc-gray sm:text-sm">Garantía</p>
               </div>
             </div>
 
@@ -109,7 +109,7 @@ export function HeroSection() {
                 <div className="absolute inset-0 bg-gradient-to-t from-lc-black/60 to-transparent" />
                 <div className="absolute bottom-4 left-4 flex items-center gap-2">
                   <Flame size={16} className="text-lc-purple-light" />
-                  <span className="text-sm font-bold tracking-wide">PIEZAS UNICAS</span>
+                  <span className="text-sm font-bold tracking-wide">PIEZAS ÚNICAS</span>
                 </div>
               </div>
             </div>
@@ -130,10 +130,10 @@ export function HeroSection() {
               <div className="relative flex h-2/5 flex-col items-center justify-center overflow-hidden rounded-3xl border border-lc-border bg-lc-dark p-8 text-center group">
                 <div className="absolute inset-0 bg-gradient-to-br from-lc-purple/20 to-lc-pink/20 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                 <h3 className="relative z-10 mb-2 text-2xl font-heading font-bold">
-                  Listo para el cambio?
+                  ¿Listo para el cambio?
                 </h3>
                 <p className="relative z-10 text-sm text-lc-gray">
-                  Unete a la revolucion urbana y lleva tu estilo al siguiente
+                  Únete a la revolución urbana y lleva tu estilo al siguiente
                   nivel.
                 </p>
               </div>

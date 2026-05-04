@@ -174,7 +174,7 @@ export default async function CustomerOrderDetailPage({
 
         {resolvedSearchParams.canceled === "true" && (
           <div className="mt-6 rounded-xl border border-lc-warning/30 bg-lc-warning/10 p-4 text-sm text-lc-warning">
-            Cerraste la sesion de pago antes de completarla. Puedes retomarla desde aqui.
+            Cerraste la sesión de pago antes de completarla. Puedes retomarla desde aquí.
           </div>
         )}
       </section>
@@ -239,7 +239,7 @@ export default async function CustomerOrderDetailPage({
             <div className="flex items-center gap-3 mb-6">
               <Truck className="text-lc-cyan" />
               <h2 className="text-xl font-heading font-bold text-lc-white">
-                Seguimiento del envio
+                Seguimiento del envío
               </h2>
             </div>
 
@@ -251,9 +251,9 @@ export default async function CustomerOrderDetailPage({
                 </p>
               </div>
               <div className="rounded-2xl border border-lc-border bg-lc-darker/60 p-4">
-                <p className="text-lc-gray mb-1">Numero de guia</p>
+                <p className="text-lc-gray mb-1">Número de guía</p>
                 <p className="text-lc-white font-medium">
-                  {order.trackingNumber || "Aun no disponible"}
+                  {order.trackingNumber || "Aún no disponible"}
                 </p>
               </div>
               <div className="rounded-2xl border border-lc-border bg-lc-darker/60 p-4">
@@ -280,7 +280,7 @@ export default async function CustomerOrderDetailPage({
               Acciones del pedido
             </h2>
             <p className="text-sm text-lc-gray mb-4">
-              Si tu pedido sigue pendiente, puedes retomarlo o cancelarlo desde aqui.
+              Si tu pedido sigue pendiente, puedes retomarlo o cancelarlo desde aquí.
             </p>
             <CustomerOrderActions
               orderId={order.id}
@@ -294,7 +294,7 @@ export default async function CustomerOrderDetailPage({
         <div className="space-y-6">
           <div className="bg-lc-dark border border-lc-border rounded-2xl p-6">
             <h2 className="text-xl font-heading font-bold text-lc-white mb-4">
-              Envio y pago
+              Envío y pago
             </h2>
             <div className="space-y-4 text-sm">
               <div>
@@ -329,12 +329,12 @@ export default async function CustomerOrderDetailPage({
                 </p>
               </div>
               <div>
-                <p className="text-lc-gray mb-1">Direccion</p>
+                <p className="text-lc-gray mb-1">Dirección</p>
                 <p className="text-lc-white font-medium">{order.shippingAddress}</p>
                 <p className="text-lc-gray">{order.shippingCity}</p>
               </div>
               <div>
-                <p className="text-lc-gray mb-1">Telefono</p>
+                <p className="text-lc-gray mb-1">Teléfono</p>
                 <p className="text-lc-white font-medium">{order.shippingPhone}</p>
               </div>
               <div>
@@ -351,7 +351,7 @@ export default async function CustomerOrderDetailPage({
               </div>
               {order.trackingNumber && (
                 <div>
-                  <p className="text-lc-gray mb-1">Numero de guia</p>
+                  <p className="text-lc-gray mb-1">Número de guía</p>
                   <p className="text-lc-white font-medium">{order.trackingNumber}</p>
                 </div>
               )}

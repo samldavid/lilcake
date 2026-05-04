@@ -130,10 +130,10 @@ export default async function AccountPage() {
             <div className="bg-lc-dark border border-lc-border border-dashed rounded-2xl p-12 text-center flex flex-col items-center">
               <SearchX size={48} className="text-lc-gray mb-4 opacity-50" />
               <p className="text-lc-gray-light text-lg">
-                Aun no tienes ningun pedido a tu nombre.
+                Aún no tienes ningún pedido a tu nombre.
               </p>
               <p className="text-sm text-lc-gray mt-2">
-                Explora la nueva coleccion y estrena algo epico.
+                Explora la nueva colección y estrena algo épico.
               </p>
             </div>
           ) : (
@@ -155,13 +155,13 @@ export default async function AccountPage() {
                       })}
                     </p>
                     <p className="text-sm text-lc-gray">
-                      {order._count.items} {order._count.items === 1 ? "articulo" : "articulos"}
+                      {order._count.items} {order._count.items === 1 ? "artículo" : "artículos"}
                     </p>
                     {order.trackingNumber ? (
                       <p className="text-xs text-lc-cyan mt-2">
                         {order.shippingCarrier
-                          ? `${order.shippingCarrier} • Guia ${order.trackingNumber}`
-                          : `Guia ${order.trackingNumber}`}
+                          ? `${order.shippingCarrier} • Guía ${order.trackingNumber}`
+                          : `Guía ${order.trackingNumber}`}
                       </p>
                     ) : null}
                   </div>

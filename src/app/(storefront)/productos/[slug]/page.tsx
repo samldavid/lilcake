@@ -101,13 +101,13 @@ export default async function ProductDetailPage({
 
           <div className="mt-auto border-t border-lc-border pt-5 sm:pt-6">
             <h4 className="mb-3 font-heading font-bold text-lc-white sm:mb-4">
-              Envios y Devoluciones
+              Envíos y Devoluciones
             </h4>
             <p className="mb-2 text-sm text-lc-gray">
-              Envio estandar: 2 a 5 dias habiles en Colombia.
+              Envío estándar: 2 a 5 días hábiles en Colombia.
             </p>
             <p className="text-sm text-lc-gray">
-              Devoluciones gratis dentro de los primeros 15 dias tras haber
+              Devoluciones gratis dentro de los primeros 15 días tras haber
               recibido tu pedido.
             </p>
           </div>

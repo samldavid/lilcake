@@ -2,12 +2,19 @@ import { Navbar } from "@/components/storefront/Navbar"
 import { Footer } from "@/components/storefront/Footer"
 import { CartProvider } from "@/components/CartProvider"
 import Link from "next/link"
+import { Suspense } from "react"
 
 export default function NotFound() {
   return (
     <CartProvider>
       <div className="flex flex-col min-h-screen">
-        <Navbar />
+        <Suspense
+          fallback={
+            <div className="sticky top-0 z-40 h-16 w-full border-b border-lc-border glass sm:h-20" />
+          }
+        >
+          <Navbar />
+        </Suspense>
         <main className="flex-1 w-full flex items-center justify-center bg-lc-black px-4 animate-fade-in">
           <div className="text-center max-w-lg">
             <h1 className="text-9xl font-heading font-black text-transparent bg-clip-text bg-gradient-to-tr from-lc-purple to-lc-pink mb-4 drop-shadow-[0_0_50px_rgba(111,0,255,0.4)]">

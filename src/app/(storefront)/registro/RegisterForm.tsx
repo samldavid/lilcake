@@ -64,17 +64,17 @@ export function RegisterForm({
         callbackUrl="/cuenta"
         label="Registrarme con Google"
         googleEnabled={googleEnabled}
-        helperText="Si es tu primera vez, tu cuenta se crea automaticamente con tu perfil de Google."
+        helperText="Si es tu primera vez, tu cuenta se crea automáticamente con tu perfil de Google."
         requiresTermsAcceptance
         hasAcceptedTerms={formData.acceptedTerms}
         termsErrorMessage={
           termsError
-            ? "Para crear una cuenta con Google debes aceptar primero los terminos y condiciones."
+            ? "Para crear una cuenta con Google debes aceptar primero los términos y condiciones."
             : undefined
         }
         onTermsRequired={() =>
           setError(
-            "Debes aceptar los terminos y condiciones antes de crear tu cuenta."
+            "Debes aceptar los términos y condiciones antes de crear tu cuenta."
           )
         }
       />
@@ -94,7 +94,7 @@ export function RegisterForm({
           name="name"
           autoComplete="name"
           required
-          placeholder="Juan Perez"
+          placeholder="Juan Pérez"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
         />
@@ -111,7 +111,7 @@ export function RegisterForm({
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
         />
         <Input
-          label="Telefono (Opcional)"
+          label="Teléfono (Opcional)"
           type="tel"
           name="tel"
           autoComplete="tel"
@@ -120,12 +120,12 @@ export function RegisterForm({
           onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
         />
         <Input
-          label="ContraseÃ±a"
+          label="Contraseña"
           type="password"
           name="password"
           autoComplete="new-password"
           required
-          placeholder="Crea una contraseÃ±a segura"
+          placeholder="Crea una contraseña segura"
           value={formData.password}
           onChange={(e) =>
             setFormData({ ...formData, password: e.target.value })
@@ -136,12 +136,12 @@ export function RegisterForm({
           identityValues={[formData.name, formData.email]}
         />
         <Input
-          label="Confirmar contraseÃ±a"
+          label="Confirmar contraseña"
           type="password"
           name="confirmPassword"
           autoComplete="new-password"
           required
-          placeholder="Repite tu contraseÃ±a"
+          placeholder="Repite tu contraseña"
           value={formData.confirmPassword}
           onChange={(e) =>
             setFormData({ ...formData, confirmPassword: e.target.value })
@@ -158,13 +158,13 @@ export function RegisterForm({
             className="mt-1 h-4 w-4 rounded border-lc-border bg-lc-black text-lc-purple focus:ring-lc-purple"
           />
           <span className="leading-6">
-            He leido y acepto los{" "}
+            He leído y acepto los{" "}
             <Link
               href="/terminos"
               target="_blank"
               className="font-semibold text-lc-cyan transition-colors hover:text-white"
             >
-              terminos y condiciones
+              términos y condiciones
             </Link>{" "}
             y la{" "}
             <Link
@@ -172,7 +172,7 @@ export function RegisterForm({
               target="_blank"
               className="font-semibold text-lc-cyan transition-colors hover:text-white"
             >
-              politica de privacidad
+              política de privacidad
             </Link>
             .
           </span>

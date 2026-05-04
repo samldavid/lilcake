@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Loader2, Search } from "lucide-react"
 import {
   ProductCard,
@@ -29,6 +29,7 @@ export function CatalogSearchExperience({
   initialCategorySlug,
   initialSearchQuery,
 }: CatalogSearchExperienceProps) {
+  const router = useRouter()
   const pathname = usePathname()
   const [selectedCategory, setSelectedCategory] = React.useState<string | undefined>(
     initialCategorySlug
@@ -48,6 +49,13 @@ export function CatalogSearchExperience({
     selectedCategory
 
   React.useEffect(() => {
+    setSelectedCategory(initialCategorySlug)
+    setQuery(initialSearchQuery ?? "")
+    setProducts(initialProducts)
+    setIsLoading(false)
+  }, [initialCategorySlug, initialProducts, initialSearchQuery])
+
+  React.useEffect(() => {
     const params = new URLSearchParams()
 
     if (selectedCategory) {
@@ -64,10 +72,12 @@ export function CatalogSearchExperience({
         ? `${window.location.pathname}${window.location.search}`
         : pathname
 
-    if (nextUrl !== currentUrl && typeof window !== "undefined") {
-      window.history.replaceState(null, "", nextUrl)
+    if (nextUrl !== currentUrl) {
+      React.startTransition(() => {
+        router.replace(nextUrl, { scroll: false })
+      })
     }
-  }, [pathname, query, selectedCategory])
+  }, [pathname, query, router, selectedCategory])
 
   React.useEffect(() => {
     const isInitialState =
@@ -98,7 +108,7 @@ export function CatalogSearchExperience({
     })
       .then(async (response) => {
         if (!response.ok) {
-          throw new Error("No pudimos actualizar el catalogo.")
+          throw new Error("No pudimos actualizar el catálogo.")
         }
 
         return response.json()
@@ -139,11 +149,11 @@ export function CatalogSearchExperience({
   const title = activeQuery
     ? `Resultados para "${activeQuery}"`
     : selectedCategory
-      ? `Categoria: ${activeCategoryName}`
-      : "Catalogo Completo"
+          ? `Categoría: ${activeCategoryName}`
+          : "Catálogo Completo"
 
   const subtitle = isShortQuery
-    ? "Escribe al menos 3 letras para activar resultados dinamicos mas precisos."
+    ? "Escribe al menos 3 letras para activar resultados dinámicos más precisos."
     : isLoading
       ? "Buscando productos..."
       : `Mostrando ${products.length} productos`
@@ -170,10 +180,10 @@ export function CatalogSearchExperience({
 
             <div className="mt-3 min-h-6 text-xs text-lc-gray">
               {isShortQuery
-                ? "Sigue escribiendo para ver coincidencias mas precisas."
+                  ? "Sigue escribiendo para ver coincidencias más precisas."
                 : activeQuery
-                  ? "La busqueda se actualiza mientras escribes."
-                  : "Puedes buscar por nombre, estilo o categoria."}
+                  ? "La búsqueda se actualiza mientras escribes."
+                  : "Puedes buscar por nombre, estilo o categoría."}
             </div>
 
             {activeQuery && products.length > 0 ? (
@@ -213,7 +223,7 @@ export function CatalogSearchExperience({
           </div>
 
           <div>
-            <h3 className="mb-4 text-lg font-bold font-heading text-lc-white">Categorias</h3>
+            <h3 className="mb-4 text-lg font-bold font-heading text-lc-white">Categorías</h3>
             <div className="flex flex-wrap gap-2 lg:flex-col lg:gap-2">
               <button
                 type="button"
@@ -267,7 +277,7 @@ export function CatalogSearchExperience({
           {products.length === 0 ? (
             <div className="rounded-2xl border border-lc-border bg-lc-dark p-8 text-center sm:p-12">
               <p className="mb-4 text-lc-gray">
-                No encontramos productos que coincidan con tu busqueda.
+                No encontramos productos que coincidan con tu búsqueda.
               </p>
               <button
                 type="button"
@@ -277,7 +287,7 @@ export function CatalogSearchExperience({
                 }}
                 className="btn-secondary inline-block"
               >
-                Ver todo el catalogo
+                Ver todo el catálogo
               </button>
             </div>
           ) : (

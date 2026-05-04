@@ -14,14 +14,14 @@ export default function CartPage() {
       <div className="mx-auto max-w-3xl px-4 py-32 text-center animate-fade-in">
         <div className="rounded-3xl border border-lc-border bg-lc-darker p-12">
           <h1 className="mb-4 text-3xl font-heading font-bold text-lc-white">
-            Tu carrito esta vacio
+            Tu carrito está vacío
           </h1>
           <p className="mb-8 text-lc-gray">
-            Parece que aun no has agregado nada. Descubre las ultimas tendencias
+            Parece que aún no has agregado nada. Descubre las últimas tendencias
             y eleva tu estilo.
           </p>
           <Link href="/productos" className="btn-primary inline-flex items-center gap-2">
-            Ver Coleccion
+            Ver Colección
             <ArrowRight size={18} />
           </Link>
         </div>
@@ -67,7 +67,7 @@ export default function CartPage() {
                 </div>
 
                 <div className="mb-4 text-sm text-lc-gray">
-                  {[item.size, item.color].filter(Boolean).join(" - ") || "Talla unica"}
+                  {[item.size, item.color].filter(Boolean).join(" - ") || "Talla única"}
                 </div>
 
                 <div className="mt-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -109,7 +109,7 @@ export default function CartPage() {
                 <span>{formatCOP(total)}</span>
               </div>
               <div className="flex justify-between text-lc-gray-light">
-                <span>Envio estimado</span>
+                <span>Envío estimado</span>
                 <span className="text-lc-success">Calculado en checkout</span>
               </div>
             </div>

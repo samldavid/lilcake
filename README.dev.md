@@ -100,6 +100,12 @@ graph TB
 
 ### 2026-05-03
 
+- Polished the storefront after the animation pass:
+  - fixed visible Spanish copy with accents, ñ characters, and opening punctuation across home, catalog, cart, checkout, account, registration, login, product detail, and 404 screens
+  - the `Experiencia LilCake` section now includes an editorial image, catalog CTA, quick clothing link, and clearer copy
+  - fixed category navigation so the top navbar and catalog sidebar stay synchronized with the `?categoria=...` URL state
+  - `Navbar` now reads `useSearchParams` inside `Suspense` boundaries so static pages like `/ayuda` and `/_not-found` keep building correctly
+  - responsive behavior was verified on mobile, tablet, and desktop without horizontal overflow
 - Improved the storefront homepage visual experience without touching backend or checkout logic:
   - added `ScrollReveal` with `IntersectionObserver` for lightweight reusable scroll animations
   - installed `motion` for more expressive React animations in the homepage experience section

@@ -16,10 +16,10 @@ export default async function RegisterPage({
         <Card glass className="relative z-10 w-full rounded-[20px]">
           <CardHeader className="border-b border-lc-border text-center">
             <h2 className="text-3xl font-bold tracking-tight text-lc-white">
-              Unete a LilCake
+              Únete a LilCake
             </h2>
             <p className="mt-2 text-sm text-lc-gray">
-              Crea tu cuenta para comprar de manera mas rapida.
+              Crea tu cuenta para comprar de manera más rápida.
             </p>
           </CardHeader>
           <CardBody className="p-8">

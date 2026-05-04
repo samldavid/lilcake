@@ -101,7 +101,7 @@ export default async function HomePage() {
               Nuevos Lanzamientos
             </h2>
             <p className="max-w-2xl text-sm text-lc-gray-light sm:text-base">
-              Lo mas fresh de la temporada. Ediciones limitadas, outfits urbanos
+              Lo más fresh de la temporada. Ediciones limitadas, outfits urbanos
               y piezas listas para rotar tu estilo.
             </p>
           </div>
@@ -109,7 +109,7 @@ export default async function HomePage() {
             href="/productos"
             className="group flex items-center text-sm font-semibold text-lc-purple transition-colors hover:text-lc-purple-light"
           >
-            Ver todo el catalogo
+            Ver todo el catálogo
             <ArrowRight
               size={16}
               className="ml-2 transition-transform group-hover:translate-x-1"
@@ -134,7 +134,7 @@ export default async function HomePage() {
               Navega a tu manera
             </p>
             <h2 className="mb-8 text-2xl font-heading font-bold text-lc-white sm:mb-12 sm:text-4xl">
-              Explora por Categoria
+              Explora por Categoría
             </h2>
           </ScrollReveal>
 
@@ -154,11 +154,11 @@ export default async function HomePage() {
                     src={cat.img}
                     alt={cat.title}
                     className="h-full w-full object-cover opacity-60 transition-all duration-700 group-hover:scale-110 group-hover:opacity-40"
-                  />
+                    />
                   <div className="absolute inset-0 bg-gradient-to-t from-lc-black/75 via-lc-black/10 to-transparent" />
                   <div className="absolute inset-x-6 bottom-6 text-left">
                     <span className="mb-3 inline-flex rounded-full border border-white/15 bg-lc-black/40 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-lc-gray-light backdrop-blur-md">
-                      Categoria 0{index + 1}
+                      Categoría 0{index + 1}
                     </span>
                     <h3 className="text-2xl font-heading font-bold uppercase tracking-[0.22em] text-white transition-transform duration-300 drop-shadow-2xl group-hover:translate-x-2 sm:text-3xl">
                       {cat.title}

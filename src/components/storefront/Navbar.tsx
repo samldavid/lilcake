@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 import { Menu, Search, ShoppingCart, User, X } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { useCart } from "@/components/CartProvider"
@@ -13,19 +13,26 @@ export function Navbar() {
   const { itemCount } = useCart()
   const { data: session } = useSession()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const currentSearch = searchParams.toString()
+  const currentCategory = searchParams.get("categoria")
   const [isMenuOpen, setIsMenuOpen] = React.useState(false)
   const [isSearchOpen, setIsSearchOpen] = React.useState(false)
 
   const navLinks = [
-    { href: "/productos?categoria=ropa", label: "Ropa" },
-    { href: "/productos?categoria=zapatos", label: "Zapatos" },
-    { href: "/productos?categoria=accesorios", label: "Accesorios" },
+    { href: "/productos?categoria=ropa", label: "Ropa", category: "ropa" },
+    { href: "/productos?categoria=zapatos", label: "Zapatos", category: "zapatos" },
+    {
+      href: "/productos?categoria=accesorios",
+      label: "Accesorios",
+      category: "accesorios",
+    },
   ]
 
   React.useEffect(() => {
     setIsMenuOpen(false)
     setIsSearchOpen(false)
-  }, [pathname])
+  }, [currentSearch, pathname])
 
   return (
     <nav className="sticky top-0 z-40 w-full border-b border-lc-border glass">
@@ -63,7 +70,9 @@ export function Navbar() {
                 href={link.href}
                 className={cn(
                   "text-sm font-semibold transition-colors hover:text-lc-purple",
-                  pathname.includes(link.href) ? "text-lc-purple" : "text-lc-gray-light"
+                  pathname === "/productos" && currentCategory === link.category
+                    ? "text-lc-purple"
+                    : "text-lc-gray-light"
                 )}
               >
                 {link.label}
@@ -75,7 +84,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setIsSearchOpen(true)}
-              aria-label="Abrir busqueda"
+              aria-label="Abrir búsqueda"
               className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-transparent text-lc-gray transition-colors hover:border-lc-border hover:text-lc-white"
             >
               <Search size={22} />
@@ -122,6 +131,7 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
+                onClick={() => setIsMenuOpen(false)}
                 className="block rounded-xl px-4 py-3 text-base font-semibold text-lc-white hover:bg-lc-dark/50"
               >
                 {link.label}

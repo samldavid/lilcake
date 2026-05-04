@@ -100,6 +100,12 @@ graph TB
 
 ### 2026-05-03
 
+- Se pulió el storefront después de la mejora de animaciones:
+  - se corrigieron textos visibles con tildes, eñes y signos de apertura en home, catálogo, carrito, checkout, cuenta, registro, login, detalle de producto y página 404
+  - la sección `Experiencia LilCake` ahora incluye imagen editorial, CTA hacia catálogo, acceso rápido a ropa y copy más claro
+  - se corrigió la navegación de categorías para que la barra superior y la barra lateral del catálogo se sincronicen correctamente con `?categoria=...`
+  - `Navbar` ahora lee `useSearchParams` dentro de límites `Suspense` para mantener el build estático de páginas como `/ayuda` y `/_not-found`
+  - se verificó responsive en móvil, tablet y escritorio sin overflow horizontal
 - Se mejoro la experiencia visual de la pagina principal sin tocar backend ni flujo de compra:
   - se agrego `ScrollReveal` con `IntersectionObserver` para animaciones por scroll ligeras y reutilizables
   - se instalo `motion` para animaciones React mas expresivas en la seccion de experiencia de la home

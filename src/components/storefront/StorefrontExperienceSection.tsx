@@ -1,27 +1,29 @@
 "use client"
 
 import { motion, useReducedMotion } from "motion/react"
-import { CheckCircle2, Sparkles, Truck } from "lucide-react"
+import { ArrowRight, CheckCircle2, Sparkles, Truck } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
 
 const experienceSteps = [
   {
     step: "01",
     title: "Descubre el drop",
-    text: "Productos destacados, categorias y fotos con movimiento suave para que la exploracion se sienta viva.",
+    text: "Productos destacados, categorías y fotos con movimiento suave para que la exploración se sienta viva.",
     accent: "from-lc-purple/35 via-lc-purple/10 to-transparent",
     icon: Sparkles,
   },
   {
     step: "02",
     title: "Encuentra la pieza",
-    text: "Cards con entrada escalonada, hover mas premium y jerarquia clara para precio, categoria y novedades.",
+    text: "Cards con entrada escalonada, hover más premium y jerarquía clara para precio, categoría y novedades.",
     accent: "from-lc-pink/35 via-lc-pink/10 to-transparent",
     icon: CheckCircle2,
   },
   {
     step: "03",
     title: "Compra con confianza",
-    text: "El flujo mantiene Wompi, Stripe y asesoria por WhatsApp sin tocar la logica segura del checkout.",
+    text: "El flujo mantiene Wompi, Stripe y asesoría por WhatsApp sin tocar la lógica segura del checkout.",
     accent: "from-lc-cyan/30 via-lc-cyan/10 to-transparent",
     icon: Truck,
   },
@@ -84,16 +86,62 @@ export function StorefrontExperienceSection() {
             Baja, elige y arma tu outfit sin perder el ritmo.
           </h2>
           <p className="mt-5 max-w-xl text-base leading-8 text-lc-gray-light">
-            La tienda ahora acompana el recorrido como una vitrina: cada bloque
-            aparece con intencion para guiar al cliente desde inspiracion hasta
+            La tienda ahora acompaña el recorrido como una vitrina: cada bloque
+            aparece con intención para guiar al cliente desde inspiración hasta
             compra.
           </p>
+
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+            <Link
+              href="/productos"
+              className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-lc-purple to-lc-pink px-6 text-sm font-bold text-white shadow-[0_18px_45px_rgba(108,60,225,0.25)] transition-transform hover:-translate-y-0.5"
+            >
+              Ver catálogo
+              <ArrowRight
+                size={17}
+                className="transition-transform group-hover:translate-x-1"
+              />
+            </Link>
+            <Link
+              href="/productos?categoria=ropa"
+              className="inline-flex min-h-12 items-center justify-center rounded-full border border-lc-border bg-lc-card/70 px-6 text-sm font-semibold text-lc-gray-light transition-colors hover:border-lc-purple/60 hover:text-lc-white"
+            >
+              Explorar ropa
+            </Link>
+          </div>
+
+          <motion.div
+            className="group relative mt-8 overflow-hidden rounded-[2rem] border border-lc-border bg-lc-card/70 shadow-[0_30px_90px_rgba(0,0,0,0.22)]"
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 22 }}
+            whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.35 }}
+            transition={{ duration: 0.7, delay: 0.12, ease: "easeOut" }}
+          >
+            <div className="relative h-56 sm:h-72">
+              <Image
+                src="/images/ropa.png"
+                alt="Outfit urbano destacado LilCake"
+                fill
+                sizes="(min-width: 1024px) 36rem, 100vw"
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-lc-black via-lc-black/35 to-transparent" />
+              <div className="absolute inset-x-5 bottom-5">
+                <div className="mb-3 inline-flex rounded-full border border-white/15 bg-lc-black/50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-lc-gray-light backdrop-blur">
+                  Drop urbano
+                </div>
+                <p className="max-w-sm font-heading text-2xl font-bold leading-tight text-white">
+                  Inspírate, combina y entra al catálogo con una idea clara.
+                </p>
+              </div>
+            </div>
+          </motion.div>
 
           <div className="mt-8 grid grid-cols-3 overflow-hidden rounded-3xl border border-lc-border bg-lc-card/60 text-center backdrop-blur">
             {[
               ["3", "pasos"],
               ["24/7", "vitrina"],
-              ["0", "friccion"],
+              ["0", "fricción"],
             ].map(([value, label]) => (
               <div
                 key={label}

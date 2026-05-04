@@ -125,7 +125,7 @@ export function ProfileForm({ user }: { user: UserData }) {
     <div className="space-y-10">
       <form onSubmit={handleProfileSubmit} className="space-y-6">
         <h3 className="border-b border-lc-border pb-2 text-xl font-bold font-heading text-lc-white">
-          Mis Datos de Envio
+          Mis Datos de Envío
         </h3>
 
         {msg ? (
@@ -151,7 +151,7 @@ export function ProfileForm({ user }: { user: UserData }) {
           <Input
             name="phone"
             autoComplete="tel"
-            label="Telefono"
+            label="Teléfono"
             defaultValue={user.phone || ""}
             placeholder="+57 321..."
           />
@@ -160,7 +160,7 @@ export function ProfileForm({ user }: { user: UserData }) {
           <Input
             name="address"
             autoComplete="street-address"
-            label="Direccion de Envio"
+            label="Dirección de Envío"
             defaultValue={user.address || ""}
             placeholder="Calle 123 #45-67"
           />

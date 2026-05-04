@@ -166,7 +166,7 @@ export function LoginForm({ googleEnabled }: LoginFormProps) {
           href="/registro"
           className="font-semibold text-lc-pink transition-colors hover:text-white"
         >
-          Registrate aqui
+          Regístrate aquí
         </Link>
       </div>
     </div>

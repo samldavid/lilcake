@@ -254,12 +254,12 @@ function CheckoutPageContent() {
           if (attempt < 9) {
             await wait(1500)
           }
-        }
+          }
 
         throw new Error(
           isWompiReturn
-            ? "Wompi recibio la transaccion, pero aun estamos terminando de confirmarla. Recarga esta pagina en unos segundos."
-            : "Stripe ya recibio el pago, pero aun estamos terminando de confirmarlo. Recarga esta pagina en unos segundos."
+            ? "Wompi recibió la transacción, pero aún estamos terminando de confirmarla. Recarga esta página en unos segundos."
+            : "Stripe ya recibió el pago, pero aún estamos terminando de confirmarlo. Recarga esta página en unos segundos."
         )
       } catch (checkoutError) {
         if (!isActive) {
@@ -440,7 +440,7 @@ function CheckoutPageContent() {
       }
 
       if (!data.url) {
-        throw new Error("No recibimos la URL de redireccion.")
+        throw new Error("No recibimos la URL de redirección.")
       }
 
       if (formData.paymentMethod === "WHATSAPP") {
@@ -484,11 +484,11 @@ function CheckoutPageContent() {
           Pedido confirmado
         </h1>
         <p className="text-lc-gray text-lg mb-8">
-          Tu pedido ya quedo registrado correctamente y nuestro equipo ya puede darle seguimiento.
+          Tu pedido ya quedó registrado correctamente y nuestro equipo ya puede darle seguimiento.
         </p>
         {orderNumber && (
           <p className="text-sm font-semibold text-lc-purple mb-8">
-            Numero de pedido: {orderNumber}
+            Número de pedido: {orderNumber}
           </p>
         )}
         <Button onClick={() => router.push("/")} size="lg">
@@ -537,7 +537,7 @@ function CheckoutPageContent() {
 
             <div className="rounded-2xl border border-lc-border bg-lc-dark p-5 sm:p-8">
               <h2 className="text-xl font-heading font-bold text-lc-white mb-6">
-                1. Datos de envio
+                1. Datos de envío
               </h2>
               <div className="mb-6 rounded-2xl border border-lc-border bg-lc-darker/60 p-4">
                 <label className="flex items-start gap-3 text-sm text-lc-gray-light">
@@ -578,9 +578,9 @@ function CheckoutPageContent() {
                   <Input
                     name="shippingAddress"
                     autoComplete="shipping street-address"
-                    label="Direccion"
+                    label="Dirección"
                     required
-                    placeholder="Calle, numero, apartamento..."
+                    placeholder="Calle, número, apartamento..."
                     value={formData.shippingAddress}
                     onChange={(e) =>
                       setFormData({ ...formData, shippingAddress: e.target.value })
@@ -600,7 +600,7 @@ function CheckoutPageContent() {
                 <Input
                   name="shippingPhone"
                   autoComplete="tel"
-                  label="Telefono"
+                  label="Teléfono"
                   type="tel"
                   required
                   value={formData.shippingPhone}
@@ -750,13 +750,13 @@ function CheckoutPageContent() {
                   className="mt-1 h-4 w-4 rounded border-lc-border bg-lc-black text-lc-purple focus:ring-lc-purple"
                 />
                 <span className="leading-6">
-                  He leido y acepto los{" "}
+                  He leído y acepto los{" "}
                   <Link
                     href="/terminos"
                     target="_blank"
                     className="font-semibold text-lc-cyan transition-colors hover:text-white"
                   >
-                    terminos y condiciones
+                    términos y condiciones
                   </Link>{" "}
                   y la{" "}
                   <Link
@@ -764,7 +764,7 @@ function CheckoutPageContent() {
                     target="_blank"
                     className="font-semibold text-lc-cyan transition-colors hover:text-white"
                   >
-                    politica de privacidad
+                    política de privacidad
                   </Link>{" "}
                   antes de confirmar esta compra.
                 </span>
@@ -864,7 +864,7 @@ function CheckoutPageContent() {
                 </div>
               ) : null}
               <div className="flex justify-between text-lc-gray-light">
-                <span>Envio</span>
+                <span>Envío</span>
                 <span className="text-lc-success">Gratis</span>
               </div>
             </div>

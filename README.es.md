@@ -80,6 +80,8 @@ Existe un panel administrativo demo disponible en:
 
 ## Mejoras Recientes
 
+- A fecha de 2026-05-03, el storefront recibió una mejora visual adicional en la experiencia de inicio, con animaciones más expresivas, una sección editorial con imagen y botones directos hacia el catálogo.
+- También se corrigió la navegación por categorías para que la barra superior y los filtros laterales trabajen sincronizados, además de una pasada de textos visibles para mejorar la presentación en español.
 - A fecha de 2026-04-25, el storefront, el admin real y el admin demo recibieron una pasada completa de UX responsive enfocada en telefonos y tablets.
 - La navegacion, el carrito, el checkout y las vistas operativas del admin ahora se sienten mas limpias en pantallas pequenas sin romper la experiencia de escritorio.
 

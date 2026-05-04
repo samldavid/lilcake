@@ -79,6 +79,8 @@ A safe admin sandbox is available at:
 
 ## Recent Improvements
 
+- As of 2026-05-03, the storefront received an additional visual polish pass on the home experience, with more expressive animations, an editorial image section, and direct catalog CTAs.
+- Category navigation was also fixed so the top navbar and catalog sidebar stay synchronized, alongside a visible Spanish-copy cleanup for a more polished presentation.
 - As of 2026-04-25, the storefront, real admin, and admin demo received a full responsive UX pass focused on phones and tablets.
 - Product browsing, cart, checkout, admin navigation, and admin data views now feel cleaner on small screens while keeping the desktop experience intact.
 
