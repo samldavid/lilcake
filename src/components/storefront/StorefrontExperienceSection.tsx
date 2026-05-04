@@ -37,6 +37,15 @@ const experienceSteps = [
   },
 ] as const
 
+const storefrontExperienceSteps = experienceSteps.map((step) =>
+  step.step === "03"
+    ? {
+        ...step,
+        text: "Elige medios de pago seguros y recibe ayuda personalizada si prefieres coordinar tu compra por WhatsApp.",
+      }
+    : step
+)
+
 function useCompactMotion() {
   const [isCompact, setIsCompact] = React.useState(false)
 
@@ -201,7 +210,7 @@ export function StorefrontExperienceSection() {
             className="absolute left-8 top-8 hidden h-[calc(100%-4rem)] w-px bg-gradient-to-b from-lc-purple via-lc-pink to-lc-cyan opacity-50 sm:block"
           />
 
-          {experienceSteps.map((item, index) => {
+          {storefrontExperienceSteps.map((item, index) => {
             const Icon = item.icon
 
             return (
