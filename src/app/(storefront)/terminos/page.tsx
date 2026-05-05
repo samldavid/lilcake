@@ -5,7 +5,7 @@ const supportEmail =
   process.env.NEXT_PUBLIC_SUPPORT_EMAIL ||
   process.env.SMTP_FROM?.match(/<([^>]+)>/)?.[1] ||
   process.env.SMTP_USER ||
-  "247061022+samldavid@users.noreply.github.com"
+  "contacto@example.com"
 
 const termsSections = [
   {

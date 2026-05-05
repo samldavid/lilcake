@@ -3,11 +3,25 @@ import bcrypt from "bcryptjs"
 
 const prisma = new PrismaClient()
 
+function getSeedAdminPassword() {
+  const password = process.env.SEED_ADMIN_PASSWORD
+
+  if (password) {
+    return password
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("Define SEED_ADMIN_PASSWORD before seeding production.")
+  }
+
+  return "admin123"
+}
+
 async function main() {
   console.log("🎂 Seeding LilCake database...")
 
   // ── Create Admin User ─────────────────────
-  const adminPassword = await bcrypt.hash("admin123", 12)
+  const adminPassword = await bcrypt.hash(getSeedAdminPassword(), 12)
   const admin = await prisma.user.upsert({
     where: { email: "admin@lilcake.co" },
     update: {},

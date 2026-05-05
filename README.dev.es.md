@@ -410,6 +410,7 @@ npm run dev
 - `DIRECT_URL`: cadena de conexion PostgreSQL directa usada por los comandos CLI de Prisma.
 - `NEXTAUTH_URL`: URL publica de la aplicacion.
 - `NEXTAUTH_SECRET`: secreto usado por las sesiones de NextAuth. Debe ser un valor aleatorio largo de al menos 32 caracteres.
+- `SEED_ADMIN_PASSWORD`: clave opcional del admin creado por seed local. Es obligatoria si se ejecuta el seed de Prisma con `NODE_ENV=production`.
 - `GOOGLE_CLIENT_ID`: client id de Google OAuth.
 - `GOOGLE_CLIENT_SECRET`: client secret de Google OAuth.
 - `SMTP_HOST`: host SMTP usado para enviar correos de verificacion y recuperacion.

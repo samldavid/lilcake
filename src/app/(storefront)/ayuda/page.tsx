@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { buildWhatsAppLink } from "@/lib/utils"
 
 export default function AyudaPage() {
   return (
@@ -15,7 +16,7 @@ export default function AyudaPage() {
           Escríbenos directamente a nuestro WhatsApp o envíanos un correo. Nuestro equipo de soporte está disponible.
         </p>
         <Link 
-          href="https://wa.me/573000000000" 
+          href={buildWhatsAppLink("Hola, necesito ayuda con LilCake.")}
           className="inline-flex w-full items-center justify-center rounded-xl font-semibold transition-all h-11 px-8 text-sm bg-lc-purple hover:bg-lc-pink text-white"
         >
           Contactar por WhatsApp
