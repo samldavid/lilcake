@@ -22,6 +22,19 @@ export function getPaymentStatusLabel(status: string) {
   )
 }
 
+export function getPaymentStatusBadgeLabel(status: string) {
+  switch (status) {
+    case "PAID":
+      return "Pagado"
+    case "FAILED":
+      return "Pago fallido"
+    case "PENDING":
+      return "Pago pendiente"
+    default:
+      return getPaymentStatusLabel(status)
+  }
+}
+
 export function getOrderStatusBadgeVariant(
   status: string
 ): "purple" | "pink" | "success" | "warning" | "error" {

@@ -11,8 +11,8 @@ import { Badge } from "@/components/ui/Badge"
 import {
   getOrderStatusBadgeVariant,
   getOrderStatusLabel,
+  getPaymentStatusBadgeLabel,
   getPaymentStatusClasses,
-  getPaymentStatusLabel,
 } from "@/lib/order-status"
 
 const accountPageUserSelect = {
@@ -139,56 +139,61 @@ export default async function AccountPage() {
           ) : (
             <div className="space-y-4">
               {orders.map((order) => (
-                <div
+                <article
                   key={order.id}
-                  className="bg-lc-dark border border-lc-border hover:border-lc-purple/50 transition-colors rounded-2xl p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+                  className="rounded-2xl border border-lc-border bg-lc-dark p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-lc-purple/50 hover:shadow-[0_18px_45px_rgba(0,0,0,0.24)] sm:p-6"
                 >
-                  <div>
-                    <span className="text-xs text-lc-purple font-bold tracking-widest mb-1 block">
-                      {order.orderNumber}
-                    </span>
-                    <p className="text-lc-white font-medium mb-1">
-                      {order.createdAt.toLocaleDateString("es-CO", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </p>
-                    <p className="text-sm text-lc-gray">
-                      {order._count.items} {order._count.items === 1 ? "artículo" : "artículos"}
-                    </p>
-                    {order.trackingNumber ? (
-                      <p className="text-xs text-lc-cyan mt-2">
-                        {order.shippingCarrier
-                          ? `${order.shippingCarrier} • Guía ${order.trackingNumber}`
-                          : `Guía ${order.trackingNumber}`}
-                      </p>
-                    ) : null}
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Badge variant={getOrderStatusBadgeVariant(order.status)}>
-                      {getOrderStatusLabel(order.status)}
-                    </Badge>
-                    <span
-                      className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wide ${getPaymentStatusClasses(order.paymentStatus)}`}
-                    >
-                      Pago {getPaymentStatusLabel(order.paymentStatus)}
-                    </span>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 lg:justify-end lg:min-w-[320px]">
-                    <div className="text-left sm:text-right">
-                      <p className="text-xs text-lc-gray mb-1">Total</p>
-                      <p className="text-lg font-bold text-lc-white">{formatCOP(order.total)}</p>
-                    </div>
-                    <Link href={`/cuenta/pedidos/${order.id}`}>
-                      <span className="inline-flex items-center justify-center rounded-full h-11 px-6 text-sm font-semibold transition-all btn-primary">
-                        Ver pedido
+                  <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(170px,auto)_minmax(240px,auto)] lg:items-center">
+                    <div className="min-w-0">
+                      <span className="mb-2 block font-mono text-xs font-bold tracking-widest text-lc-purple">
+                        {order.orderNumber}
                       </span>
-                    </Link>
+                      <p className="mb-1 text-lg font-semibold text-lc-white">
+                        {order.createdAt.toLocaleDateString("es-CO", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                      <p className="text-sm text-lc-gray">
+                        {order._count.items} {order._count.items === 1 ? "artículo" : "artículos"}
+                      </p>
+                      {order.trackingNumber ? (
+                        <p className="mt-3 max-w-full break-words text-sm font-medium text-lc-cyan">
+                          {order.shippingCarrier
+                            ? `${order.shippingCarrier} • Guía ${order.trackingNumber}`
+                            : `Guía ${order.trackingNumber}`}
+                        </p>
+                      ) : null}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 lg:justify-center">
+                      <Badge variant={getOrderStatusBadgeVariant(order.status)}>
+                        {getOrderStatusLabel(order.status)}
+                      </Badge>
+                      <span
+                        className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wide ${getPaymentStatusClasses(order.paymentStatus)}`}
+                      >
+                        {getPaymentStatusBadgeLabel(order.paymentStatus)}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between lg:justify-end lg:gap-6">
+                      <div className="text-left sm:text-right">
+                        <p className="mb-1 text-xs text-lc-gray">Total</p>
+                        <p className="text-xl font-bold text-lc-white">
+                          {formatCOP(order.total)}
+                        </p>
+                      </div>
+                      <Link
+                        href={`/cuenta/pedidos/${order.id}`}
+                        className="inline-flex h-12 w-full items-center justify-center rounded-full px-6 text-sm font-semibold transition-all btn-primary sm:w-auto"
+                      >
+                        Ver pedido
+                      </Link>
+                    </div>
                   </div>
-                </div>
+                </article>
               ))}
             </div>
           )}

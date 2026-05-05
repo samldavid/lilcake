@@ -8,8 +8,8 @@ import {
   getOrderStatusBadgeVariant,
   getOrderStatusLabel,
   getPaymentMethodLabel,
+  getPaymentStatusBadgeLabel,
   getPaymentStatusClasses,
-  getPaymentStatusLabel,
 } from "@/lib/order-status"
 import { formatCOP } from "@/lib/utils"
 
@@ -182,7 +182,7 @@ export default async function AdminOrderDetailPage({
           <span
             className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wide ${getPaymentStatusClasses(order.paymentStatus)}`}
           >
-            Pago {getPaymentStatusLabel(order.paymentStatus)}
+            {getPaymentStatusBadgeLabel(order.paymentStatus)}
           </span>
         </div>
       </div>

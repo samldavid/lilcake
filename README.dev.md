@@ -98,6 +98,13 @@ graph TB
 
 ## Changelog
 
+### 2026-05-05
+
+- Polished the customer order history cards without changing checkout, payment, auth, or database behavior:
+  - the order card now uses a responsive grid so order metadata, badges, total, and the action button align more cleanly across mobile and desktop
+  - payment badges now use a shared display helper, avoiding repeated wording while keeping pending and failed states explicit
+  - the same payment badge wording is reused on customer, admin, and admin-demo order detail headers for consistency
+
 ### 2026-05-04
 
 - Completed the Wompi production rollout without committing credentials:

@@ -98,6 +98,13 @@ graph TB
 
 ## Historial de cambios
 
+### 2026-05-05
+
+- Se pulieron las tarjetas del historial de pedidos del cliente sin cambiar checkout, pagos, auth ni base de datos:
+  - la tarjeta ahora usa una grilla responsive para alinear mejor datos del pedido, badges, total y boton de accion en movil y escritorio
+  - los badges de pago usan un helper compartido y evitan texto repetido, manteniendo claros los estados pendiente y fallido
+  - el mismo texto de badge de pago se reutiliza en los headers de detalle de pedido de cliente, admin real y admin-demo
+
 ### 2026-05-04
 
 - Se completo el rollout productivo de Wompi sin versionar credenciales:

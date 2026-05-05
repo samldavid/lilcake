@@ -10,9 +10,9 @@ import { CustomerOrderActions } from "@/components/orders/CustomerOrderActions"
 import {
   getOrderStatusBadgeVariant,
   getOrderStatusLabel,
+  getPaymentStatusBadgeLabel,
   getPaymentMethodLabel,
   getPaymentStatusClasses,
-  getPaymentStatusLabel,
 } from "@/lib/order-status"
 
 type CustomerOrderItem = {
@@ -141,7 +141,7 @@ export default async function CustomerOrderDetailPage({
           <span
             className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wide ${getPaymentStatusClasses(order.paymentStatus)}`}
           >
-            Pago {getPaymentStatusLabel(order.paymentStatus)}
+            {getPaymentStatusBadgeLabel(order.paymentStatus)}
           </span>
         </div>
       </div>
