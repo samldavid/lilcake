@@ -100,6 +100,14 @@ graph TB
 
 ### 2026-05-05
 
+- Hardened the payment and cart API surface after a security review:
+  - Stripe and Wompi return URLs now use a trusted configured app origin instead of deriving redirects from the incoming request host
+  - checkout, coupon preview, and cart sync payloads now enforce item, quantity, and text-length limits before touching Prisma
+  - cart sync now filters submitted variants to active products before writing, avoiding invalid variant writes and stale cart rows
+  - checkout creation, resume, and cancellation endpoints now share per-user/IP rate limits to reduce order and payment-session abuse
+  - Google OAuth no longer auto-links accounts by matching email, reducing account pre-hijacking risk for unverified credential signups
+  - `next-auth` was bumped to `4.24.14`, and PostCSS is overridden to a patched `8.5.14` version across direct and transitive installs
+  - `npm audit` still reports the upstream `next-auth`/`nodemailer` advisory because `next-auth` currently peers on Nodemailer 7; the app does not pass user-controlled `name` or `envelope.size` options to Nodemailer
 - Polished the customer order history cards without changing checkout, payment, auth, or database behavior:
   - the order card now uses a responsive grid so order metadata, badges, total, and the action button align more cleanly across mobile and desktop
   - payment badges now use a shared display helper, avoiding repeated wording while keeping pending and failed states explicit

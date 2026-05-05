@@ -2,7 +2,11 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { prepareCheckoutItems } from "@/lib/checkout"
+import {
+  CHECKOUT_MAX_ITEMS,
+  CHECKOUT_MAX_QUANTITY,
+  prepareCheckoutItems,
+} from "@/lib/checkout"
 import { CouponValidationError, resolveCouponForSubtotal } from "@/lib/coupons"
 import { prisma } from "@/lib/prisma"
 import {
@@ -14,15 +18,24 @@ import {
 import { getPublicErrorMessage } from "@/lib/errors"
 
 const previewCouponSchema = z.object({
-  couponCode: z.string().trim().min(3, "Ingresa un codigo valido."),
+  couponCode: z
+    .string()
+    .trim()
+    .min(3, "Ingresa un codigo valido.")
+    .max(40, "El codigo de cupon es demasiado largo."),
   items: z
     .array(
       z.object({
-        variantId: z.string().min(1, "Variante requerida."),
-        quantity: z.number().int().positive("Cantidad invalida."),
+        variantId: z.string().trim().min(1, "Variante requerida.").max(100),
+        quantity: z
+          .number()
+          .int()
+          .positive("Cantidad invalida.")
+          .max(CHECKOUT_MAX_QUANTITY, "Cantidad demasiado alta."),
       })
     )
-    .min(1, "Debes enviar al menos un producto."),
+    .min(1, "Debes enviar al menos un producto.")
+    .max(CHECKOUT_MAX_ITEMS, "Demasiados productos para validar."),
 })
 
 export async function POST(req: Request) {

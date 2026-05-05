@@ -162,7 +162,6 @@ if (googleAuthEnabled) {
     GoogleProvider({
       clientId: googleClientId!,
       clientSecret: googleClientSecret!,
-      allowDangerousEmailAccountLinking: true,
       profile(profile) {
         if (profile.email_verified !== true || !profile.email) {
           throw new Error("El correo de Google debe estar verificado.")

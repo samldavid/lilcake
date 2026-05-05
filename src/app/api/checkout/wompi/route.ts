@@ -23,6 +23,11 @@ import {
   isWompiCheckoutEnabled,
   toWompiAmountInCents,
 } from "@/lib/wompi"
+import { getTrustedAppOrigin } from "@/lib/app-url"
+import {
+  consumeCheckoutRateLimit,
+  createCheckoutRateLimitResponse,
+} from "@/lib/checkout-rate-limit"
 
 export const runtime = "nodejs"
 
@@ -125,6 +130,12 @@ export async function POST(req: Request) {
       )
     }
 
+    const rateLimit = consumeCheckoutRateLimit(req, session.user.id, "wompi")
+
+    if (!rateLimit.allowed) {
+      return createCheckoutRateLimitResponse(rateLimit.retryAfterSeconds)
+    }
+
     const body = await req.json()
     const result = checkoutRequestSchema.safeParse({
       ...body,
@@ -152,7 +163,7 @@ export async function POST(req: Request) {
         shippingName: payload.shippingName,
         shippingPhone: payload.shippingPhone,
       },
-      origin: new URL(req.url).origin,
+      origin: getTrustedAppOrigin(req.url),
     })
 
     return NextResponse.json({

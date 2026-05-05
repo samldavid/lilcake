@@ -5,9 +5,13 @@ import { prisma } from "@/lib/prisma"
 import { canCustomerCancelOrder } from "@/lib/order-status"
 import { releaseCouponUsage } from "@/lib/coupons"
 import { getPublicErrorMessage } from "@/lib/errors"
+import {
+  consumeCheckoutRateLimit,
+  createCheckoutRateLimitResponse,
+} from "@/lib/checkout-rate-limit"
 
 export async function POST(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -15,6 +19,12 @@ export async function POST(
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Debes iniciar sesion." }, { status: 401 })
+    }
+
+    const rateLimit = consumeCheckoutRateLimit(req, session.user.id, "cancel")
+
+    if (!rateLimit.allowed) {
+      return createCheckoutRateLimitResponse(rateLimit.retryAfterSeconds)
     }
 
     const { id } = await params

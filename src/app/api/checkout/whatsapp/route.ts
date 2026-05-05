@@ -10,6 +10,10 @@ import {
 import { CouponValidationError } from "@/lib/coupons"
 import { getPublicErrorMessage } from "@/lib/errors"
 import { sendOrderReceivedEmail } from "@/lib/order-notifications"
+import {
+  consumeCheckoutRateLimit,
+  createCheckoutRateLimitResponse,
+} from "@/lib/checkout-rate-limit"
 
 export async function POST(req: Request) {
   try {
@@ -17,6 +21,12 @@ export async function POST(req: Request) {
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Debes iniciar sesion" }, { status: 401 })
+    }
+
+    const rateLimit = consumeCheckoutRateLimit(req, session.user.id, "whatsapp")
+
+    if (!rateLimit.allowed) {
+      return createCheckoutRateLimitResponse(rateLimit.retryAfterSeconds)
     }
 
     const body = await req.json()

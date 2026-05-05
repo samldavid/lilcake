@@ -100,6 +100,14 @@ graph TB
 
 ### 2026-05-05
 
+- Se reforzo la superficie de APIs de pagos y carrito despues de una revision de seguridad:
+  - las URLs de retorno de Stripe y Wompi ahora usan el origen confiable configurado de la app, en vez de derivar redirecciones desde el host entrante del request
+  - checkout, vista previa de cupon y sync de carrito ahora limitan cantidad de items, cantidades por item y largos de texto antes de tocar Prisma
+  - el sync de carrito filtra variantes enviadas contra productos activos antes de escribir, evitando variantes invalidas y filas viejas
+  - creacion, reintento y cancelacion de pedidos comparten rate limits por usuario/IP para reducir abuso de ordenes y sesiones de pago
+  - Google OAuth ya no auto-vincula cuentas solo por coincidencia de email, reduciendo riesgo de pre-hijacking en registros con correo no verificado
+  - `next-auth` se subio a `4.24.14`, y PostCSS queda forzado a la version parchada `8.5.14` en instalaciones directas y transitivas
+  - `npm audit` aun reporta el advisory upstream de `next-auth`/`nodemailer` porque `next-auth` todavia declara peer sobre Nodemailer 7; la app no pasa opciones `name` ni `envelope.size` controladas por usuario a Nodemailer
 - Se pulieron las tarjetas del historial de pedidos del cliente sin cambiar checkout, pagos, auth ni base de datos:
   - la tarjeta ahora usa una grilla responsive para alinear mejor datos del pedido, badges, total y boton de accion en movil y escritorio
   - los badges de pago usan un helper compartido y evitan texto repetido, manteniendo claros los estados pendiente y fallido

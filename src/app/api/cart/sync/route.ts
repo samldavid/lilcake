@@ -2,6 +2,33 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
+import { z } from "zod"
+import { CHECKOUT_MAX_ITEMS, CHECKOUT_MAX_QUANTITY } from "@/lib/checkout"
+
+const cartSyncSchema = z.object({
+  mode: z.enum(["merge", "replace"]).optional().default("merge"),
+  version: z
+    .number()
+    .int()
+    .min(0)
+    .max(Number.MAX_SAFE_INTEGER)
+    .optional()
+    .default(0),
+  items: z
+    .array(
+      z.object({
+        variantId: z.string().trim().min(1).max(100),
+        quantity: z
+          .number()
+          .int()
+          .positive()
+          .max(CHECKOUT_MAX_QUANTITY),
+      })
+    )
+    .max(CHECKOUT_MAX_ITEMS)
+    .optional()
+    .default([]),
+})
 
 export async function POST(req: Request) {
   try {
@@ -11,10 +38,16 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json()
-    const localItems = Array.isArray(body.items) ? body.items : []
-    const mode = body.mode === "replace" ? "replace" : "merge"
-    const clientVersion =
-      Number.isInteger(body.version) && body.version >= 0 ? body.version : 0
+    const result = cartSyncSchema.safeParse(body)
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: "Datos de carrito invalidos" },
+        { status: 400 }
+      )
+    }
+
+    const { items: localItems, mode, version: clientVersion } = result.data
 
     const userId = session.user.id
 
@@ -66,7 +99,23 @@ export async function POST(req: Request) {
         }
       }
 
-      const desiredEntries = [...desiredItems.entries()]
+      const requestedEntries = [...desiredItems.entries()]
+      const requestedVariantIds = requestedEntries.map(([variantId]) => variantId)
+      const activeVariants = requestedVariantIds.length
+        ? await tx.productVariant.findMany({
+            where: {
+              id: { in: requestedVariantIds },
+              product: { isActive: true },
+            },
+            select: { id: true },
+          })
+        : []
+      const activeVariantIds = new Set(
+        activeVariants.map((variant) => variant.id)
+      )
+      const desiredEntries = requestedEntries.filter(([variantId]) =>
+        activeVariantIds.has(variantId)
+      )
       const desiredVariantIds = desiredEntries.map(([variantId]) => variantId)
 
       await tx.cartItem.deleteMany({

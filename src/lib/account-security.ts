@@ -3,6 +3,7 @@ import { createHash, randomBytes } from "crypto"
 import { prisma } from "@/lib/prisma"
 import { getPasswordValidationErrors } from "@/lib/password-policy"
 import { buildBrandedEmailHtml, sendBrandedMail } from "@/lib/mail"
+import { buildTrustedAppUrl } from "@/lib/app-url"
 
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || "LilCake"
 const PASSWORD_RESET_WINDOW_MS = 1000 * 60 * 60
@@ -10,14 +11,6 @@ const EMAIL_VERIFICATION_WINDOW_MS = 1000 * 60 * 60 * 24
 
 type AccountSecurityTokenType = "PASSWORD_RESET" | "EMAIL_VERIFICATION"
 type PasswordEmailMode = "forgot-password" | "account-change"
-
-function getAppUrl() {
-  return (
-    process.env.NEXT_PUBLIC_APP_URL ||
-    process.env.NEXTAUTH_URL ||
-    "http://localhost:3000"
-  ).replace(/\/$/, "")
-}
 
 function getTokenExpiry(type: AccountSecurityTokenType) {
   return new Date(
@@ -33,7 +26,7 @@ function hashToken(token: string) {
 }
 
 function buildAbsoluteUrl(path: string) {
-  return `${getAppUrl()}${path.startsWith("/") ? path : `/${path}`}`
+  return buildTrustedAppUrl(path)
 }
 
 function buildPasswordResetUrl(rawToken: string, mode: PasswordEmailMode) {

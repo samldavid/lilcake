@@ -11,6 +11,7 @@ import {
 } from "@/lib/sales-note"
 import { getSalesNoteBusinessDetails } from "@/lib/business-settings"
 import { formatCOP } from "@/lib/utils"
+import { buildTrustedAppUrl } from "@/lib/app-url"
 
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || "LilCake"
 
@@ -54,16 +55,8 @@ type OrderNotificationRecord = Prisma.OrderGetPayload<{
   select: typeof orderNotificationSelect
 }>
 
-function getAppUrl() {
-  return (
-    process.env.NEXT_PUBLIC_APP_URL ||
-    process.env.NEXTAUTH_URL ||
-    "http://localhost:3000"
-  ).replace(/\/$/, "")
-}
-
 function buildOrderUrl(orderId: string) {
-  return `${getAppUrl()}/cuenta/pedidos/${orderId}`
+  return buildTrustedAppUrl(`/cuenta/pedidos/${orderId}`)
 }
 
 function getRecipientEmail(order: OrderNotificationRecord) {

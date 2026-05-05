@@ -8,21 +8,36 @@ import {
 } from "@/lib/coupons"
 import { z } from "zod"
 
+export const CHECKOUT_MAX_ITEMS = 50
+export const CHECKOUT_MAX_QUANTITY = 99
+
 const checkoutItemSchema = z.object({
-  variantId: z.string().min(1, "Variante requerida"),
-  quantity: z.number().int().positive("Cantidad invalida"),
+  variantId: z.string().trim().min(1, "Variante requerida").max(100),
+  quantity: z
+    .number()
+    .int()
+    .positive("Cantidad invalida")
+    .max(CHECKOUT_MAX_QUANTITY, "Cantidad demasiado alta"),
 })
 
 export const checkoutRequestSchema = z.object({
-  items: z.array(checkoutItemSchema).min(1, "Debes agregar al menos un producto"),
-  customerEmail: z.string().email("Email invalido"),
-  shippingName: z.string().min(2, "Nombre requerido"),
-  shippingAddress: z.string().min(5, "Direccion requerida"),
-  shippingCity: z.string().min(2, "Ciudad requerida"),
-  shippingPhone: z.string().min(7, "Telefono requerido"),
+  items: z
+    .array(checkoutItemSchema)
+    .min(1, "Debes agregar al menos un producto")
+    .max(CHECKOUT_MAX_ITEMS, "Demasiados productos en el checkout"),
+  customerEmail: z.string().email("Email invalido").max(254),
+  shippingName: z.string().trim().min(2, "Nombre requerido").max(120),
+  shippingAddress: z.string().trim().min(5, "Direccion requerida").max(200),
+  shippingCity: z.string().trim().min(2, "Ciudad requerida").max(80),
+  shippingPhone: z.string().trim().min(7, "Telefono requerido").max(40),
   paymentMethod: z.enum(["STRIPE", "WOMPI", "WHATSAPP"]),
-  couponCode: z.string().trim().min(3, "Ingresa un codigo valido").optional(),
-  notes: z.string().trim().optional(),
+  couponCode: z
+    .string()
+    .trim()
+    .min(3, "Ingresa un codigo valido")
+    .max(40)
+    .optional(),
+  notes: z.string().trim().max(700).optional(),
   acceptedTerms: z
     .boolean()
     .refine(

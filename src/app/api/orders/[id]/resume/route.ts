@@ -14,6 +14,11 @@ import { createStripeDiscountCoupon } from "@/lib/coupons"
 import { getPublicErrorMessage } from "@/lib/errors"
 import { createOrReuseWompiCheckout } from "@/lib/wompi-payments"
 import { isWompiCheckoutEnabled } from "@/lib/wompi"
+import { getTrustedAppOrigin } from "@/lib/app-url"
+import {
+  consumeCheckoutRateLimit,
+  createCheckoutRateLimitResponse,
+} from "@/lib/checkout-rate-limit"
 
 export async function POST(
   req: Request,
@@ -24,6 +29,12 @@ export async function POST(
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Debes iniciar sesion." }, { status: 401 })
+    }
+
+    const rateLimit = consumeCheckoutRateLimit(req, session.user.id, "resume")
+
+    if (!rateLimit.allowed) {
+      return createCheckoutRateLimitResponse(rateLimit.retryAfterSeconds)
     }
 
     const { id } = await params
@@ -111,7 +122,7 @@ export async function POST(
           shippingName: order.shippingName,
           shippingPhone: order.shippingPhone,
         },
-        origin: new URL(req.url).origin,
+        origin: getTrustedAppOrigin(req.url),
       })
 
       return NextResponse.json({
@@ -135,7 +146,7 @@ export async function POST(
       )
     }
 
-    const origin = new URL(req.url).origin
+    const origin = getTrustedAppOrigin(req.url)
     const stripeCurrency = "cop"
     const stripeDiscountCoupon =
       order.discount > 0

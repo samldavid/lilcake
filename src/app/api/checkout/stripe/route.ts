@@ -22,6 +22,11 @@ import {
 } from "@/lib/coupons"
 import { getPublicErrorMessage } from "@/lib/errors"
 import { sendOrderConfirmationEmail } from "@/lib/order-notifications"
+import { getTrustedAppOrigin } from "@/lib/app-url"
+import {
+  consumeCheckoutRateLimit,
+  createCheckoutRateLimitResponse,
+} from "@/lib/checkout-rate-limit"
 
 function getCheckoutStatus(orderPaymentStatus: string, stripePaymentStatus: string | null) {
   if (orderPaymentStatus === "PAID") {
@@ -175,6 +180,12 @@ export async function POST(req: Request) {
       )
     }
 
+    const rateLimit = consumeCheckoutRateLimit(req, session.user.id, "stripe")
+
+    if (!rateLimit.allowed) {
+      return createCheckoutRateLimitResponse(rateLimit.retryAfterSeconds)
+    }
+
     const body = await req.json()
     const result = checkoutRequestSchema.safeParse({
       ...body,
@@ -192,7 +203,7 @@ export async function POST(req: Request) {
     const checkoutItems = await prepareCheckoutItems(payload.items)
     const order = await createPendingOrder(session.user.id, payload, checkoutItems)
     pendingOrderId = order.id
-    const origin = new URL(req.url).origin
+    const origin = getTrustedAppOrigin(req.url)
 
     const stripeCurrency = "cop"
     const stripeDiscountCoupon =
