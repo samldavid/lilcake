@@ -100,6 +100,14 @@ graph TB
 
 ### 2026-05-04
 
+- Completed the Wompi production rollout without committing credentials:
+  - live Wompi values are configured only as Vercel Production environment variables
+  - `NEXT_PUBLIC_WOMPI_ENABLED=true` was redeployed so the static checkout bundle exposes the Wompi option
+  - `WOMPI_ENVIRONMENT=production` is active for server-side Wompi calls
+  - the Wompi webhook health endpoint was verified as configured in production
+  - `/api/checkout/wompi` now reaches the authenticated checkout guard instead of the disabled-provider response
+  - `.vercelignore` now keeps every `.env*` file out of the Vercel upload bundle
+  - production HTML and JS chunks were checked for Wompi server-side secret markers
 - Added PDF sales notes as internal, non-fiscal order documents:
   - `src/lib/sales-note.ts` centralizes PDF generation, `NV-{orderNumber}` numbering, business details from environment variables, and the disclaimer that the document does not replace DIAN e-invoicing
   - `/api/admin/orders/[id]/sales-note` lets the real admin download an order sales note behind the existing admin role guard
@@ -620,9 +628,12 @@ Operational notes:
 
 - Google OAuth is enabled in production after loading `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` into Vercel.
 - Stripe is currently enabled in production in test mode using test publishable and secret keys.
-- Wompi should be loaded in Vercel with sandbox keys and kept behind `NEXT_PUBLIC_WOMPI_ENABLED=false` until controlled checks pass.
+- Wompi is enabled in production with live values stored only in Vercel environment variables.
+- `NEXT_PUBLIC_WOMPI_ENABLED=true` exposes the Wompi option in the checkout bundle; changing this public flag requires a new deploy.
+- Keep `WOMPI_PRIVATE_KEY`, `WOMPI_EVENTS_SECRET`, and `WOMPI_INTEGRITY_SECRET` server-only. Only `NEXT_PUBLIC_WOMPI_PUBLIC_KEY` is intentionally browser-visible.
 - The production deployment was verified with live product routes on Vercel and a direct Prisma/PostgreSQL connection against Supabase.
 - Admin image uploads use Vercel Blob in production when `BLOB_READ_WRITE_TOKEN` is configured, and keep a local filesystem fallback for development.
+- The Vercel upload bundle excludes `.env*` files through `.vercelignore`; never add real Wompi, Stripe, SMTP, Google, or database secrets to tracked files.
 
 ## Orders and Stripe webhook flow
 
@@ -683,7 +694,7 @@ Security notes:
 - The charged total is calculated from the backend order, not from the browser.
 - Currency must be `COP`, and the amount must match `amount_in_cents` exactly.
 - Event signature validation uses the properties sent by Wompi in each payload; the code does not assume a fixed list.
-- For a safe rollout, load secrets in Vercel first, keep `NEXT_PUBLIC_WOMPI_ENABLED=false`, validate the webhook, then enable the button.
+- Production rollout is active. Before considering the rollout fully business-verified, confirm the event URL in the Wompi dashboard and run a low-value live payment check.
 
 ## Shipping tracking and order emails
 

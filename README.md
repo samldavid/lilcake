@@ -84,6 +84,8 @@ A safe admin sandbox is available at:
 
 ## Recent Improvements
 
+- As of 2026-05-05, Wompi Colombia is enabled in production, giving shoppers a local payment experience for PSE, Nequi, cards, and other methods available through Wompi.
+- The payment setup is handled behind the scenes with server-side verification, so customers get a smoother Colombian checkout while business credentials stay protected.
 - As of 2026-05-04, real orders can generate internal PDF sales notes downloadable from the admin, customer account, and admin demo.
 - As of 2026-05-04, the real admin now includes a business settings section for editing business name, identification, email, phone, address, city, logo URL, and the sales-note legal text without touching environment variables.
 - The admin demo exposes the same experience in sandbox mode, simulating saves without writing production data.
@@ -156,6 +158,7 @@ Most commerce repos look good on the surface but fall apart in the real business
 LilCake stands out because it already includes the parts that usually get skipped:
 
 - real backend validation for checkout, discounts, and pricing
+- local Colombian payment coverage through Wompi, with PSE, Nequi, card, and assisted checkout options
 - persistent production media storage and reorderable product galleries, separate from local development files
 - an admin panel that actually helps operate the business
 - coupon rules designed to protect revenue, not just display a promo field

@@ -100,6 +100,14 @@ graph TB
 
 ### 2026-05-04
 
+- Se completo el rollout productivo de Wompi sin versionar credenciales:
+  - los valores live de Wompi quedan configurados solo como variables de entorno de Produccion en Vercel
+  - `NEXT_PUBLIC_WOMPI_ENABLED=true` se redesplego para que el bundle estatico de checkout muestre la opcion Wompi
+  - `WOMPI_ENVIRONMENT=production` queda activo para llamadas Wompi del lado servidor
+  - el endpoint de salud del webhook Wompi se verifico como configurado en produccion
+  - `/api/checkout/wompi` ahora llega al guard de checkout autenticado en vez de responder como proveedor deshabilitado
+  - `.vercelignore` ahora evita que cualquier archivo `.env*` entre al paquete subido a Vercel
+  - se revisaron HTML y chunks JS de produccion para descartar marcadores de secretos server-side de Wompi
 - Se implementaron notas de venta PDF como comprobantes internos no fiscales:
   - `src/lib/sales-note.ts` centraliza la generacion del PDF, numeracion `NV-{orderNumber}`, datos de negocio por variables de entorno y aviso de no reemplazo de factura electronica DIAN
   - `/api/admin/orders/[id]/sales-note` permite al admin real descargar la nota del pedido con guard de rol administrativo
@@ -621,9 +629,12 @@ Notas operativas:
 
 - Google OAuth ya esta activo en produccion tras cargar `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` en Vercel.
 - Stripe esta activo en produccion en modo test usando llaves de prueba.
-- Wompi debe cargarse en Vercel con llaves sandbox y mantenerse con `NEXT_PUBLIC_WOMPI_ENABLED=false` hasta completar pruebas controladas.
+- Wompi esta activo en produccion con valores live guardados solo en variables de entorno de Vercel.
+- `NEXT_PUBLIC_WOMPI_ENABLED=true` muestra Wompi en el bundle de checkout; cambiar este flag publico exige un nuevo deploy.
+- Mantener `WOMPI_PRIVATE_KEY`, `WOMPI_EVENTS_SECRET` y `WOMPI_INTEGRITY_SECRET` solo del lado servidor. Solo `NEXT_PUBLIC_WOMPI_PUBLIC_KEY` es visible en navegador por diseno.
 - El despliegue productivo se verifico con rutas publicas reales en Vercel y con una conexion directa Prisma/PostgreSQL contra Supabase.
 - Las subidas de imagenes del admin usan Vercel Blob en produccion cuando `BLOB_READ_WRITE_TOKEN` esta configurado, y mantienen fallback local al filesystem para desarrollo.
+- El paquete subido a Vercel excluye archivos `.env*` mediante `.vercelignore`; no versionar secretos reales de Wompi, Stripe, SMTP, Google ni base de datos.
 
 ## Flujo de ordenes y webhook de Stripe
 
@@ -684,7 +695,7 @@ Notas de seguridad:
 - El total cobrado se calcula desde la orden creada en backend, no desde el navegador.
 - La moneda debe ser `COP` y el monto debe coincidir exactamente con `amount_in_cents`.
 - La firma del evento usa las propiedades enviadas por Wompi en cada payload; no se asume una lista fija.
-- Para rollout seguro, primero carga secretos en Vercel, deja `NEXT_PUBLIC_WOMPI_ENABLED=false`, valida el webhook y luego activa el boton.
+- El rollout productivo esta activo. Antes de darlo por cerrado a nivel negocio, confirma la URL de eventos en el dashboard de Wompi y ejecuta una compra live de bajo valor.
 
 ## Seguimiento de envios y correos de pedidos
 

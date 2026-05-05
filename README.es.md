@@ -85,6 +85,8 @@ Existe un panel administrativo demo disponible en:
 
 ## Mejoras Recientes
 
+- A fecha de 2026-05-05, Wompi Colombia queda activo en produccion para ofrecer una experiencia de pago local con PSE, Nequi, tarjetas y otros metodos disponibles por Wompi.
+- La configuracion de pagos se maneja tras bambalinas con verificacion del lado servidor, para que el cliente tenga un checkout mas cercano al mercado colombiano sin exponer credenciales del negocio.
 - A fecha de 2026-05-04, los pedidos ya pueden generar notas de venta PDF como comprobante interno, descargables desde admin, cuenta cliente y admin demo.
 - A fecha de 2026-05-04, el admin real ya incluye una seccion de configuracion del negocio para editar nombre comercial, identificacion, correo, telefono, direccion, ciudad, logo y texto legal de la nota de venta sin tocar variables de entorno.
 - El admin demo tambien muestra esta experiencia en modo sandbox, simulando el guardado sin escribir datos reales.
@@ -159,6 +161,7 @@ LilCake destaca porque ya incluye lo que normalmente se deja para “después”
 - validación backend real para checkout, descuentos y precios
 - almacenamiento persistente de imágenes y galerías reordenables, separado de los archivos locales de desarrollo
 - un panel admin que sí sirve para operar el negocio
+- cobertura de pagos locales en Colombia con Wompi, PSE, Nequi, tarjeta y opciones asistidas de checkout
 - reglas de cupones pensadas para proteger ingresos, no solo para mostrar un campo promocional
 - reportes exportables útiles para operación, control y seguimiento
 - una base lista para producción con PostgreSQL, autenticación, correos y despliegue ya conectados
