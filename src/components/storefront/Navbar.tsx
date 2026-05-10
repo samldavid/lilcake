@@ -60,7 +60,7 @@ export function Navbar() {
                 />
               </div>
               <span className="text-xl font-heading font-bold text-lc-white sm:text-2xl">
-                Lil<span className="text-lc-purple">Cake</span>
+                Lil<span className="gradient-text">Cake</span>
               </span>
             </Link>
           </div>

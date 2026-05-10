@@ -1,5 +1,7 @@
+import type * as React from "react"
 import Link from "next/link"
-import { ArrowRight, Mail, MapPin } from "lucide-react"
+import { ArrowRight, Mail, MapPin, MessageCircle, Music2 } from "lucide-react"
+import { buildWhatsAppLink } from "@/lib/utils"
 
 const shopLinks = [
   { href: "/productos?categoria=ropa", label: "Ropa" },
@@ -13,6 +15,43 @@ const helpLinks = [
   { href: "/ayuda", label: "Cambios y devoluciones" },
   { href: "/ayuda", label: "Guia de tallas" },
   { href: "/ayuda", label: "Contacto" },
+]
+
+function InstagramIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" {...props}>
+      <rect
+        x="3"
+        y="3"
+        width="18"
+        height="18"
+        rx="5"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+      <circle cx="12" cy="12" r="3.5" stroke="currentColor" strokeWidth="2" />
+      <circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" />
+    </svg>
+  )
+}
+
+function FacebookIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" {...props}>
+      <path d="M14 8h2V5h-2c-2.3 0-4 1.7-4 4v2H8v3h2v7h3v-7h2.4l.6-3h-3V9c0-.6.4-1 1-1Z" />
+    </svg>
+  )
+}
+
+type SocialIcon = React.ComponentType<
+  React.SVGProps<SVGSVGElement> & { size?: number }
+>
+
+const socialLinks: { href: string; label: string; icon: SocialIcon }[] = [
+  { href: "#", label: "Instagram", icon: InstagramIcon },
+  { href: "#", label: "Facebook", icon: FacebookIcon },
+  { href: "#", label: "TikTok", icon: Music2 },
+  { href: buildWhatsAppLink(), label: "WhatsApp", icon: MessageCircle },
 ]
 
 export function Footer() {
@@ -31,7 +70,7 @@ export function Footer() {
                 />
               </div>
               <span className="text-xl font-heading font-bold text-lc-white">
-                Lil<span className="text-lc-purple">Cake</span>
+                Lil<span className="gradient-text">Cake</span>
               </span>
             </Link>
             <p className="text-sm leading-6 text-lc-gray-light">
@@ -39,23 +78,25 @@ export function Footer() {
               Colombia con una experiencia clara y segura.
             </p>
             <div className="mt-5 flex gap-3">
-              <a
-                href="#"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-lc-border text-xs font-bold text-lc-gray transition-colors hover:text-lc-white"
-                aria-label="Instagram"
-              >
-                IG
-              </a>
-              <a
-                href="#"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-lc-border text-xs font-bold text-lc-gray transition-colors hover:text-lc-white"
-                aria-label="Facebook"
-              >
-                FB
-              </a>
+              {socialLinks.map((social) => {
+                const Icon = social.icon
+
+                return (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    target={social.href.startsWith("http") ? "_blank" : undefined}
+                    rel={social.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-lc-border bg-lc-black/35 text-lc-gray-light transition-colors hover:border-lc-purple-light/55 hover:bg-lc-purple/16 hover:text-lc-white"
+                    aria-label={social.label}
+                  >
+                    <Icon size={18} className="h-[18px] w-[18px]" />
+                  </a>
+                )
+              })}
               <a
                 href="mailto:info@lilcake.co"
-                className="rounded-md border border-lc-border p-2 text-lc-gray transition-colors hover:text-lc-white"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-lc-border bg-lc-black/35 text-lc-gray-light transition-colors hover:border-lc-purple-light/55 hover:bg-lc-purple/16 hover:text-lc-white"
                 aria-label="Correo"
               >
                 <Mail size={18} />
