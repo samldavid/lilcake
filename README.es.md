@@ -87,6 +87,7 @@ Existe un panel administrativo demo disponible en:
 ## Mejoras Recientes
 
 - A fecha de 2026-05-10, el storefront recibio una pasada de diseno comercial para que LilCake se vea mas profesional y menos como una plantilla generada, sin tocar comportamiento backend.
+- El detalle de producto ahora separa compra directa y carrito: el cliente puede pagar solo la variante elegida con Comprar ahora, o seguir acumulando prendas con Agregar al carrito.
 - El hero de inicio ahora usa una imagen mas fuerte de tienda/sneakers, y la seccion de confianza integra carrusel de productos y lookbook para que la primera vista respire mejor.
 - Los acentos de color de marca vuelven a la palabra LilCake, el CTA de WhatsApp y los iconos sociales del footer sin perder la direccion retail sobria.
 - Inicio, catalogo, detalle de producto, carrito, ayuda, auth, cards compartidas y navegacion ahora usan menos brillos/gradientes, radios mas sobrios, mejor jerarquia de producto y mensajes de confianza mas utiles para venta.

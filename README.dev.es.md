@@ -313,6 +313,7 @@ graph TB
   - los campos de envio usan metadatos reales de autocompletado del navegador
   - el cliente puede elegir recordar sus datos de envio en este navegador para futuras compras
   - el checkout vuelve a cargar datos guardados localmente y datos basicos del perfil autenticado si existen
+  - el detalle de producto ahora permite checkout directo de un solo item desde Comprar ahora sin reemplazar el flujo normal del carrito
 - Se reforzo la seguridad de cuenta:
   - la politica de contrasena exige mayuscula, minuscula, numero, simbolo y confirmacion
   - los usuarios pueden crear o cambiar contrasena desde el area de cuenta

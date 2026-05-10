@@ -1,9 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { ShoppingCart } from "lucide-react"
-import { useCart } from "@/components/CartProvider"
+import { CreditCard, ShoppingCart } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useCart, type CartItem } from "@/components/CartProvider"
 import { Button } from "@/components/ui/Button"
+import { writeBuyNowCheckout } from "@/lib/buy-now-checkout"
 
 interface AddToCartBtnProps {
   product: {
@@ -23,6 +25,7 @@ interface AddToCartBtnProps {
 
 export function AddToCartBtn({ product, variants }: AddToCartBtnProps) {
   const { addToCart } = useCart()
+  const router = useRouter()
   const [selectedVariantId, setSelectedVariantId] = React.useState<string>(
     variants.length === 1 ? variants[0].id : ""
   )
@@ -32,11 +35,15 @@ export function AddToCartBtn({ product, variants }: AddToCartBtnProps) {
   const selectedVariant = variants.find((v) => v.id === selectedVariantId)
   const availableStock = selectedVariant ? selectedVariant.stock : 0
   const requireSelection = variants.length > 1
+  const isActionDisabled =
+    !selectedVariantId || availableStock === 0 || quantity < 1
 
-  const handleAddToCart = () => {
-    if (!selectedVariant) return
+  const buildCartItem = (): CartItem | null => {
+    if (!selectedVariant) {
+      return null
+    }
 
-    addToCart({
+    return {
       variantId: selectedVariant.id,
       productId: product.id,
       productSlug: product.slug,
@@ -46,10 +53,27 @@ export function AddToCartBtn({ product, variants }: AddToCartBtnProps) {
       image: product.image,
       size: selectedVariant.size || undefined,
       color: selectedVariant.color || undefined,
-    })
+    }
+  }
+
+  const handleAddToCart = () => {
+    const item = buildCartItem()
+
+    if (!item) return
+
+    addToCart(item)
 
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
+  }
+
+  const handleBuyNow = () => {
+    const item = buildCartItem()
+
+    if (!item) return
+
+    writeBuyNowCheckout(item)
+    router.push("/checkout?directo=1")
   }
 
   return (
@@ -111,14 +135,25 @@ export function AddToCartBtn({ product, variants }: AddToCartBtnProps) {
         </div>
       ) : null}
 
-      <Button
-        className="h-12 w-full rounded-md text-base font-bold sm:h-14 sm:text-lg"
-        disabled={!selectedVariantId || availableStock === 0 || quantity < 1}
-        onClick={handleAddToCart}
-      >
-        <ShoppingCart size={20} className="mr-2" />
-        {added ? "Agregado" : availableStock === 0 ? "Agotado" : "Agregar al carrito"}
-      </Button>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Button
+          className="h-12 w-full rounded-md text-base font-bold sm:h-14 sm:text-lg"
+          disabled={isActionDisabled}
+          onClick={handleBuyNow}
+        >
+          <CreditCard size={20} className="mr-2" />
+          {selectedVariantId && availableStock === 0 ? "Agotado" : "Comprar ahora"}
+        </Button>
+        <Button
+          variant="secondary"
+          className="h-12 w-full rounded-md text-base font-bold sm:h-14 sm:text-lg"
+          disabled={isActionDisabled}
+          onClick={handleAddToCart}
+        >
+          <ShoppingCart size={20} className="mr-2" />
+          {added ? "Agregado" : "Agregar al carrito"}
+        </Button>
+      </div>
     </div>
   )
 }

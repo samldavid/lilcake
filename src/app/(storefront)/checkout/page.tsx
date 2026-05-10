@@ -4,10 +4,14 @@ import * as React from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useSession } from "next-auth/react"
-import { useCart } from "@/components/CartProvider"
+import { useCart, type CartItem } from "@/components/CartProvider"
 import { formatCOP } from "@/lib/utils"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
+import {
+  clearBuyNowCheckout,
+  readBuyNowCheckout,
+} from "@/lib/buy-now-checkout"
 
 const stripeEnabled = process.env.NEXT_PUBLIC_STRIPE_ENABLED === "true"
 const wompiEnabled = process.env.NEXT_PUBLIC_WOMPI_ENABLED === "true"
@@ -82,10 +86,11 @@ function parseSavedCheckoutDetails(rawValue: string | null): SavedCheckoutDetail
 }
 
 function CheckoutPageContent() {
-  const { items, total, clearCart } = useCart()
+  const { items: cartItems, clearCart } = useCart()
   const router = useRouter()
   const searchParams = useSearchParams()
   const { data: session, status } = useSession()
+  const completedDirectCheckoutRef = React.useRef(false)
 
   const [loading, setLoading] = React.useState(false)
   const [success, setSuccess] = React.useState(false)
@@ -101,6 +106,8 @@ function CheckoutPageContent() {
   const [isValidatingCoupon, setIsValidatingCoupon] = React.useState(false)
   const [rememberDetails, setRememberDetails] = React.useState(true)
   const [detailsLoaded, setDetailsLoaded] = React.useState(false)
+  const [buyNowLoaded, setBuyNowLoaded] = React.useState(false)
+  const [buyNowItem, setBuyNowItem] = React.useState<CartItem | null>(null)
   const [acceptedTerms, setAcceptedTerms] = React.useState(false)
   const [formData, setFormData] = React.useState({
     shippingName: "",
@@ -133,6 +140,8 @@ function CheckoutPageContent() {
 
   const successParam = searchParams.get("success") === "true"
   const canceledParam = searchParams.get("canceled") === "true"
+  const directCheckoutParam =
+    searchParams.get("directo") === "1" || searchParams.get("buyNow") === "1"
   const sessionId = searchParams.get("session_id")
   const providerParam = searchParams.get("provider")
   const wompiTransactionId =
@@ -144,6 +153,29 @@ function CheckoutPageContent() {
     : sessionId
       ? `stripe:${sessionId}`
       : null
+  const shouldUseBuyNow = Boolean(
+    buyNowItem &&
+      (directCheckoutParam || canceledParam || successParam || wompiTransactionId)
+  )
+  const checkoutItems = React.useMemo(
+    () => (shouldUseBuyNow && buyNowItem ? [buyNowItem] : cartItems),
+    [buyNowItem, cartItems, shouldUseBuyNow]
+  )
+  const checkoutTotal = React.useMemo(
+    () =>
+      checkoutItems.reduce(
+        (acc, item) => acc + item.price * item.quantity,
+        0
+      ),
+    [checkoutItems]
+  )
+
+  React.useEffect(() => {
+    const savedBuyNowCheckout = readBuyNowCheckout()
+
+    setBuyNowItem(savedBuyNowCheckout?.item ?? null)
+    setBuyNowLoaded(true)
+  }, [])
 
   React.useEffect(() => {
     if (!detailsLoaded) {
@@ -189,6 +221,10 @@ function CheckoutPageContent() {
   }, [detailsLoaded, formData, rememberDetails])
 
   React.useEffect(() => {
+    if (!buyNowLoaded) {
+      return
+    }
+
     const isStripeReturn = successParam && Boolean(sessionId)
     const isWompiReturn = Boolean(wompiTransactionId)
 
@@ -234,7 +270,13 @@ function CheckoutPageContent() {
               return
             }
 
-            clearCart()
+            if (shouldUseBuyNow) {
+              completedDirectCheckoutRef.current = true
+              clearBuyNowCheckout()
+              setBuyNowItem(null)
+            } else {
+              clearCart()
+            }
             if (paymentReturnKey && typeof window !== "undefined") {
               window.sessionStorage.setItem(
                 getProcessedReturnKey(paymentReturnKey),
@@ -284,10 +326,12 @@ function CheckoutPageContent() {
       isActive = false
     }
   }, [
+    buyNowLoaded,
     clearCart,
     paymentReturnKey,
     router,
     sessionId,
+    shouldUseBuyNow,
     status,
     success,
     successParam,
@@ -295,7 +339,12 @@ function CheckoutPageContent() {
   ])
 
   React.useEffect(() => {
-    if (!success || paymentReturnKey || items.length === 0) {
+    if (
+      !success ||
+      paymentReturnKey ||
+      completedDirectCheckoutRef.current ||
+      checkoutItems.length === 0
+    ) {
       return
     }
 
@@ -303,12 +352,13 @@ function CheckoutPageContent() {
     setOrderNumber("")
     setError("")
     setLoading(false)
-  }, [items.length, paymentReturnKey, success])
+  }, [checkoutItems.length, paymentReturnKey, success])
 
   React.useEffect(() => {
     if (
+      buyNowLoaded &&
       status !== "loading" &&
-      items.length === 0 &&
+      checkoutItems.length === 0 &&
       !success &&
       !isFinalizing &&
       !successParam &&
@@ -316,7 +366,16 @@ function CheckoutPageContent() {
     ) {
       router.push("/carrito")
     }
-  }, [isFinalizing, items.length, router, status, success, successParam, wompiTransactionId])
+  }, [
+    buyNowLoaded,
+    checkoutItems.length,
+    isFinalizing,
+    router,
+    status,
+    success,
+    successParam,
+    wompiTransactionId,
+  ])
 
   const validateCoupon = React.useCallback(
     async (codeOverride?: string) => {
@@ -330,7 +389,8 @@ function CheckoutPageContent() {
       }
 
       if (!session?.user?.id) {
-        router.push(`/login?callbackUrl=${encodeURIComponent("/checkout")}`)
+        const callbackUrl = shouldUseBuyNow ? "/checkout?directo=1" : "/checkout"
+        router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`)
         return false
       }
 
@@ -343,7 +403,7 @@ function CheckoutPageContent() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             couponCode: nextCode,
-            items: items.map((item) => ({
+            items: checkoutItems.map((item) => ({
               variantId: item.variantId,
               quantity: item.quantity,
             })),
@@ -377,14 +437,15 @@ function CheckoutPageContent() {
         setIsValidatingCoupon(false)
       }
     },
-    [couponCode, items, router, session?.user?.id]
+    [checkoutItems, couponCode, router, session?.user?.id, shouldUseBuyNow]
   )
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!session?.user?.id) {
-      router.push(`/login?callbackUrl=${encodeURIComponent("/checkout")}`)
+      const callbackUrl = shouldUseBuyNow ? "/checkout?directo=1" : "/checkout"
+      router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`)
       return
     }
 
@@ -407,7 +468,7 @@ function CheckoutPageContent() {
       }
 
       const payload = {
-        items: items.map((item) => ({
+        items: checkoutItems.map((item) => ({
           variantId: item.variantId,
           quantity: item.quantity,
         })),
@@ -444,8 +505,15 @@ function CheckoutPageContent() {
       }
 
       if (formData.paymentMethod === "WHATSAPP") {
-        clearCart()
+        if (shouldUseBuyNow) {
+          clearBuyNowCheckout()
+          setBuyNowItem(null)
+        } else {
+          clearCart()
+        }
         setOrderNumber(data.orderNumber || "")
+      } else if (!shouldUseBuyNow) {
+        clearBuyNowCheckout()
       }
 
       window.location.assign(data.url)
@@ -498,7 +566,7 @@ function CheckoutPageContent() {
     )
   }
 
-  if (items.length === 0) {
+  if (!buyNowLoaded || checkoutItems.length === 0) {
     return null
   }
 
@@ -508,7 +576,7 @@ function CheckoutPageContent() {
       ? appliedCoupon
       : null
   const displayDiscount = activeAppliedCoupon?.discount ?? 0
-  const displayTotal = activeAppliedCoupon?.total ?? total
+  const displayTotal = activeAppliedCoupon?.total ?? checkoutTotal
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8 animate-fade-in">
@@ -776,9 +844,14 @@ function CheckoutPageContent() {
         <div className="order-1 lg:order-2 lg:col-span-5">
           <div className="rounded-lg border border-lc-border bg-lc-darker p-5 lg:sticky lg:top-28 lg:p-6">
             <h2 className="text-xl font-heading font-bold text-lc-white mb-6">Tu Pedido</h2>
+            {shouldUseBuyNow ? (
+              <div className="mb-5 rounded-lg border border-lc-purple/30 bg-lc-purple/10 px-4 py-3 text-sm font-semibold text-lc-purple-light">
+                Compra directa: este checkout usa solo el producto seleccionado.
+              </div>
+            ) : null}
 
             <div className="mb-6 max-h-[240px] space-y-4 overflow-y-auto pr-2 custom-scrollbar sm:max-h-[300px]">
-              {items.map((item) => (
+              {checkoutItems.map((item) => (
                 <div key={item.variantId} className="flex gap-4">
                   <div className="w-16 h-16 bg-lc-black border border-lc-border rounded-lg overflow-hidden shrink-0">
                     <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
@@ -855,7 +928,7 @@ function CheckoutPageContent() {
 
               <div className="flex justify-between text-lc-gray-light">
                 <span>Subtotal</span>
-                <span>{formatCOP(total)}</span>
+                <span>{formatCOP(checkoutTotal)}</span>
               </div>
               {displayDiscount > 0 ? (
                 <div className="flex justify-between text-lc-success">

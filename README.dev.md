@@ -313,6 +313,7 @@ graph TB
   - shipping fields now use browser autocomplete metadata
   - customers can choose to remember shipping details in the local browser for future purchases
   - checkout pre-fills saved details and authenticated profile data when available
+  - product detail now supports a one-item direct checkout from Buy now without overwriting the normal cart flow
 - Added stronger account security flows:
   - password policy now requires uppercase, lowercase, number, symbol, and confirmation
   - users can create or change passwords from the account area
