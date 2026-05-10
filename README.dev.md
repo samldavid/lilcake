@@ -101,6 +101,7 @@ graph TB
 ### 2026-05-10
 
 - Completed a storefront-only retail design pass without changing backend routes, Prisma models, checkout services, auth logic, or payment integrations.
+- Updated the homepage hero to use a local store-interior image asset and changed featured storefront reads to request two ordered product images, enabling homepage product-card hover crossfades when a product has a secondary gallery image.
 - Updated the storefront design system toward a restrained dark retail direction:
   - calmer charcoal surfaces and thinner borders
   - reduced glow, glass, gradient, oversized radius, and decorative motion usage

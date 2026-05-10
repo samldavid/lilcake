@@ -39,7 +39,7 @@ export const getFeaturedProducts = unstable_cache(
             altText: true,
           },
           orderBy: { sortOrder: "asc" },
-          take: 1,
+          take: 2,
         },
         category: { select: { name: true } },
       },

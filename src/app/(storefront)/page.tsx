@@ -23,6 +23,10 @@ const dummyProducts: ProductCardProduct[] = [
         url: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800&auto=format&fit=crop",
         altText: "Hoodie",
       },
+      {
+        url: "https://images.unsplash.com/photo-1578681994506-b8f463449011?w=800&auto=format&fit=crop",
+        altText: "Hoodie urbano en segundo angulo",
+      },
     ],
     category: { name: "Ropa" },
     isFeatured: true,
@@ -37,6 +41,10 @@ const dummyProducts: ProductCardProduct[] = [
       {
         url: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=800&auto=format&fit=crop",
         altText: "Sneakers",
+      },
+      {
+        url: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=800&auto=format&fit=crop",
+        altText: "Sneakers en segundo angulo",
       },
     ],
     category: { name: "Zapatos" },
@@ -53,6 +61,10 @@ const dummyProducts: ProductCardProduct[] = [
         url: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=800&auto=format&fit=crop",
         altText: "Rinonera",
       },
+      {
+        url: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop",
+        altText: "Accesorio urbano en segundo angulo",
+      },
     ],
     category: { name: "Accesorios" },
     isFeatured: true,
@@ -67,6 +79,10 @@ const dummyProducts: ProductCardProduct[] = [
       {
         url: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=800&auto=format&fit=crop",
         altText: "Gorra",
+      },
+      {
+        url: "https://images.unsplash.com/photo-1521369909029-2afed882baee?w=800&auto=format&fit=crop",
+        altText: "Gorra en segundo angulo",
       },
     ],
     category: { name: "Accesorios" },

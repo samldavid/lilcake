@@ -19,18 +19,18 @@ export function HeroSection() {
       <div className="absolute inset-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/ropa.png"
-          alt="Prenda urbana destacada de LilCake"
-          className="h-full w-full object-cover object-[58%_center] opacity-[0.68] sm:object-center"
+          src="/images/storefront-store.jpg"
+          alt="Interior de tienda de ropa urbana con prendas y accesorios seleccionados"
+          className="h-full w-full object-cover object-[52%_center] opacity-[0.72] sm:object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-lc-black via-lc-black/82 to-lc-black/18" />
+        <div className="absolute inset-0 bg-gradient-to-r from-lc-black via-lc-black/78 to-lc-black/12" />
         <div className="absolute inset-0 bg-gradient-to-t from-lc-black via-lc-black/18 to-transparent" />
       </div>
 
       <div className="relative z-10 mx-auto flex min-h-[76vh] max-w-7xl flex-col justify-end px-4 pb-8 pt-16 sm:px-6 sm:pb-10 lg:px-8 lg:pb-12">
         <div className="max-w-2xl animate-slide-up">
           <p className="mb-4 inline-flex rounded-md border border-white/12 bg-lc-black/45 px-3 py-1.5 text-xs font-semibold text-lc-gray-light backdrop-blur">
-            Drop activo en Colombia
+            Desde la tienda
           </p>
 
           <h1 className="text-5xl font-heading font-bold leading-none text-lc-white sm:text-7xl lg:text-8xl">

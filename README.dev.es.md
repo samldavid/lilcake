@@ -101,6 +101,7 @@ graph TB
 ### 2026-05-10
 
 - Se completo una pasada visual solo de storefront, sin cambiar rutas backend, modelos Prisma, servicios de checkout, auth ni integraciones de pago.
+- Se actualizo el hero de inicio para usar un asset local de interior de tienda y la lectura de productos destacados ahora pide dos imagenes ordenadas, activando el crossfade en hover cuando un producto tiene segunda imagen en galeria.
 - El sistema visual de la tienda se movio hacia una direccion retail oscura y mas sobria:
   - superficies charcoal, bordes mas finos y acento LilCake mas controlado
   - menos glow, glass, gradientes, radios grandes y movimiento decorativo

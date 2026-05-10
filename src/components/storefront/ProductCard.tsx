@@ -37,10 +37,6 @@ function resolveDisplayImage(url: string | undefined, fallback: string) {
     return fallback
   }
 
-  if (process.env.NODE_ENV !== "production" && url.startsWith("/uploads/")) {
-    return fallback
-  }
-
   return url
 }
 
@@ -60,7 +56,8 @@ export function ProductCard({ product }: ProductCardProps) {
     <article className="group flex h-full flex-col overflow-hidden rounded-lg border border-lc-border bg-lc-card transition duration-200 hover:-translate-y-0.5 hover:border-white/[0.18] hover:shadow-[0_18px_45px_rgba(0,0,0,0.22)]">
       <Link
         href={`/productos/${product.slug}`}
-        className="relative block aspect-[4/5] overflow-hidden bg-lc-dark"
+        className="relative block aspect-[4/5] overflow-hidden bg-lc-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lc-white/70"
+        aria-label={`Ver ${product.name}`}
       >
         <div className="absolute left-3 top-3 z-10 flex flex-col gap-1.5">
           {product.isFeatured ? (
@@ -79,8 +76,10 @@ export function ProductCard({ product }: ProductCardProps) {
         <img
           src={imageUrl}
           alt={product.images?.[0]?.altText || product.name}
-          className={`h-full w-full object-cover object-center text-transparent transition duration-500 ${
-            hasSecondaryImage ? "group-hover:opacity-0" : "group-hover:scale-[1.025]"
+          className={`h-full w-full object-cover object-center text-transparent transition duration-700 ease-out ${
+            hasSecondaryImage
+              ? "group-hover:scale-[1.015] group-hover:opacity-0 group-focus-within:scale-[1.015] group-focus-within:opacity-0"
+              : "group-hover:scale-[1.025] group-focus-within:scale-[1.025]"
           }`}
         />
         {hasSecondaryImage ? (
@@ -88,7 +87,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <img
             src={secondaryImageUrl}
             alt={product.images?.[1]?.altText || product.name}
-            className="absolute inset-0 h-full w-full object-cover object-center text-transparent opacity-0 transition duration-500 group-hover:scale-[1.025] group-hover:opacity-100"
+            className="absolute inset-0 h-full w-full scale-[1.015] object-cover object-center text-transparent opacity-0 transition duration-700 ease-out group-hover:scale-100 group-hover:opacity-100 group-focus-within:scale-100 group-focus-within:opacity-100"
           />
         ) : null}
 

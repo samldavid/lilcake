@@ -86,6 +86,7 @@ A safe admin sandbox is available at:
 ## Recent Improvements
 
 - As of 2026-05-10, the storefront received a retail design pass focused on making LilCake look more professional and less template-generated without touching backend behavior.
+- The home hero now uses a real store-interior visual, and featured product cards request two images so multi-photo products can crossfade on hover from the homepage.
 - The home, catalog, product detail, cart, help, auth surfaces, shared cards, and storefront chrome now use a more restrained visual language: fewer glows and gradients, tighter radii, clearer product hierarchy, and more commercial trust cues.
 - As of 2026-05-05, Wompi Colombia is enabled in production, giving shoppers a local payment experience for PSE, Nequi, cards, and other methods available through Wompi.
 - The payment setup is handled behind the scenes with server-side verification, so customers get a smoother Colombian checkout while business credentials stay protected.
