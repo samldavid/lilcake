@@ -76,11 +76,11 @@ export function HeroProductCarousel({ products }: HeroProductCarouselProps) {
 
   return (
     <div
-      className="w-full max-w-[420px] justify-self-end"
+      className="w-full"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div className="overflow-hidden rounded-lg border border-white/12 bg-lc-black/58 shadow-[0_24px_80px_rgba(0,0,0,0.38)] backdrop-blur-md">
+      <div className="overflow-hidden rounded-lg border border-lc-border bg-lc-card shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
         <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
           <div className="flex items-center gap-2 text-xs font-bold uppercase text-lc-gray-light">
             <Sparkles size={15} className="text-lc-purple-light" />
@@ -96,7 +96,7 @@ export function HeroProductCarousel({ products }: HeroProductCarouselProps) {
           className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lc-purple-light"
           aria-label={`Ver ${activeProduct.name}`}
         >
-          <div className="relative aspect-[4/5] overflow-hidden bg-lc-dark">
+          <div className="relative aspect-[16/10] overflow-hidden bg-lc-dark">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               key={activeProduct.id}

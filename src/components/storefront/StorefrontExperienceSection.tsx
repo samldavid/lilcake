@@ -10,6 +10,7 @@ import {
   MessageCircle,
   RotateCcw,
   ShieldCheck,
+  Sparkles,
   Truck,
 } from "lucide-react"
 import {
@@ -108,7 +109,17 @@ function LookbookCarousel() {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div className="relative aspect-[16/11] overflow-hidden bg-lc-dark">
+      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+        <div className="flex items-center gap-2 text-xs font-bold uppercase text-lc-gray-light">
+          <Sparkles size={15} className="text-lc-purple-light" />
+          Lookbook
+        </div>
+        <div className="text-xs font-semibold text-lc-gray">
+          {activeIndex + 1}/{lookbookSlides.length}
+        </div>
+      </div>
+
+      <div className="relative aspect-[16/10] overflow-hidden bg-lc-dark">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           key={activeSlide.image}
@@ -118,7 +129,6 @@ function LookbookCarousel() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-lc-black via-lc-black/20 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 p-4">
-          <p className="text-xs font-semibold text-lc-purple-light">Lookbook</p>
           <h3 className="mt-1 font-heading text-xl font-bold text-lc-white">
             {activeSlide.title}
           </h3>
