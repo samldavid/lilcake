@@ -4,6 +4,15 @@ import * as React from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useSession } from "next-auth/react"
+import {
+  CreditCard,
+  Landmark,
+  MessageCircle,
+  ShieldCheck,
+  Smartphone,
+  Truck,
+  type LucideIcon,
+} from "lucide-react"
 import { useCart, type CartItem } from "@/components/CartProvider"
 import { formatCOP } from "@/lib/utils"
 import { Button } from "@/components/ui/Button"
@@ -38,17 +47,26 @@ type SavedCheckoutDetails = {
 }
 
 function PaymentBrandBadge({
-  children,
-  className = "",
+  label,
+  icon: Icon,
+  className,
+  iconClassName,
 }: {
-  children: React.ReactNode
-  className?: string
+  label: string
+  icon: LucideIcon
+  className: string
+  iconClassName: string
 }) {
   return (
     <span
-      className={`inline-flex h-7 min-w-10 items-center justify-center rounded-lg border px-2 text-[11px] font-black uppercase tracking-wide ${className}`}
+      className={`inline-flex min-h-10 items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[11px] font-black uppercase leading-none tracking-wide ${className}`}
     >
-      {children}
+      <span
+        className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${iconClassName}`}
+      >
+        <Icon size={14} strokeWidth={2.4} />
+      </span>
+      <span className="whitespace-nowrap">{label}</span>
     </span>
   )
 }
@@ -688,40 +706,70 @@ function CheckoutPageContent() {
                   <label
                     className={`block p-4 border rounded-xl cursor-pointer transition-colors ${formData.paymentMethod === "WOMPI" ? "border-lc-cyan bg-lc-cyan/10" : "border-lc-border bg-lc-darker hover:border-lc-gray"}`}
                   >
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex items-center">
-                        <input
-                          type="radio"
-                          name="payment"
-                          value="WOMPI"
-                          checked={formData.paymentMethod === "WOMPI"}
-                          onChange={() =>
-                            setFormData({ ...formData, paymentMethod: "WOMPI" })
-                          }
-                          className="w-5 h-5 text-lc-cyan bg-lc-black border-lc-gray focus:ring-lc-cyan focus:ring-offset-lc-black"
-                        />
-                        <span className="ml-4 font-bold text-lc-white">
+                    <div className="flex items-start gap-4">
+                      <input
+                        type="radio"
+                        name="payment"
+                        value="WOMPI"
+                        checked={formData.paymentMethod === "WOMPI"}
+                        onChange={() =>
+                          setFormData({ ...formData, paymentMethod: "WOMPI" })
+                        }
+                        className="mt-1 h-5 w-5 text-lc-cyan bg-lc-black border-lc-gray focus:ring-lc-cyan focus:ring-offset-lc-black"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <span className="font-bold text-lc-white">
                           Wompi Colombia
                         </span>
-                      </div>
-                      <div className="ml-9 flex flex-wrap gap-2 sm:ml-0">
-                        <PaymentBrandBadge className="border-lc-cyan/30 bg-lc-cyan/10 text-lc-cyan">
-                          Wompi
-                        </PaymentBrandBadge>
-                        <PaymentBrandBadge className="border-lc-purple/30 bg-lc-purple/10 text-lc-purple">
-                          PSE
-                        </PaymentBrandBadge>
-                        <PaymentBrandBadge className="border-lc-success/30 bg-lc-success/10 text-lc-success">
-                          Nequi
-                        </PaymentBrandBadge>
-                        <PaymentBrandBadge className="border-lc-border bg-lc-black/40 text-lc-white">
-                          Visa
-                        </PaymentBrandBadge>
+                        <p className="mt-1 text-sm text-lc-gray">
+                          Paga con PSE, tarjeta, Nequi y bancos disponibles dentro de Wompi.
+                        </p>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          <PaymentBrandBadge
+                            label="Wompi"
+                            icon={ShieldCheck}
+                            className="border-lc-cyan/30 bg-lc-cyan/10 text-lc-cyan"
+                            iconClassName="bg-lc-cyan text-lc-black"
+                          />
+                          <PaymentBrandBadge
+                            label="PSE"
+                            icon={Landmark}
+                            className="border-lc-purple/30 bg-lc-purple/10 text-lc-purple-light"
+                            iconClassName="bg-lc-purple text-white"
+                          />
+                          <PaymentBrandBadge
+                            label="Bancolombia"
+                            icon={Landmark}
+                            className="border-[#ffcc00]/35 bg-[#ffcc00]/10 text-[#ffdd55]"
+                            iconClassName="bg-[#ffcc00] text-lc-black"
+                          />
+                          <PaymentBrandBadge
+                            label="Davivienda"
+                            icon={Landmark}
+                            className="border-[#ed1c24]/35 bg-[#ed1c24]/10 text-[#ff6b6b]"
+                            iconClassName="bg-[#ed1c24] text-white"
+                          />
+                          <PaymentBrandBadge
+                            label="Nequi"
+                            icon={Smartphone}
+                            className="border-[#a855f7]/35 bg-[#a855f7]/10 text-[#d8b4fe]"
+                            iconClassName="bg-[#a855f7] text-white"
+                          />
+                          <PaymentBrandBadge
+                            label="Visa"
+                            icon={CreditCard}
+                            className="border-lc-border bg-lc-black/40 text-lc-white"
+                            iconClassName="bg-lc-white text-lc-black"
+                          />
+                          <PaymentBrandBadge
+                            label="Mastercard"
+                            icon={CreditCard}
+                            className="border-[#ff8a00]/30 bg-[#ff8a00]/10 text-[#ffbd6a]"
+                            iconClassName="bg-[#ff8a00] text-lc-black"
+                          />
+                        </div>
                       </div>
                     </div>
-                    <p className="ml-9 mt-1 text-sm text-lc-gray">
-                      Paga con PSE, tarjeta, Nequi u otros metodos disponibles en Wompi.
-                    </p>
                   </label>
                 )}
 
@@ -729,74 +777,104 @@ function CheckoutPageContent() {
                   <label
                     className={`block p-4 border rounded-xl cursor-pointer transition-colors ${formData.paymentMethod === "STRIPE" ? "border-lc-purple bg-lc-purple/10" : "border-lc-border bg-lc-darker hover:border-lc-gray"}`}
                   >
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex items-center">
-                        <input
-                          type="radio"
-                          name="payment"
-                          value="STRIPE"
-                          checked={formData.paymentMethod === "STRIPE"}
-                          onChange={() =>
-                            setFormData({ ...formData, paymentMethod: "STRIPE" })
-                          }
-                          className="w-5 h-5 text-lc-purple bg-lc-black border-lc-gray focus:ring-lc-purple focus:ring-offset-lc-black"
-                        />
-                        <span className="ml-4 font-bold text-lc-white">
+                    <div className="flex items-start gap-4">
+                      <input
+                        type="radio"
+                        name="payment"
+                        value="STRIPE"
+                        checked={formData.paymentMethod === "STRIPE"}
+                        onChange={() =>
+                          setFormData({ ...formData, paymentMethod: "STRIPE" })
+                        }
+                        className="mt-1 h-5 w-5 text-lc-purple bg-lc-black border-lc-gray focus:ring-lc-purple focus:ring-offset-lc-black"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <span className="font-bold text-lc-white">
                           Tarjeta de Credito / Debito
                         </span>
-                      </div>
-                      <div className="ml-9 flex flex-wrap gap-2 sm:ml-0">
-                        <PaymentBrandBadge className="border-lc-purple/30 bg-lc-purple/10 text-lc-purple">
-                          Stripe
-                        </PaymentBrandBadge>
-                        <PaymentBrandBadge className="border-lc-border bg-lc-black/40 text-lc-white">
-                          Visa
-                        </PaymentBrandBadge>
-                        <PaymentBrandBadge className="border-lc-border bg-lc-black/40 text-lc-white">
-                          MC
-                        </PaymentBrandBadge>
+                        <p className="mt-1 text-sm text-lc-gray">
+                          Pago seguro e inmediato con tarjetas procesadas por Stripe.
+                        </p>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          <PaymentBrandBadge
+                            label="Stripe"
+                            icon={ShieldCheck}
+                            className="border-lc-purple/30 bg-lc-purple/10 text-lc-purple-light"
+                            iconClassName="bg-lc-purple text-white"
+                          />
+                          <PaymentBrandBadge
+                            label="Visa"
+                            icon={CreditCard}
+                            className="border-lc-border bg-lc-black/40 text-lc-white"
+                            iconClassName="bg-lc-white text-lc-black"
+                          />
+                          <PaymentBrandBadge
+                            label="Mastercard"
+                            icon={CreditCard}
+                            className="border-[#ff8a00]/30 bg-[#ff8a00]/10 text-[#ffbd6a]"
+                            iconClassName="bg-[#ff8a00] text-lc-black"
+                          />
+                          <PaymentBrandBadge
+                            label="Amex"
+                            icon={CreditCard}
+                            className="border-lc-cyan/30 bg-lc-cyan/10 text-lc-cyan"
+                            iconClassName="bg-lc-cyan text-lc-black"
+                          />
+                        </div>
                       </div>
                     </div>
-                    <p className="ml-9 mt-1 text-sm text-lc-gray">
-                      Pago seguro e inmediato con Stripe.
-                    </p>
                   </label>
                 )}
 
                 <label
                   className={`block p-4 border rounded-xl cursor-pointer transition-colors ${formData.paymentMethod === "WHATSAPP" ? "border-lc-success bg-lc-success/10" : "border-lc-border bg-lc-darker hover:border-lc-gray"}`}
                 >
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center">
-                      <input
-                        type="radio"
-                        name="payment"
-                        value="WHATSAPP"
-                        checked={formData.paymentMethod === "WHATSAPP"}
-                        onChange={() =>
-                          setFormData({ ...formData, paymentMethod: "WHATSAPP" })
-                        }
-                        className="w-5 h-5 text-lc-success bg-lc-black border-lc-gray focus:ring-lc-success focus:ring-offset-lc-black"
-                      />
-                      <span className="ml-4 font-bold text-lc-white">
+                  <div className="flex items-start gap-4">
+                    <input
+                      type="radio"
+                      name="payment"
+                      value="WHATSAPP"
+                      checked={formData.paymentMethod === "WHATSAPP"}
+                      onChange={() =>
+                        setFormData({ ...formData, paymentMethod: "WHATSAPP" })
+                      }
+                      className="mt-1 h-5 w-5 text-lc-success bg-lc-black border-lc-gray focus:ring-lc-success focus:ring-offset-lc-black"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <span className="font-bold text-lc-white">
                         Contraentrega / asesor por WhatsApp
                       </span>
-                    </div>
-                    <div className="ml-9 flex flex-wrap gap-2 sm:ml-0">
-                      <PaymentBrandBadge className="border-lc-success/30 bg-lc-success/10 text-lc-success">
-                        Contraentrega
-                      </PaymentBrandBadge>
-                      <PaymentBrandBadge className="border-lc-purple/30 bg-lc-purple/10 text-lc-purple">
-                        Addi
-                      </PaymentBrandBadge>
-                      <PaymentBrandBadge className="border-lc-border bg-lc-black/40 text-lc-white">
-                        Asesor
-                      </PaymentBrandBadge>
+                      <p className="mt-1 text-sm text-lc-gray">
+                        Ideal para pagar contraentrega o revisar opciones asistidas como Addi directamente con un asesor.
+                      </p>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <PaymentBrandBadge
+                          label="WhatsApp"
+                          icon={MessageCircle}
+                          className="border-lc-success/30 bg-lc-success/10 text-lc-success"
+                          iconClassName="bg-lc-success text-lc-black"
+                        />
+                        <PaymentBrandBadge
+                          label="Contraentrega"
+                          icon={Truck}
+                          className="border-lc-success/30 bg-lc-success/10 text-lc-success"
+                          iconClassName="bg-lc-success text-lc-black"
+                        />
+                        <PaymentBrandBadge
+                          label="Addi"
+                          icon={CreditCard}
+                          className="border-lc-purple/30 bg-lc-purple/10 text-lc-purple-light"
+                          iconClassName="bg-lc-purple text-white"
+                        />
+                        <PaymentBrandBadge
+                          label="Asesor"
+                          icon={MessageCircle}
+                          className="border-lc-border bg-lc-black/40 text-lc-white"
+                          iconClassName="bg-lc-white text-lc-black"
+                        />
+                      </div>
                     </div>
                   </div>
-                  <p className="ml-9 mt-1 text-sm text-lc-gray">
-                    Ideal para pagar contraentrega o revisar opciones asistidas como Addi directamente con un asesor.
-                  </p>
                 </label>
                 {!stripeEnabled && (
                   <div className="rounded-xl border border-lc-border border-dashed bg-lc-darker/60 p-4 text-sm text-lc-gray">

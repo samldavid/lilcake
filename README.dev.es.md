@@ -184,7 +184,7 @@ graph TB
   - despues de confirmar un pago se limpia la URL visible para evitar reutilizar `session_id` o `id` de Wompi en la siguiente navegacion
 - Se mejoro la presentacion de metodos de pago en checkout:
   - Wompi queda como primera opcion y seleccionado por defecto cuando esta activo
-  - los metodos muestran badges visuales para Wompi, PSE, Nequi, Visa, Stripe, Mastercard, contraentrega, Addi y asesor
+  - los metodos muestran badges visuales de confianza para Wompi, PSE, Bancolombia, Davivienda, Nequi, Visa, Mastercard, Stripe, Amex, WhatsApp, contraentrega, Addi y asesor
   - el fallback `WHATSAPP` dejo de presentarse como transferencia y ahora comunica contraentrega u otros metodos coordinados con asesor
 
 ### 2026-04-25
