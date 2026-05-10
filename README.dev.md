@@ -101,7 +101,7 @@ graph TB
 ### 2026-05-10
 
 - Completed a storefront-only retail design pass without changing backend routes, Prisma models, checkout services, auth logic, or payment integrations.
-- Updated the homepage hero to use a stronger local sneaker-store image asset, added a client-side featured-product carousel in the first viewport, and changed featured storefront reads to request two ordered product images, enabling homepage product-card hover crossfades when a product has a secondary gallery image.
+- Updated the homepage hero to use a stronger local sneaker-store image asset, moved the client-side featured-product carousel into the confidence/lookbook section, and changed featured storefront reads to request two ordered product images, enabling homepage product-card hover crossfades when a product has a secondary gallery image.
 - Restored controlled LilCake brand-color accents in the wordmark, WhatsApp CTA, and footer social icons without changing backend behavior.
 - Updated the storefront design system toward a restrained dark retail direction:
   - calmer charcoal surfaces and thinner borders

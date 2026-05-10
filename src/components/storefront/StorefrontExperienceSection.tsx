@@ -1,24 +1,36 @@
 "use client"
 
+import * as React from "react"
 import { motion, useReducedMotion } from "motion/react"
-import Image from "next/image"
 import Link from "next/link"
-import { ArrowRight, MessageCircle, RotateCcw, ShieldCheck, Truck } from "lucide-react"
+import {
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  MessageCircle,
+  RotateCcw,
+  ShieldCheck,
+  Truck,
+} from "lucide-react"
+import {
+  HeroProductCarousel,
+  type HeroCarouselProduct,
+} from "@/components/storefront/HeroProductCarousel"
 
 const confidenceItems = [
   {
     title: "Pago protegido",
-    text: "Checkout con pasarelas seguras y validacion del lado servidor.",
+    text: "Pasarelas seguras y confirmacion clara antes de finalizar.",
     icon: ShieldCheck,
   },
   {
     title: "Envios en Colombia",
-    text: "Despachos nacionales con seguimiento del pedido desde tu cuenta.",
+    text: "Despachos nacionales con seguimiento y soporte cercano.",
     icon: Truck,
   },
   {
     title: "Cambios claros",
-    text: "Politicas visibles para que el cliente compre con menos dudas.",
+    text: "Reglas visibles para elegir talla y comprar con menos dudas.",
     icon: RotateCcw,
   },
   {
@@ -28,13 +40,136 @@ const confidenceItems = [
   },
 ]
 
+const lookbookSlides = [
+  {
+    image: "/images/storefront-store.jpg",
+    title: "Tienda con energia urbana",
+    text: "Un ambiente visual que conecta ropa, sneakers y accesorios.",
+  },
+  {
+    image: "/images/ropa.png",
+    title: "Prendas con presencia",
+    text: "Siluetas faciles de combinar para looks de uso diario.",
+  },
+  {
+    image: "/images/zapatos.png",
+    title: "Sneakers que sostienen el outfit",
+    text: "Producto visible, proporciones claras y compra directa.",
+  },
+  {
+    image: "/images/accesorios.png",
+    title: "Detalles que completan",
+    text: "Accesorios, gorras y piezas pequenas con protagonismo justo.",
+  },
+]
+
 const revealViewport = {
   once: true,
   amount: 0.25,
   margin: "0px 0px -8% 0px",
 } as const
 
-export function StorefrontExperienceSection() {
+type StorefrontExperienceSectionProps = {
+  products: HeroCarouselProduct[]
+}
+
+function LookbookCarousel() {
+  const [activeIndex, setActiveIndex] = React.useState(0)
+  const [isPaused, setIsPaused] = React.useState(false)
+
+  React.useEffect(() => {
+    if (isPaused || lookbookSlides.length <= 1) {
+      return
+    }
+
+    const timer = window.setInterval(() => {
+      setActiveIndex((currentIndex) => (currentIndex + 1) % lookbookSlides.length)
+    }, 4600)
+
+    return () => window.clearInterval(timer)
+  }, [isPaused])
+
+  const activeSlide = lookbookSlides[activeIndex]
+
+  function goToPrevious() {
+    setActiveIndex(
+      (currentIndex) =>
+        (currentIndex - 1 + lookbookSlides.length) % lookbookSlides.length
+    )
+  }
+
+  function goToNext() {
+    setActiveIndex((currentIndex) => (currentIndex + 1) % lookbookSlides.length)
+  }
+
+  return (
+    <div
+      className="overflow-hidden rounded-lg border border-lc-border bg-lc-card"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      <div className="relative aspect-[16/11] overflow-hidden bg-lc-dark">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          key={activeSlide.image}
+          src={activeSlide.image}
+          alt={activeSlide.title}
+          className="h-full w-full object-cover object-center text-transparent transition duration-700"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-lc-black via-lc-black/20 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 p-4">
+          <p className="text-xs font-semibold text-lc-purple-light">Lookbook</p>
+          <h3 className="mt-1 font-heading text-xl font-bold text-lc-white">
+            {activeSlide.title}
+          </h3>
+          <p className="mt-1 text-sm leading-6 text-lc-gray-light">
+            {activeSlide.text}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between gap-3 p-3">
+        <button
+          type="button"
+          onClick={goToPrevious}
+          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-lc-border text-lc-white transition-colors hover:border-lc-purple-light hover:bg-lc-purple/16"
+          aria-label="Imagen anterior"
+        >
+          <ChevronLeft size={18} />
+        </button>
+
+        <div className="flex flex-1 justify-center gap-2">
+          {lookbookSlides.map((slide, index) => (
+            <button
+              key={slide.title}
+              type="button"
+              onClick={() => setActiveIndex(index)}
+              className={`h-1.5 rounded-full transition-all ${
+                index === activeIndex
+                  ? "w-8 bg-gradient-to-r from-lc-purple to-lc-pink"
+                  : "w-2.5 bg-white/24 hover:bg-white/45"
+              }`}
+              aria-label={`Ver imagen ${index + 1}`}
+            />
+          ))}
+        </div>
+
+        <button
+          type="button"
+          onClick={goToNext}
+          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-lc-border text-lc-white transition-colors hover:border-lc-purple-light hover:bg-lc-purple/16"
+          aria-label="Imagen siguiente"
+        >
+          <ChevronRight size={18} />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export function StorefrontExperienceSection({
+  products,
+}: StorefrontExperienceSectionProps) {
   const shouldReduceMotion = Boolean(useReducedMotion())
   const initial = shouldReduceMotion ? false : { opacity: 0, y: 18 }
   const whileInView = shouldReduceMotion ? undefined : { opacity: 1, y: 0 }
@@ -50,14 +185,15 @@ export function StorefrontExperienceSection() {
             transition={{ duration: 0.5, ease: "easeOut" }}
           >
             <p className="mb-3 text-sm font-semibold text-lc-purple-light">
-              Compra con confianza
+              Mira, elige y compra
             </p>
             <h2 className="max-w-2xl text-3xl font-heading font-bold leading-tight text-lc-white sm:text-5xl">
-              Una tienda que deja que la ropa hable.
+              Producto al frente, compra sin vueltas.
             </h2>
             <p className="mt-5 max-w-xl text-base leading-8 text-lc-gray-light">
-              El nuevo storefront prioriza fotografia, precio, categorias y
-              rutas de compra. Menos ruido visual, mas claridad para decidir.
+              Fotos claras, precios visibles y categorias faciles de recorrer.
+              Todo esta pensado para que el look se entienda rapido y el pedido
+              salga sin friccion.
             </p>
 
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
@@ -110,41 +246,10 @@ export function StorefrontExperienceSection() {
             whileInView={whileInView}
             viewport={revealViewport}
             transition={{ duration: 0.55, ease: "easeOut" }}
-            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1"
+            className="grid gap-4 md:grid-cols-2 lg:grid-cols-1"
           >
-            <div className="relative overflow-hidden rounded-lg border border-lc-border bg-lc-card">
-              <div className="relative aspect-[4/5] sm:aspect-[3/4] lg:aspect-[16/11]">
-                <Image
-                  src="/images/zapatos.png"
-                  alt="Sneakers LilCake"
-                  fill
-                  sizes="(min-width: 1024px) 40rem, 100vw"
-                  className="object-cover"
-                />
-              </div>
-              <div className="p-4">
-                <p className="text-sm font-semibold text-lc-white">
-                  Sneakers y prendas faciles de combinar.
-                </p>
-              </div>
-            </div>
-
-            <div className="relative overflow-hidden rounded-lg border border-lc-border bg-lc-card">
-              <div className="relative aspect-[4/5] sm:aspect-[3/4] lg:aspect-[16/9]">
-                <Image
-                  src="/images/accesorios.png"
-                  alt="Accesorios LilCake"
-                  fill
-                  sizes="(min-width: 1024px) 40rem, 100vw"
-                  className="object-cover"
-                />
-              </div>
-              <div className="p-4">
-                <p className="text-sm font-semibold text-lc-white">
-                  Accesorios que completan sin competir con el outfit.
-                </p>
-              </div>
-            </div>
+            <HeroProductCarousel products={products} />
+            <LookbookCarousel />
           </motion.div>
         </div>
       </div>

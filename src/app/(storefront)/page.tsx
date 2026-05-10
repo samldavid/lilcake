@@ -125,7 +125,7 @@ export default async function HomePage() {
 
   return (
     <div className="overflow-hidden">
-      <HeroSection products={productsToDisplay} />
+      <HeroSection />
 
       <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-18 lg:px-8">
         <ScrollReveal className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
@@ -211,7 +211,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <StorefrontExperienceSection />
+      <StorefrontExperienceSection products={productsToDisplay} />
     </div>
   )
 }

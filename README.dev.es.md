@@ -101,7 +101,7 @@ graph TB
 ### 2026-05-10
 
 - Se completo una pasada visual solo de storefront, sin cambiar rutas backend, modelos Prisma, servicios de checkout, auth ni integraciones de pago.
-- Se actualizo el hero de inicio para usar un asset local mas fuerte de tienda/sneakers, se agrego un carrusel cliente de productos destacados en la primera vista, y la lectura de productos destacados ahora pide dos imagenes ordenadas, activando el crossfade en hover cuando un producto tiene segunda imagen en galeria.
+- Se actualizo el hero de inicio para usar un asset local mas fuerte de tienda/sneakers, se movio el carrusel cliente de productos destacados a la seccion de confianza/lookbook, y la lectura de productos destacados ahora pide dos imagenes ordenadas, activando el crossfade en hover cuando un producto tiene segunda imagen en galeria.
 - Se recuperaron acentos controlados de color LilCake en el wordmark, CTA de WhatsApp e iconos sociales del footer sin cambiar comportamiento backend.
 - El sistema visual de la tienda se movio hacia una direccion retail oscura y mas sobria:
   - superficies charcoal, bordes mas finos y acento LilCake mas controlado

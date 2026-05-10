@@ -87,7 +87,7 @@ Existe un panel administrativo demo disponible en:
 ## Mejoras Recientes
 
 - A fecha de 2026-05-10, el storefront recibio una pasada de diseno comercial para que LilCake se vea mas profesional y menos como una plantilla generada, sin tocar comportamiento backend.
-- El hero de inicio ahora usa una imagen mas fuerte de tienda/sneakers, suma un carrusel de productos destacados en la primera vista, y las cards destacadas piden dos imagenes para que los productos con galeria puedan hacer crossfade al pasar el cursor desde la home.
+- El hero de inicio ahora usa una imagen mas fuerte de tienda/sneakers, y la seccion de confianza integra carrusel de productos y lookbook para que la primera vista respire mejor.
 - Los acentos de color de marca vuelven a la palabra LilCake, el CTA de WhatsApp y los iconos sociales del footer sin perder la direccion retail sobria.
 - Inicio, catalogo, detalle de producto, carrito, ayuda, auth, cards compartidas y navegacion ahora usan menos brillos/gradientes, radios mas sobrios, mejor jerarquia de producto y mensajes de confianza mas utiles para venta.
 - A fecha de 2026-05-05, Wompi Colombia queda activo en produccion para ofrecer una experiencia de pago local con PSE, Nequi, tarjetas y otros metodos disponibles por Wompi.

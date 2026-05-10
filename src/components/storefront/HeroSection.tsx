@@ -1,9 +1,5 @@
 import Link from "next/link"
 import { ArrowRight, MessageCircle, ShieldCheck, Truck } from "lucide-react"
-import {
-  HeroProductCarousel,
-  type HeroCarouselProduct,
-} from "@/components/storefront/HeroProductCarousel"
 
 const trustItems = [
   { label: "Envios nacionales", icon: Truck },
@@ -17,11 +13,7 @@ const categoryLinks = [
   { label: "Accesorios", href: "/productos?categoria=accesorios" },
 ]
 
-type HeroSectionProps = {
-  products: HeroCarouselProduct[]
-}
-
-export function HeroSection({ products }: HeroSectionProps) {
+export function HeroSection() {
   return (
     <section className="relative isolate min-h-[78vh] overflow-hidden bg-lc-black">
       <div className="absolute inset-0">
@@ -36,8 +28,8 @@ export function HeroSection({ products }: HeroSectionProps) {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_28%_38%,rgba(124,58,237,0.22),transparent_34%),radial-gradient(circle_at_50%_72%,rgba(217,70,163,0.16),transparent_32%)]" />
       </div>
 
-      <div className="relative z-10 mx-auto grid min-h-[78vh] max-w-7xl items-end gap-8 px-4 pb-8 pt-20 sm:px-6 sm:pb-10 lg:grid-cols-[minmax(0,1fr)_minmax(340px,420px)] lg:px-8 lg:pb-12">
-        <div className="max-w-2xl animate-slide-up">
+      <div className="relative z-10 mx-auto flex min-h-[78vh] max-w-7xl items-end px-4 pb-8 pt-20 sm:px-6 sm:pb-10 lg:px-8 lg:pb-12">
+        <div className="max-w-3xl animate-slide-up">
           <p className="mb-4 inline-flex rounded-md border border-lc-purple-light/30 bg-lc-purple/12 px-3 py-1.5 text-xs font-semibold text-lc-purple-light backdrop-blur">
             Desde la tienda
           </p>
@@ -46,7 +38,7 @@ export function HeroSection({ products }: HeroSectionProps) {
             Lil<span className="gradient-text">Cake</span>
           </h1>
 
-          <p className="mt-5 max-w-xl text-lg leading-8 text-lc-gray-light sm:text-xl">
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-lc-gray-light sm:text-xl">
             Ropa urbana seleccionada para armar looks con presencia, calidad y
             una compra simple desde cualquier ciudad del pais.
           </p>
@@ -98,9 +90,6 @@ export function HeroSection({ products }: HeroSectionProps) {
           </div>
         </div>
 
-        <div className="hidden animate-slide-up md:block">
-          <HeroProductCarousel products={products} />
-        </div>
       </div>
     </section>
   )

@@ -86,7 +86,7 @@ A safe admin sandbox is available at:
 ## Recent Improvements
 
 - As of 2026-05-10, the storefront received a retail design pass focused on making LilCake look more professional and less template-generated without touching backend behavior.
-- The home hero now uses a stronger sneaker-store interior visual, adds a featured-product carousel in the first viewport, and featured product cards request two images so multi-photo products can crossfade on hover from the homepage.
+- The home hero now uses a stronger sneaker-store interior visual, and the confidence section carries the featured-product and lookbook carousel so the first viewport stays cleaner.
 - Brand color accents were restored on the LilCake wordmark, WhatsApp CTA, and footer social icons while keeping the restrained retail direction.
 - The home, catalog, product detail, cart, help, auth surfaces, shared cards, and storefront chrome now use a more restrained visual language: fewer glows and gradients, tighter radii, clearer product hierarchy, and more commercial trust cues.
 - As of 2026-05-05, Wompi Colombia is enabled in production, giving shoppers a local payment experience for PSE, Nequi, cards, and other methods available through Wompi.
