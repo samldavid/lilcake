@@ -79,8 +79,8 @@ export default async function AccountPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 flex flex-col md:flex-row gap-12 animate-fade-in">
       <div className="w-full md:w-1/3 lg:w-1/4 shrink-0">
-        <div className="bg-lc-dark border border-lc-border rounded-2xl p-6 shadow-xl sticky top-28">
-          <div className="w-20 h-20 bg-gradient-to-tr from-lc-purple to-lc-pink rounded-full flex items-center justify-center text-2xl font-bold mb-4 shadow-[0_0_20px_rgba(111,0,255,0.3)]">
+        <div className="bg-lc-dark border border-lc-border rounded-lg p-6 shadow-xl sticky top-28">
+          <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full border border-lc-border bg-lc-card text-2xl font-bold text-lc-white">
             {dbUser.image ? (
               <img src={dbUser.image} alt="Avatar" className="w-full h-full rounded-full object-cover p-1 bg-lc-black" />
             ) : (
@@ -103,7 +103,7 @@ export default async function AccountPage() {
       </div>
 
       <div className="flex-1 space-y-12">
-        <section className="bg-lc-dark border border-lc-border rounded-2xl p-6 md:p-10 shadow-xl">
+        <section className="bg-lc-dark border border-lc-border rounded-lg p-6 md:p-10 shadow-xl">
           <ProfileForm
             user={{
               name: dbUser.name || "",
@@ -127,7 +127,7 @@ export default async function AccountPage() {
           </div>
 
           {orders.length === 0 ? (
-            <div className="bg-lc-dark border border-lc-border border-dashed rounded-2xl p-12 text-center flex flex-col items-center">
+            <div className="bg-lc-dark border border-lc-border border-dashed rounded-lg p-12 text-center flex flex-col items-center">
               <SearchX size={48} className="text-lc-gray mb-4 opacity-50" />
               <p className="text-lc-gray-light text-lg">
                 Aún no tienes ningún pedido a tu nombre.
@@ -141,7 +141,7 @@ export default async function AccountPage() {
               {orders.map((order) => (
                 <article
                   key={order.id}
-                  className="rounded-2xl border border-lc-border bg-lc-dark p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-lc-purple/50 hover:shadow-[0_18px_45px_rgba(0,0,0,0.24)] sm:p-6"
+                  className="rounded-lg border border-lc-border bg-lc-dark p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-lc-purple/50 hover:shadow-[0_18px_45px_rgba(0,0,0,0.24)] sm:p-6"
                 >
                   <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(170px,auto)_minmax(240px,auto)] lg:items-center">
                     <div className="min-w-0">

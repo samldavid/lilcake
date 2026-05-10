@@ -146,7 +146,7 @@ export default async function CustomerOrderDetailPage({
         </div>
       </div>
 
-      <section className="bg-lc-dark border border-lc-border rounded-2xl p-6 md:p-8">
+      <section className="bg-lc-dark border border-lc-border rounded-lg p-6 md:p-8">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div>
             <p className="text-sm text-lc-purple font-bold tracking-widest mb-2">
@@ -181,7 +181,7 @@ export default async function CustomerOrderDetailPage({
 
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-lc-dark border border-lc-border rounded-2xl p-6">
+          <div className="bg-lc-dark border border-lc-border rounded-lg p-6">
             <div className="flex items-center gap-3 mb-6">
               <Package className="text-lc-purple" />
               <h2 className="text-xl font-heading font-bold text-lc-white">
@@ -199,7 +199,7 @@ export default async function CustomerOrderDetailPage({
                 return (
                   <div
                     key={item.id}
-                    className="flex flex-col sm:flex-row gap-4 rounded-2xl border border-lc-border bg-lc-darker/60 p-4"
+                    className="flex flex-col sm:flex-row gap-4 rounded-lg border border-lc-border bg-lc-darker/60 p-4"
                   >
                     <div className="w-full sm:w-24 h-28 bg-lc-black rounded-xl overflow-hidden shrink-0">
                       {imageUrl ? (
@@ -235,7 +235,7 @@ export default async function CustomerOrderDetailPage({
             </div>
           </div>
 
-          <div className="bg-lc-dark border border-lc-border rounded-2xl p-6">
+          <div className="bg-lc-dark border border-lc-border rounded-lg p-6">
             <div className="flex items-center gap-3 mb-6">
               <Truck className="text-lc-cyan" />
               <h2 className="text-xl font-heading font-bold text-lc-white">
@@ -244,19 +244,19 @@ export default async function CustomerOrderDetailPage({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div className="rounded-2xl border border-lc-border bg-lc-darker/60 p-4">
+              <div className="rounded-lg border border-lc-border bg-lc-darker/60 p-4">
                 <p className="text-lc-gray mb-1">Transportadora</p>
                 <p className="text-lc-white font-medium">
                   {order.shippingCarrier || "Te la compartiremos cuando el pedido sea enviado"}
                 </p>
               </div>
-              <div className="rounded-2xl border border-lc-border bg-lc-darker/60 p-4">
+              <div className="rounded-lg border border-lc-border bg-lc-darker/60 p-4">
                 <p className="text-lc-gray mb-1">Número de guía</p>
                 <p className="text-lc-white font-medium">
                   {order.trackingNumber || "Aún no disponible"}
                 </p>
               </div>
-              <div className="rounded-2xl border border-lc-border bg-lc-darker/60 p-4">
+              <div className="rounded-lg border border-lc-border bg-lc-darker/60 p-4">
                 <p className="text-lc-gray mb-1">Pedido confirmado</p>
                 <p className="text-lc-white font-medium">
                   {order.confirmedAt
@@ -264,7 +264,7 @@ export default async function CustomerOrderDetailPage({
                     : "Pendiente"}
                 </p>
               </div>
-              <div className="rounded-2xl border border-lc-border bg-lc-darker/60 p-4">
+              <div className="rounded-lg border border-lc-border bg-lc-darker/60 p-4">
                 <p className="text-lc-gray mb-1">Pedido enviado</p>
                 <p className="text-lc-white font-medium">
                   {order.shippedAt
@@ -275,7 +275,7 @@ export default async function CustomerOrderDetailPage({
             </div>
           </div>
 
-          <div className="bg-lc-dark border border-lc-border rounded-2xl p-6">
+          <div className="bg-lc-dark border border-lc-border rounded-lg p-6">
             <h2 className="text-xl font-heading font-bold text-lc-white mb-4">
               Acciones del pedido
             </h2>
@@ -290,7 +290,7 @@ export default async function CustomerOrderDetailPage({
             />
           </div>
 
-          <div className="bg-lc-dark border border-lc-border rounded-2xl p-6">
+          <div className="bg-lc-dark border border-lc-border rounded-lg p-6">
             <div className="mb-4 flex items-center gap-3">
               <FileText className="text-lc-purple" />
               <h2 className="text-xl font-heading font-bold text-lc-white">
@@ -312,7 +312,7 @@ export default async function CustomerOrderDetailPage({
         </div>
 
         <div className="space-y-6">
-          <div className="bg-lc-dark border border-lc-border rounded-2xl p-6">
+          <div className="bg-lc-dark border border-lc-border rounded-lg p-6">
             <h2 className="text-xl font-heading font-bold text-lc-white mb-4">
               Envío y pago
             </h2>
@@ -385,7 +385,7 @@ export default async function CustomerOrderDetailPage({
           </div>
 
           {order.paymentMethod === "WHATSAPP" && order.status === "PENDING" && (
-            <div className="bg-lc-dark border border-lc-border rounded-2xl p-6">
+            <div className="bg-lc-dark border border-lc-border rounded-lg p-6">
               <div className="flex items-center gap-3 mb-3">
                 <MessageCircle className="text-lc-success" />
                 <h2 className="text-xl font-heading font-bold text-lc-white">

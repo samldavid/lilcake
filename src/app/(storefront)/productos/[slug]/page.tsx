@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import { PackageCheck, RotateCcw, ShieldCheck } from "lucide-react"
 import { AddToCartBtn } from "@/components/storefront/AddToCartBtn"
 import { ProductImageGallery } from "@/components/storefront/ProductImageGallery"
 import { Badge } from "@/components/ui/Badge"
@@ -7,6 +8,48 @@ import { getProductBySlug } from "@/lib/storefront-data"
 import { formatCOP } from "@/lib/utils"
 
 export const revalidate = 60
+
+const commerceNotes = [
+  {
+    title: "Pago seguro",
+    text: "El checkout valida precios, descuentos y totales en servidor.",
+    icon: ShieldCheck,
+  },
+  {
+    title: "Envio nacional",
+    text: "Entrega estimada de 2 a 5 dias habiles en Colombia.",
+    icon: PackageCheck,
+  },
+  {
+    title: "Cambios",
+    text: "Cambios y devoluciones segun politica dentro de los primeros 15 dias.",
+    icon: RotateCcw,
+  },
+]
+
+function getCategoryFallback(categorySlug?: string) {
+  if (categorySlug === "zapatos") {
+    return "/images/zapatos.png"
+  }
+
+  if (categorySlug === "accesorios") {
+    return "/images/accesorios.png"
+  }
+
+  return "/images/ropa.png"
+}
+
+function resolveDisplayImage(url: string | undefined, fallback: string) {
+  if (!url) {
+    return fallback
+  }
+
+  if (process.env.NODE_ENV !== "production" && url.startsWith("/uploads/")) {
+    return fallback
+  }
+
+  return url
+}
 
 export default async function ProductDetailPage({
   params,
@@ -27,61 +70,68 @@ export default async function ProductDetailPage({
       )
     : 0
 
+  const fallbackImage = getCategoryFallback(product.category?.slug)
+  const displayImages = product.images.map((image) => ({
+    ...image,
+    url: resolveDisplayImage(image.url, fallbackImage),
+  }))
   const mainImage =
-    product.images[0]?.url ||
-    "https://placehold.co/800x1000/1A1A2E/8B8B9E?text=Sin+Imagen"
+    displayImages[0]?.url ||
+    "https://placehold.co/800x1000/181818/C8C5BD?text=Sin+Imagen"
+  const categoryHref = product.category?.slug
+    ? `/productos?categoria=${product.category.slug}`
+    : "/productos"
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8 animate-fade-in">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
       <div className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-lc-gray sm:mb-8 sm:text-sm">
         <Link href="/" className="hover:text-lc-white">
           Inicio
         </Link>
         <span>/</span>
-        <Link
-          href={`/productos?categoria=${product.category?.slug}`}
-          className="hover:text-lc-white"
-        >
-          {product.category?.name}
+        <Link href={categoryHref} className="hover:text-lc-white">
+          {product.category?.name || "Catalogo"}
         </Link>
         <span>/</span>
         <span className="font-medium text-lc-white">{product.name}</span>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-10 lg:gap-16">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)] lg:gap-14">
         <ProductImageGallery
-          images={product.images}
+          images={displayImages}
           productName={product.name}
           discount={discount}
         />
 
-        <div className="flex flex-col">
-          {product.isFeatured && (
-            <div className="mb-3 sm:mb-4">
-              <Badge variant="purple">DROP EXCLUSIVO</Badge>
-            </div>
-          )}
+        <div className="lg:sticky lg:top-28 lg:self-start">
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            {product.isFeatured ? <Badge variant="purple">Nuevo ingreso</Badge> : null}
+            {discount > 0 ? <Badge variant="pink">-{discount}%</Badge> : null}
+            <span className="rounded-md border border-lc-border px-2.5 py-1 text-xs font-semibold text-lc-gray-light">
+              {product.category?.name || "LilCake"}
+            </span>
+          </div>
 
-          <h1 className="mb-4 text-2xl font-heading font-bold leading-tight text-lc-white sm:text-4xl lg:text-5xl">
+          <h1 className="text-3xl font-heading font-bold leading-tight text-lc-white sm:text-5xl">
             {product.name}
           </h1>
 
-          <div className="mb-6 flex flex-wrap items-end gap-3 sm:mb-8 sm:gap-4">
-            <span className="bg-gradient-to-r from-lc-white to-lc-gray-light bg-clip-text text-3xl font-bold text-transparent sm:text-4xl">
+          <div className="mt-5 flex flex-wrap items-end gap-3">
+            <span className="text-3xl font-bold text-lc-white sm:text-4xl">
               {formatCOP(product.price)}
             </span>
-            {product.compareAtPrice && (
-              <span className="mb-1 text-lg text-lc-gray line-through decoration-lc-pink sm:text-xl">
+            {product.compareAtPrice ? (
+              <span className="mb-1 text-lg text-lc-gray line-through decoration-lc-gray">
                 {formatCOP(product.compareAtPrice)}
               </span>
-            )}
+            ) : null}
           </div>
 
-          <div className="prose prose-invert prose-p:text-lc-gray-light mb-8 max-w-none sm:mb-10">
-            <p>{product.description}</p>
-          </div>
+          <p className="mt-6 max-w-2xl text-base leading-8 text-lc-gray-light">
+            {product.description}
+          </p>
 
-          <div className="mb-8 rounded-2xl border border-lc-border bg-lc-darker p-4 sm:mb-10 sm:p-6">
+          <div className="mt-8 rounded-lg border border-lc-border bg-lc-card p-4 sm:p-5">
             <AddToCartBtn
               product={{
                 id: product.id,
@@ -99,17 +149,25 @@ export default async function ProductDetailPage({
             />
           </div>
 
-          <div className="mt-auto border-t border-lc-border pt-5 sm:pt-6">
-            <h4 className="mb-3 font-heading font-bold text-lc-white sm:mb-4">
-              Envíos y Devoluciones
-            </h4>
-            <p className="mb-2 text-sm text-lc-gray">
-              Envío estándar: 2 a 5 días hábiles en Colombia.
-            </p>
-            <p className="text-sm text-lc-gray">
-              Devoluciones gratis dentro de los primeros 15 días tras haber
-              recibido tu pedido.
-            </p>
+          <div className="mt-6 grid gap-3">
+            {commerceNotes.map((note) => {
+              const Icon = note.icon
+
+              return (
+                <div
+                  key={note.title}
+                  className="flex gap-3 rounded-lg border border-lc-border bg-lc-darker p-4"
+                >
+                  <Icon size={19} className="mt-0.5 shrink-0 text-lc-white" />
+                  <div>
+                    <h2 className="text-sm font-bold text-lc-white">{note.title}</h2>
+                    <p className="mt-1 text-sm leading-6 text-lc-gray-light">
+                      {note.text}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>

@@ -14,7 +14,7 @@ export default function StorefrontLayout({
       <div className="flex flex-col min-h-screen">
         <Suspense
           fallback={
-            <div className="sticky top-0 z-40 h-16 w-full border-b border-lc-border glass sm:h-20" />
+            <div className="sticky top-0 z-40 h-16 w-full border-b border-lc-border bg-lc-black/[0.94] sm:h-[72px]" />
           }
         >
           <Navbar />

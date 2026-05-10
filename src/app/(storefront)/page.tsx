@@ -74,6 +74,27 @@ const dummyProducts: ProductCardProduct[] = [
   },
 ]
 
+const categories = [
+  {
+    title: "Ropa",
+    slug: "ropa",
+    img: "/images/ropa.png",
+    description: "Prendas con silueta urbana y rotacion diaria.",
+  },
+  {
+    title: "Zapatos",
+    slug: "zapatos",
+    img: "/images/zapatos.png",
+    description: "Sneakers para completar el look sin sobrecargarlo.",
+  },
+  {
+    title: "Accesorios",
+    slug: "accesorios",
+    img: "/images/accesorios.png",
+    description: "Detalles que elevan el outfit sin competir con el look.",
+  },
+]
+
 export default async function HomePage() {
   let featuredProducts: ProductCardProduct[] = []
 
@@ -87,82 +108,85 @@ export default async function HomePage() {
     featuredProducts.length > 0 ? featuredProducts : dummyProducts
 
   return (
-    <div className="animate-fade-in overflow-hidden">
+    <div className="overflow-hidden">
       <HeroSection />
 
-      <section className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
-        <div className="pointer-events-none absolute -right-24 top-10 h-72 w-72 rounded-full bg-lc-purple/10 blur-[90px]" />
-        <ScrollReveal className="mb-8 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
+      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-18 lg:px-8">
+        <ScrollReveal className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.28em] text-lc-purple-light">
-              Drop activo
+            <p className="mb-3 text-sm font-semibold text-lc-purple-light">
+              Nuevos ingresos
             </p>
-            <h2 className="mb-2 text-2xl font-heading font-bold text-lc-white sm:text-4xl">
-              Nuevos Lanzamientos
+            <h2 className="text-3xl font-heading font-bold text-lc-white sm:text-4xl">
+              Piezas listas para salir
             </h2>
-            <p className="max-w-2xl text-sm text-lc-gray-light sm:text-base">
-              Lo más fresh de la temporada. Ediciones limitadas, outfits urbanos
-              y piezas listas para rotar tu estilo.
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-lc-gray-light sm:text-base">
+              Una seleccion corta para comprar rapido: fotos claras, precio al
+              frente y categorias faciles de recorrer.
             </p>
           </div>
           <Link
             href="/productos"
-            className="group flex items-center text-sm font-semibold text-lc-purple transition-colors hover:text-lc-purple-light"
+            className="group inline-flex items-center text-sm font-semibold text-lc-white transition-colors hover:text-lc-purple-light"
           >
-            Ver todo el catálogo
+            Ver todo el catalogo
             <ArrowRight
               size={16}
-              className="ml-2 transition-transform group-hover:translate-x-1"
+              className="ml-2 transition-transform group-hover:translate-x-0.5"
             />
           </Link>
         </ScrollReveal>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
           {productsToDisplay.map((product, index) => (
-            <ScrollReveal key={product.id} delay={index * 90}>
+            <ScrollReveal key={product.id} delay={index * 70}>
               <ProductCard product={product} />
             </ScrollReveal>
           ))}
         </div>
       </section>
 
-      <section className="relative border-y border-lc-border bg-lc-darker/50 py-14 sm:py-20">
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,transparent,rgba(108,60,225,0.08),transparent)]" />
-        <div className="relative mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-          <ScrollReveal>
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.28em] text-lc-gray">
-              Navega a tu manera
-            </p>
-            <h2 className="mb-8 text-2xl font-heading font-bold text-lc-white sm:mb-12 sm:text-4xl">
-              Explora por Categoría
-            </h2>
+      <section className="border-y border-lc-border bg-lc-darker py-14 sm:py-18">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <ScrollReveal className="mb-8 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="mb-3 text-sm font-semibold text-lc-gray-light">
+                Compra por categoria
+              </p>
+              <h2 className="text-3xl font-heading font-bold text-lc-white sm:text-4xl">
+                Encuentra el punto de partida
+              </h2>
+            </div>
           </ScrollReveal>
 
-          <div className="grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-3 md:gap-8">
-            {[
-              { title: "Ropa", slug: "ropa", img: "/images/ropa.png" },
-              { title: "Zapatos", slug: "zapatos", img: "/images/zapatos.png" },
-              { title: "Accesorios", slug: "accesorios", img: "/images/accesorios.png" },
-            ].map((cat, index) => (
-              <ScrollReveal key={cat.slug} delay={index * 120}>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {categories.map((cat, index) => (
+              <ScrollReveal key={cat.slug} delay={index * 90}>
                 <Link
                   href={`/productos?categoria=${cat.slug}`}
-                  className="group category-card relative block h-52 overflow-hidden rounded-3xl border border-lc-border sm:h-64 md:h-80"
+                  className="group category-card relative block overflow-hidden rounded-lg border border-lc-border bg-lc-card"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={cat.img}
-                    alt={cat.title}
-                    className="h-full w-full object-cover opacity-60 transition-all duration-700 group-hover:scale-110 group-hover:opacity-40"
+                  <div className="aspect-[4/3] overflow-hidden bg-lc-dark">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={cat.img}
+                      alt={cat.title}
+                      className="h-full w-full object-cover opacity-85 transition duration-500 group-hover:scale-[1.025] group-hover:opacity-100"
                     />
-                  <div className="absolute inset-0 bg-gradient-to-t from-lc-black/75 via-lc-black/10 to-transparent" />
-                  <div className="absolute inset-x-6 bottom-6 text-left">
-                    <span className="mb-3 inline-flex rounded-full border border-white/15 bg-lc-black/40 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-lc-gray-light backdrop-blur-md">
-                      Categoría 0{index + 1}
-                    </span>
-                    <h3 className="text-2xl font-heading font-bold uppercase tracking-[0.22em] text-white transition-transform duration-300 drop-shadow-2xl group-hover:translate-x-2 sm:text-3xl">
-                      {cat.title}
-                    </h3>
+                  </div>
+                  <div className="p-4 sm:p-5">
+                    <div className="flex items-center justify-between gap-4">
+                      <h3 className="text-xl font-heading font-bold text-lc-white">
+                        {cat.title}
+                      </h3>
+                      <ArrowRight
+                        size={18}
+                        className="text-lc-gray transition-transform group-hover:translate-x-0.5 group-hover:text-lc-white"
+                      />
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-lc-gray-light">
+                      {cat.description}
+                    </p>
                   </div>
                 </Link>
               </ScrollReveal>

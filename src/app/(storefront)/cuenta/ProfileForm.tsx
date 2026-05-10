@@ -287,7 +287,7 @@ export function ProfileForm({ user }: { user: UserData }) {
           </div>
 
           {passwordFlowOpen ? (
-            <div className="mt-5 rounded-2xl border border-lc-border/80 bg-lc-black/30 p-5">
+            <div className="mt-5 rounded-lg border border-lc-border/80 bg-lc-black/30 p-5">
               <p className="text-sm text-lc-gray-light">
                 {user.emailVerified
                   ? "Al confirmar, enviaremos un correo a tu cuenta con un token temporal de un solo uso. Ese enlace abrirá el formulario seguro para definir tu nueva contraseña."

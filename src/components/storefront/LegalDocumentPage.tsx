@@ -41,7 +41,7 @@ export function LegalDocumentPage({
               </p>
             </div>
 
-            <div className="rounded-3xl border border-lc-border bg-lc-darker/80 p-6 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
+            <div className="rounded-lg border border-lc-border bg-lc-darker/80 p-6 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
               <div className="mb-5 inline-flex rounded-full border border-lc-purple/30 bg-lc-purple/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-lc-purple-light">
                 Documento vigente
               </div>
@@ -63,7 +63,7 @@ export function LegalDocumentPage({
                     {contactEmail}
                   </a>
                 </div>
-                <div className="rounded-2xl border border-lc-border bg-lc-dark/70 p-4 text-sm leading-7 text-lc-gray-light">
+                <div className="rounded-lg border border-lc-border bg-lc-dark/70 p-4 text-sm leading-7 text-lc-gray-light">
                   Si necesitas ejercer derechos sobre tus datos o resolver una duda
                   legal sobre una compra, puedes escribirnos directamente y te
                   responderemos por ese mismo medio.
@@ -76,7 +76,7 @@ export function LegalDocumentPage({
 
       <section className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[250px_minmax(0,1fr)] lg:px-8 lg:py-14">
         <aside className="lg:sticky lg:top-28 lg:self-start">
-          <div className="rounded-3xl border border-lc-border bg-lc-darker/80 p-5">
+          <div className="rounded-lg border border-lc-border bg-lc-darker/80 p-5">
             <p className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-lc-gray">
               En esta página
             </p>
@@ -85,7 +85,7 @@ export function LegalDocumentPage({
                 <a
                   key={section.id}
                   href={`#${section.id}`}
-                  className="flex items-start gap-3 rounded-2xl px-3 py-3 text-sm text-lc-gray-light transition-colors hover:bg-lc-dark hover:text-lc-white"
+                  className="flex items-start gap-3 rounded-lg px-3 py-3 text-sm text-lc-gray-light transition-colors hover:bg-lc-dark hover:text-lc-white"
                 >
                   <span className="mt-0.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full border border-lc-border text-[11px] font-semibold text-lc-purple-light">
                     {index + 1}
@@ -102,7 +102,7 @@ export function LegalDocumentPage({
             <article
               id={section.id}
               key={section.id}
-              className="scroll-mt-28 rounded-[28px] border border-lc-border bg-lc-darker/82 p-6 shadow-[0_16px_48px_rgba(0,0,0,0.22)] sm:p-8"
+              className="scroll-mt-28 rounded-lg border border-lc-border bg-lc-darker/82 p-6 shadow-[0_16px_48px_rgba(0,0,0,0.22)] sm:p-8"
             >
               <div className="mb-5 flex flex-wrap items-center gap-3">
                 <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-lc-purple/12 text-sm font-bold text-lc-purple-light">
@@ -127,7 +127,7 @@ export function LegalDocumentPage({
                   {section.items.map((item) => (
                     <li
                       key={item}
-                      className="rounded-2xl border border-lc-border bg-lc-dark/65 px-4 py-3 text-sm leading-7 text-lc-gray-light"
+                      className="rounded-lg border border-lc-border bg-lc-dark/65 px-4 py-3 text-sm leading-7 text-lc-gray-light"
                     >
                       {item}
                     </li>
@@ -137,7 +137,7 @@ export function LegalDocumentPage({
             </article>
           ))}
 
-          <div className="rounded-[28px] border border-lc-border bg-lc-dark/65 p-6 text-sm leading-7 text-lc-gray-light sm:p-8">
+          <div className="rounded-lg border border-lc-border bg-lc-dark/65 p-6 text-sm leading-7 text-lc-gray-light sm:p-8">
             <p className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-lc-gray">
               Soporte
             </p>

@@ -148,7 +148,7 @@ export function RegisterForm({
           }
         />
 
-        <label className="flex items-start gap-3 rounded-2xl border border-lc-border bg-lc-darker/60 p-4 text-sm text-lc-gray-light">
+        <label className="flex items-start gap-3 rounded-lg border border-lc-border bg-lc-darker/60 p-4 text-sm text-lc-gray-light">
           <input
             type="checkbox"
             checked={formData.acceptedTerms}

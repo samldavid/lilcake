@@ -518,28 +518,28 @@ function CheckoutPageContent() {
         <div className="order-2 space-y-8 lg:order-1 lg:col-span-7">
           <form id="checkout-form" onSubmit={handleSubmit} className="space-y-8">
             {canceledParam && (
-              <div className="rounded-2xl border border-lc-warning/30 bg-lc-warning/10 p-4 text-sm text-lc-warning">
+              <div className="rounded-lg border border-lc-warning/30 bg-lc-warning/10 p-4 text-sm text-lc-warning">
                 Cancelaste la sesion de pago. Puedes revisar tus datos e intentarlo de nuevo.
               </div>
             )}
 
             {error && (
-              <div className="rounded-2xl border border-lc-error/30 bg-lc-error/10 p-4 text-sm text-lc-error">
+              <div className="rounded-lg border border-lc-error/30 bg-lc-error/10 p-4 text-sm text-lc-error">
                 {error}
               </div>
             )}
 
             {!session?.user?.id && status !== "loading" && (
-              <div className="rounded-2xl border border-lc-purple/30 bg-lc-purple/10 p-4 text-sm text-lc-gray-light">
+              <div className="rounded-lg border border-lc-purple/30 bg-lc-purple/10 p-4 text-sm text-lc-gray-light">
                 Necesitas iniciar sesion para crear la orden y continuar con el pago.
               </div>
             )}
 
-            <div className="rounded-2xl border border-lc-border bg-lc-dark p-5 sm:p-8">
+            <div className="rounded-lg border border-lc-border bg-lc-dark p-5 sm:p-8">
               <h2 className="text-xl font-heading font-bold text-lc-white mb-6">
                 1. Datos de envío
               </h2>
-              <div className="mb-6 rounded-2xl border border-lc-border bg-lc-darker/60 p-4">
+              <div className="mb-6 rounded-lg border border-lc-border bg-lc-darker/60 p-4">
                 <label className="flex items-start gap-3 text-sm text-lc-gray-light">
                   <input
                     type="checkbox"
@@ -611,7 +611,7 @@ function CheckoutPageContent() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-lc-border bg-lc-dark p-5 sm:p-8">
+            <div className="rounded-lg border border-lc-border bg-lc-dark p-5 sm:p-8">
               <h2 className="text-xl font-heading font-bold text-lc-white mb-6">
                 2. Metodo de Pago
               </h2>
@@ -738,11 +738,11 @@ function CheckoutPageContent() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-lc-border bg-lc-dark p-5 sm:p-8">
+            <div className="rounded-lg border border-lc-border bg-lc-dark p-5 sm:p-8">
               <h2 className="text-xl font-heading font-bold text-lc-white mb-4">
                 3. Confirmacion legal
               </h2>
-              <label className="flex items-start gap-3 rounded-2xl border border-lc-border bg-lc-darker/60 p-4 text-sm text-lc-gray-light">
+              <label className="flex items-start gap-3 rounded-lg border border-lc-border bg-lc-darker/60 p-4 text-sm text-lc-gray-light">
                 <input
                   type="checkbox"
                   checked={acceptedTerms}
@@ -774,7 +774,7 @@ function CheckoutPageContent() {
         </div>
 
         <div className="order-1 lg:order-2 lg:col-span-5">
-          <div className="rounded-2xl border border-lc-border bg-lc-darker p-5 lg:sticky lg:top-28 lg:p-6">
+          <div className="rounded-lg border border-lc-border bg-lc-darker p-5 lg:sticky lg:top-28 lg:p-6">
             <h2 className="text-xl font-heading font-bold text-lc-white mb-6">Tu Pedido</h2>
 
             <div className="mb-6 max-h-[240px] space-y-4 overflow-y-auto pr-2 custom-scrollbar sm:max-h-[300px]">
@@ -795,7 +795,7 @@ function CheckoutPageContent() {
             </div>
 
             <div className="space-y-4 pt-6 border-t border-lc-border mb-6 text-sm">
-              <div className="rounded-2xl border border-lc-border bg-lc-dark/70 p-4">
+              <div className="rounded-lg border border-lc-border bg-lc-dark/70 p-4">
                 <div className="flex items-center justify-between gap-3 mb-3">
                   <div>
                     <p className="text-sm font-semibold text-lc-white">
@@ -871,7 +871,7 @@ function CheckoutPageContent() {
 
             <div className="flex justify-between items-end mb-8 pt-6 border-t border-lc-border">
               <span className="text-lc-white font-bold text-lg">Total</span>
-              <span className="text-3xl font-heading font-bold text-transparent bg-clip-text bg-gradient-to-r from-lc-purple to-lc-pink">
+              <span className="text-3xl font-heading font-bold text-lc-white">
                 {formatCOP(displayTotal)}
               </span>
             </div>

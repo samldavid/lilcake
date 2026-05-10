@@ -35,6 +35,7 @@ Inside the demo you can explore:
 - Per-order PDF sales notes for internal proof, admin/customer downloads, and email attachments
 - Admin-managed business settings for the commercial details used in sales notes
 
+- Retail-oriented storefront design with an editorial hero, cleaner product cards, calmer catalog filters, and restrained LilCake accent usage
 - 🛍️ Storefront ready to sell with catalog, product pages, cart, search, and checkout flow
 - 🖼️ Persistent product media storage with multi-image galleries, cover selection, custom ordering, and Vercel Blob support
 - 🔐 Flexible authentication with email/password and Google sign-in
@@ -84,6 +85,8 @@ A safe admin sandbox is available at:
 
 ## Recent Improvements
 
+- As of 2026-05-10, the storefront received a retail design pass focused on making LilCake look more professional and less template-generated without touching backend behavior.
+- The home, catalog, product detail, cart, help, auth surfaces, shared cards, and storefront chrome now use a more restrained visual language: fewer glows and gradients, tighter radii, clearer product hierarchy, and more commercial trust cues.
 - As of 2026-05-05, Wompi Colombia is enabled in production, giving shoppers a local payment experience for PSE, Nequi, cards, and other methods available through Wompi.
 - The payment setup is handled behind the scenes with server-side verification, so customers get a smoother Colombian checkout while business credentials stay protected.
 - As of 2026-05-04, real orders can generate internal PDF sales notes downloadable from the admin, customer account, and admin demo.

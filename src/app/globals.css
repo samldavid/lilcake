@@ -7,18 +7,18 @@
 
 @theme inline {
   /* Brand Colors */
-  --color-lc-black: #0D0D0D;
-  --color-lc-dark: #1A1A2E;
-  --color-lc-darker: #141425;
-  --color-lc-card: #1E1E35;
-  --color-lc-purple: #6C3CE1;
-  --color-lc-purple-light: #8B5CF6;
-  --color-lc-pink: #E91E8C;
-  --color-lc-cyan: #00D4FF;
-  --color-lc-white: #F5F5F7;
-  --color-lc-gray: #8B8B9E;
-  --color-lc-gray-light: #ABABBE;
-  --color-lc-border: #2A2A45;
+  --color-lc-black: #0A0A0A;
+  --color-lc-dark: #141414;
+  --color-lc-darker: #101010;
+  --color-lc-card: #181818;
+  --color-lc-purple: #7C3AED;
+  --color-lc-purple-light: #A78BFA;
+  --color-lc-pink: #D946A3;
+  --color-lc-cyan: #38BDF8;
+  --color-lc-white: #F7F7F5;
+  --color-lc-gray: #8D8D88;
+  --color-lc-gray-light: #C8C5BD;
+  --color-lc-border: #2B2B28;
   --color-lc-success: #00E676;
   --color-lc-warning: #FFB300;
   --color-lc-error: #FF5252;
@@ -53,7 +53,7 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
 }
 
 /* ──────────────────────────────────────────────
@@ -91,17 +91,17 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Glassmorphism card */
 .glass {
-  background: rgba(30, 30, 53, 0.6);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(108, 60, 225, 0.15);
+  background: rgba(10, 10, 10, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(247, 247, 245, 0.08);
 }
 
 .glass-light {
-  background: rgba(30, 30, 53, 0.3);
+  background: rgba(24, 24, 24, 0.72);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(108, 60, 225, 0.1);
+  border: 1px solid rgba(247, 247, 245, 0.08);
 }
 
 /* Purple glow shadow */
@@ -117,20 +117,22 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Gradient button primary */
 .btn-primary {
-  background: linear-gradient(135deg, var(--color-lc-purple), var(--color-lc-pink));
-  color: white;
-  font-weight: 600;
-  padding: 0.75rem 2rem;
-  border-radius: 9999px;
-  transition: all 0.3s ease;
-  border: none;
+  background: var(--color-lc-white);
+  border: 1px solid var(--color-lc-white);
+  color: var(--color-lc-black);
+  font-weight: 700;
+  padding: 0.8rem 1.4rem;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
   cursor: pointer;
   font-size: 0.95rem;
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(108, 60, 225, 0.4);
+  background: var(--color-lc-purple);
+  border-color: var(--color-lc-purple);
+  color: white;
+  transform: translateY(-1px);
 }
 
 .btn-primary:active {
@@ -149,18 +151,18 @@ h1, h2, h3, h4, h5, h6 {
   background: transparent;
   color: var(--color-lc-white);
   font-weight: 600;
-  padding: 0.75rem 2rem;
-  border-radius: 9999px;
-  border: 2px solid var(--color-lc-border);
-  transition: all 0.3s ease;
+  padding: 0.8rem 1.4rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-lc-border);
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
   cursor: pointer;
   font-size: 0.95rem;
 }
 
 .btn-secondary:hover {
-  border-color: var(--color-lc-purple);
-  background: rgba(108, 60, 225, 0.1);
-  transform: translateY(-2px);
+  border-color: var(--color-lc-gray-light);
+  background: rgba(247, 247, 245, 0.04);
+  transform: translateY(-1px);
 }
 
 /* Input field */
@@ -169,10 +171,10 @@ h1, h2, h3, h4, h5, h6 {
   padding: 0.875rem 1.25rem;
   background: var(--color-lc-darker);
   border: 1px solid var(--color-lc-border);
-  border-radius: 12px;
+  border-radius: 8px;
   color: var(--color-lc-white);
   font-size: 0.95rem;
-  transition: all 0.3s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
   outline: none;
 }
 
@@ -181,45 +183,46 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .input-field:focus {
-  border-color: var(--color-lc-purple);
-  box-shadow: 0 0 0 3px rgba(108, 60, 225, 0.2);
+  border-color: var(--color-lc-gray-light);
+  box-shadow: 0 0 0 3px rgba(247, 247, 245, 0.08);
 }
 
 /* Card component */
 .card {
   background: var(--color-lc-card);
   border: 1px solid var(--color-lc-border);
-  border-radius: 16px;
+  border-radius: 8px;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card:hover {
-  border-color: var(--color-lc-purple);
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3),
-              0 0 30px rgba(108, 60, 225, 0.1);
+  border-color: rgba(247, 247, 245, 0.18);
+  transform: translateY(-2px);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
 }
 
 /* Badge */
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
   font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
 .badge-purple {
-  background: rgba(108, 60, 225, 0.15);
+  background: rgba(124, 58, 237, 0.12);
   color: var(--color-lc-purple-light);
+  border: 1px solid rgba(167, 139, 250, 0.2);
 }
 
 .badge-pink {
-  background: rgba(233, 30, 140, 0.15);
+  background: rgba(217, 70, 163, 0.12);
   color: var(--color-lc-pink);
+  border: 1px solid rgba(217, 70, 163, 0.22);
 }
 
 .badge-success {
@@ -326,9 +329,7 @@ h1, h2, h3, h4, h5, h6 {
 .button-shine {
   position: absolute;
   inset: 0;
-  transform: translateX(-120%) skewX(-20deg);
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
-  transition: transform 0.7s ease;
+  display: none;
 }
 
 .btn-primary:hover .button-shine {
@@ -337,19 +338,17 @@ h1, h2, h3, h4, h5, h6 {
 
 .scroll-reveal {
   opacity: 0;
-  transform: translate3d(0, 34px, 0) scale(0.98);
-  filter: blur(8px);
+  transform: translate3d(0, 18px, 0);
+  filter: none;
   transition:
-    opacity 0.75s ease,
-    transform 0.75s ease,
-    filter 0.75s ease;
-  will-change: opacity, transform, filter;
+    opacity 0.55s ease,
+    transform 0.55s ease;
+  will-change: opacity, transform;
 }
 
 .scroll-reveal.is-visible {
   opacity: 1;
-  transform: translate3d(0, 0, 0) scale(1);
-  filter: blur(0);
+  transform: translate3d(0, 0, 0);
 }
 
 @media (max-width: 640px), (pointer: coarse) {
@@ -381,9 +380,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .hero-collage > div > div:hover {
-  border-color: rgba(139, 92, 246, 0.55);
-  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35), 0 0 40px rgba(108, 60, 225, 0.12);
-  transform: translateY(-6px);
+  border-color: rgba(247, 247, 245, 0.18);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
+  transform: translateY(-4px);
 }
 
 .category-card {
@@ -395,9 +394,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .category-card:hover {
-  border-color: rgba(139, 92, 246, 0.6);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.4), 0 0 42px rgba(108, 60, 225, 0.12);
-  transform: translateY(-8px);
+  border-color: rgba(247, 247, 245, 0.22);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
+  transform: translateY(-4px);
 }
 
 /* Stagger animation delays */

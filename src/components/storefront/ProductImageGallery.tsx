@@ -15,7 +15,7 @@ type ProductImageGalleryProps = {
 
 const fallbackImage = {
   id: "fallback",
-  url: "https://placehold.co/800x1000/1A1A2E/8B8B9E?text=Sin+Imagen",
+  url: "https://placehold.co/800x1000/181818/C8C5BD?text=Sin+Imagen",
   altText: "Sin imagen",
 }
 
@@ -47,7 +47,7 @@ export function ProductImageGallery({
   return (
     <div className="space-y-3 sm:space-y-4">
       <div
-        className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-lc-border bg-lc-dark sm:aspect-[5/6] md:h-[600px] md:aspect-auto md:rounded-3xl"
+        className="relative aspect-[4/5] cursor-zoom-in overflow-hidden rounded-lg border border-lc-border bg-lc-dark sm:aspect-[5/6] md:h-[620px] md:aspect-auto"
         onMouseEnter={() => setIsZoomed(true)}
         onMouseLeave={() => {
           setIsZoomed(false)
@@ -55,22 +55,23 @@ export function ProductImageGallery({
         }}
         onMouseMove={handleMouseMove}
       >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={selectedImage.url}
           alt={selectedImage.altText || productName}
-          className={`w-full h-full object-cover transition-transform duration-300 ${isZoomed ? "scale-150" : "scale-100"}`}
+          className={`h-full w-full object-cover text-transparent transition-transform duration-300 ${isZoomed ? "scale-150" : "scale-100"}`}
           style={{ transformOrigin: zoomOrigin }}
         />
         {discount > 0 && (
           <Badge
             variant="pink"
-            className="absolute left-3 top-3 px-2.5 py-1 text-sm shadow-lg backdrop-blur-md sm:left-4 sm:top-4 sm:px-3 sm:text-base"
+            className="absolute left-3 top-3 px-2.5 py-1 text-sm sm:left-4 sm:top-4 sm:px-3 sm:text-base"
           >
-            -{discount}% OFF
+            -{discount}%
           </Badge>
         )}
-        <div className="absolute bottom-4 right-4 hidden rounded-full bg-lc-black/70 px-3 py-1 text-xs font-semibold text-lc-white backdrop-blur-md md:block">
-          Pasa el mouse para zoom
+        <div className="absolute bottom-4 right-4 hidden rounded-md bg-lc-black/72 px-3 py-1.5 text-xs font-semibold text-lc-white backdrop-blur-md md:block">
+          Zoom al pasar
         </div>
       </div>
 
@@ -81,12 +82,13 @@ export function ProductImageGallery({
               key={image.id}
               type="button"
               onClick={() => setSelectedImageIndex(index)}
-              className={`h-20 w-20 shrink-0 cursor-pointer overflow-hidden rounded-xl border bg-lc-dark transition-all md:h-auto md:w-auto md:aspect-square ${selectedImageIndex === index ? "border-lc-purple shadow-[0_0_0_1px_rgba(108,60,225,0.35)]" : "border-lc-border hover:border-lc-purple/60"}`}
+              className={`h-20 w-20 shrink-0 cursor-pointer overflow-hidden rounded-[8px] border bg-lc-dark transition-all md:aspect-square md:h-auto md:w-auto ${selectedImageIndex === index ? "border-lc-white" : "border-lc-border hover:border-lc-gray-light"}`}
             >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={image.url}
                 alt={image.altText || `${productName} ${index + 1}`}
-                className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                className="h-full w-full object-cover text-transparent transition-transform duration-300 hover:scale-[1.03]"
               />
             </button>
           ))}

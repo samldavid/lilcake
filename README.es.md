@@ -35,6 +35,7 @@ Dentro del demo puedes explorar:
 - Notas de venta PDF por pedido para soporte interno, descarga desde admin/cliente y adjunto en correos
 - Configuracion del negocio desde admin para personalizar datos comerciales usados en notas de venta
 
+- Diseno de storefront orientado a retail, con hero editorial, cards de producto mas limpias, filtros de catalogo mas claros y acentos LilCake usados con mas control
 - 🛍️ Tienda online lista para vender con catálogo, páginas de producto, carrito, búsqueda y checkout
 - 🖼️ Almacenamiento persistente de imágenes con galerías múltiples, portada, orden personalizado y soporte de Vercel Blob
 - 🔐 Autenticación flexible con email/contraseña y acceso con Google
@@ -85,6 +86,8 @@ Existe un panel administrativo demo disponible en:
 
 ## Mejoras Recientes
 
+- A fecha de 2026-05-10, el storefront recibio una pasada de diseno comercial para que LilCake se vea mas profesional y menos como una plantilla generada, sin tocar comportamiento backend.
+- Inicio, catalogo, detalle de producto, carrito, ayuda, auth, cards compartidas y navegacion ahora usan menos brillos/gradientes, radios mas sobrios, mejor jerarquia de producto y mensajes de confianza mas utiles para venta.
 - A fecha de 2026-05-05, Wompi Colombia queda activo en produccion para ofrecer una experiencia de pago local con PSE, Nequi, tarjetas y otros metodos disponibles por Wompi.
 - La configuracion de pagos se maneja tras bambalinas con verificacion del lado servidor, para que el cliente tenga un checkout mas cercano al mercado colombiano sin exponer credenciales del negocio.
 - A fecha de 2026-05-04, los pedidos ya pueden generar notas de venta PDF como comprobante interno, descargables desde admin, cuenta cliente y admin demo.

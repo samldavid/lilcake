@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowRight, Loader2, Search, Sparkles, X } from "lucide-react"
+import { ArrowRight, Loader2, Search, SearchX, X } from "lucide-react"
 import { cn, formatCOP } from "@/lib/utils"
 import type { ProductCardProduct } from "@/components/storefront/ProductCard"
 
@@ -89,7 +89,7 @@ export function StorefrontSearchPanel({
     })
       .then(async (response) => {
         if (!response.ok) {
-          throw new Error("No pudimos completar la búsqueda.")
+          throw new Error("No pudimos completar la busqueda.")
         }
 
         return response.json()
@@ -133,10 +133,10 @@ export function StorefrontSearchPanel({
     ? `Resultados para "${normalizedQuery}"`
     : "Buscar productos"
   const helperText = isShortQuery
-    ? "Escribe al menos 3 letras para activar la búsqueda inteligente."
+    ? "Escribe al menos 3 letras para buscar con mas precision."
     : hasActiveQuery
-      ? `${products.length} coincidencias relevantes`
-      : "Descubre productos destacados o empieza a escribir para buscar."
+      ? `${products.length} coincidencias`
+      : "Mira productos destacados o empieza a escribir."
 
   return (
     <div
@@ -148,22 +148,20 @@ export function StorefrontSearchPanel({
     >
       <button
         type="button"
-        aria-label="Cerrar búsqueda"
+        aria-label="Cerrar busqueda"
         className="absolute inset-0 bg-black/72 backdrop-blur-sm"
         onClick={onClose}
       />
 
       <aside
         className={cn(
-          "absolute right-0 top-0 flex h-full w-full max-w-xl flex-col border-l border-lc-border bg-lc-darker shadow-[-24px_0_60px_rgba(0,0,0,0.45)] transition-transform duration-300",
+          "absolute right-0 top-0 flex h-full w-full max-w-xl flex-col border-l border-lc-border bg-lc-darker shadow-[-18px_0_45px_rgba(0,0,0,0.32)] transition-transform duration-300",
           open ? "translate-x-0" : "translate-x-full"
         )}
       >
         <div className="flex items-center justify-between border-b border-lc-border px-5 py-5 sm:px-6">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-lc-gray">
-              Búsqueda
-            </p>
+            <p className="text-xs font-semibold text-lc-gray">Busqueda</p>
             <h2 className="mt-2 text-2xl font-heading font-bold text-lc-white">
               {panelTitle}
             </h2>
@@ -172,8 +170,8 @@ export function StorefrontSearchPanel({
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-lc-border text-lc-gray transition-colors hover:text-lc-white"
-            aria-label="Cerrar panel de búsqueda"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-lc-border text-lc-gray transition-colors hover:text-lc-white"
+            aria-label="Cerrar panel de busqueda"
           >
             <X size={20} />
           </button>
@@ -191,7 +189,7 @@ export function StorefrontSearchPanel({
                 type="text"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Busca por nombre, categoría o estilo..."
+                placeholder="Busca por nombre, categoria o estilo..."
                 autoComplete="off"
                 spellCheck={false}
                 className="input-field min-h-14"
@@ -201,7 +199,7 @@ export function StorefrontSearchPanel({
             <button
               type="submit"
               disabled={query.trim().length < 3}
-              className="inline-flex min-h-14 items-center justify-center rounded-xl bg-lc-purple px-5 text-sm font-semibold text-white transition-all hover:bg-lc-purple-light disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-28"
+              className="inline-flex min-h-14 items-center justify-center rounded-md bg-lc-white px-5 text-sm font-semibold text-lc-black transition-all hover:bg-lc-purple hover:text-white disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-28"
             >
               Buscar
             </button>
@@ -212,15 +210,15 @@ export function StorefrontSearchPanel({
         <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
           {isLoading ? (
             <div className="flex h-full min-h-56 items-center justify-center">
-              <div className="flex items-center gap-3 rounded-2xl border border-lc-border bg-lc-card px-5 py-4 text-sm text-lc-gray-light">
+              <div className="flex items-center gap-3 rounded-md border border-lc-border bg-lc-card px-5 py-4 text-sm text-lc-gray-light">
                 <Loader2 size={18} className="animate-spin text-lc-purple" />
                 Buscando productos...
               </div>
             </div>
           ) : isShortQuery ? (
-            <div className="rounded-3xl border border-dashed border-lc-border bg-lc-card/60 p-6">
+            <div className="rounded-lg border border-dashed border-lc-border bg-lc-card p-6">
               <div className="flex items-start gap-4">
-                <div className="rounded-2xl bg-lc-purple/10 p-3 text-lc-purple-light">
+                <div className="rounded-md bg-lc-purple/10 p-3 text-lc-purple-light">
                   <Search size={18} />
                 </div>
                 <div>
@@ -228,30 +226,31 @@ export function StorefrontSearchPanel({
                     Sigue escribiendo
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-lc-gray-light">
-                    A partir de 3 letras te mostramos coincidencias cada vez más precisas.
+                    A partir de 3 letras te mostramos coincidencias mas precisas.
                   </p>
                 </div>
               </div>
             </div>
           ) : products.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-lc-border bg-lc-card/60 p-6">
+            <div className="rounded-lg border border-dashed border-lc-border bg-lc-card p-6">
               <div className="flex items-start gap-4">
-                <div className="rounded-2xl bg-lc-pink/10 p-3 text-lc-pink">
-                  <Sparkles size={18} />
+                <div className="rounded-md bg-lc-pink/10 p-3 text-lc-pink">
+                  <SearchX size={18} />
                 </div>
                 <div>
                   <h3 className="text-lg font-heading font-bold text-lc-white">
                     No encontramos coincidencias
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-lc-gray-light">
-                    Prueba con otro nombre, una categoría o una descripción más específica.
+                    Prueba con otro nombre, una categoria o una descripcion mas
+                    especifica.
                   </p>
                   <Link
                     href="/productos"
                     onClick={onClose}
-                    className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-lc-purple transition-colors hover:text-lc-white"
+                    className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-lc-white transition-colors hover:text-lc-purple-light"
                   >
-                    Ver catálogo completo <ArrowRight size={16} />
+                    Ver catalogo completo <ArrowRight size={16} />
                   </Link>
                 </div>
               </div>
@@ -261,40 +260,40 @@ export function StorefrontSearchPanel({
               {products.map((product) => {
                 const imageUrl =
                   product.images?.[0]?.url ||
-                  "https://placehold.co/160x160/1A1A2E/8B8B9E?text=Sin+Imagen"
+                  "https://placehold.co/160x160/181818/C8C5BD?text=Sin+Imagen"
 
                 return (
                   <Link
                     key={product.id}
                     href={`/productos/${product.slug}`}
                     onClick={onClose}
-                    className="group flex items-center gap-4 rounded-3xl border border-lc-border bg-lc-card/70 p-3 transition-all hover:border-lc-purple hover:bg-lc-card"
+                    className="group flex items-center gap-4 rounded-lg border border-lc-border bg-lc-card p-3 transition-all hover:border-lc-gray-light hover:bg-lc-dark"
                   >
-                    <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-lc-border bg-lc-dark">
+                    <div className="h-20 w-20 shrink-0 overflow-hidden rounded-md border border-lc-border bg-lc-dark">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={imageUrl}
                         alt={product.images?.[0]?.altText || product.name}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                       />
                     </div>
 
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold uppercase tracking-[0.14em] text-lc-purple-light">
+                          <p className="truncate text-sm font-semibold text-lc-purple-light">
                             {product.category?.name || "LilCake"}
                           </p>
-                          <h3 className="mt-1 truncate text-lg font-heading font-bold text-lc-white">
+                          <h3 className="mt-1 truncate text-base font-heading font-bold text-lc-white">
                             {product.name}
                           </h3>
                         </div>
                         <div className="shrink-0 text-right">
-                          <p className="text-base font-bold text-lc-white">
+                          <p className="text-sm font-bold text-lc-white">
                             {formatCOP(product.price)}
                           </p>
                           {product.compareAtPrice ? (
-                            <p className="text-xs text-lc-gray line-through decoration-lc-pink">
+                            <p className="text-xs text-lc-gray line-through decoration-lc-gray">
                               {formatCOP(product.compareAtPrice)}
                             </p>
                           ) : null}
@@ -316,9 +315,9 @@ export function StorefrontSearchPanel({
                 : "/productos"
             }
             onClick={onClose}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-lc-white transition-colors hover:text-lc-purple"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-lc-white transition-colors hover:text-lc-purple-light"
           >
-            {hasActiveQuery ? "Ver resultados completos" : "Explorar todo el catálogo"}
+            {hasActiveQuery ? "Ver resultados completos" : "Explorar todo el catalogo"}
             <ArrowRight size={16} />
           </Link>
         </div>

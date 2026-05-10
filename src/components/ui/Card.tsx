@@ -9,7 +9,7 @@ export function Card({ className, glass, ...props }: CardProps) {
   return (
     <div
       className={cn(
-        "rounded-2xl overflow-hidden",
+        "rounded-lg overflow-hidden",
         glass ? "glass" : "card",
         className
       )}

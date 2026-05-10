@@ -98,6 +98,15 @@ graph TB
 
 ## Historial de cambios
 
+### 2026-05-10
+
+- Se completo una pasada visual solo de storefront, sin cambiar rutas backend, modelos Prisma, servicios de checkout, auth ni integraciones de pago.
+- El sistema visual de la tienda se movio hacia una direccion retail oscura y mas sobria:
+  - superficies charcoal, bordes mas finos y acento LilCake mas controlado
+  - menos glow, glass, gradientes, radios grandes y movimiento decorativo
+  - hero, cards de producto, controles de catalogo, detalle de producto, carrito, ayuda, auth y tarjetas compartidas mas limpios
+  - ordenamiento de catalogo en cliente sobre la respuesta existente del API de productos
+
 ### 2026-05-05
 
 - Se reforzo la superficie de APIs de pagos y carrito despues de una revision de seguridad:

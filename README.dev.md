@@ -98,6 +98,15 @@ graph TB
 
 ## Changelog
 
+### 2026-05-10
+
+- Completed a storefront-only retail design pass without changing backend routes, Prisma models, checkout services, auth logic, or payment integrations.
+- Updated the storefront design system toward a restrained dark retail direction:
+  - calmer charcoal surfaces and thinner borders
+  - reduced glow, glass, gradient, oversized radius, and decorative motion usage
+  - cleaner hero, product cards, catalog controls, product detail, cart, help, auth, and shared card styling
+  - client-side catalog sorting added on top of the existing product API response
+
 ### 2026-05-05
 
 - Hardened the payment and cart API surface after a security review:
