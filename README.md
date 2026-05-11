@@ -88,6 +88,7 @@ A safe admin sandbox is available at:
 - As of 2026-05-10, the storefront received a retail design pass focused on making LilCake look more professional and less template-generated without touching backend behavior.
 - Product detail now separates direct purchase from cart building: shoppers can pay for only the selected variant with Buy now, or keep adding items through Add to cart.
 - Checkout payment methods now use real local logo assets for Wompi/PSE banks, card networks, and assisted WhatsApp payment options.
+- Checkout legal acceptance now sits directly above the payment button so shoppers understand why the CTA is enabled or disabled.
 - The home hero now uses a stronger sneaker-store interior visual, and the confidence section carries the featured-product and lookbook carousel so the first viewport stays cleaner.
 - Brand color accents were restored on the LilCake wordmark, WhatsApp CTA, and footer social icons while keeping the restrained retail direction.
 - The home, catalog, product detail, cart, help, auth surfaces, shared cards, and storefront chrome now use a more restrained visual language: fewer glows and gradients, tighter radii, clearer product hierarchy, and more commercial trust cues.

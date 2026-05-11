@@ -185,6 +185,7 @@ graph TB
 - Improved checkout payment-method presentation:
   - Wompi is now the first option and the default selection when enabled
   - payment methods now show real local logo assets for Wompi, PSE, Bancolombia, Davivienda, Nequi, Visa, Mastercard, Stripe, Amex, WhatsApp, Addi, plus text chips for non-brand assisted options
+  - the terms/privacy acceptance checkbox now appears in the order summary directly above the payment CTA, with helper copy when it is not checked
   - the `WHATSAPP` fallback is no longer presented as bank transfer; it now communicates cash-on-delivery or advisor-coordinated payment options
 
 ### 2026-04-25

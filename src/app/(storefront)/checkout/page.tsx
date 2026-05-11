@@ -877,39 +877,6 @@ function CheckoutPageContent() {
                 )}
               </div>
             </div>
-
-            <div className="rounded-lg border border-lc-border bg-lc-dark p-5 sm:p-8">
-              <h2 className="text-xl font-heading font-bold text-lc-white mb-4">
-                3. Confirmacion legal
-              </h2>
-              <label className="flex items-start gap-3 rounded-lg border border-lc-border bg-lc-darker/60 p-4 text-sm text-lc-gray-light">
-                <input
-                  type="checkbox"
-                  checked={acceptedTerms}
-                  onChange={(event) => setAcceptedTerms(event.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-lc-border bg-lc-black text-lc-purple focus:ring-lc-purple"
-                />
-                <span className="leading-6">
-                  He leído y acepto los{" "}
-                  <Link
-                    href="/terminos"
-                    target="_blank"
-                    className="font-semibold text-lc-cyan transition-colors hover:text-white"
-                  >
-                    términos y condiciones
-                  </Link>{" "}
-                  y la{" "}
-                  <Link
-                    href="/privacidad"
-                    target="_blank"
-                    className="font-semibold text-lc-cyan transition-colors hover:text-white"
-                  >
-                    política de privacidad
-                  </Link>{" "}
-                  antes de confirmar esta compra.
-                </span>
-              </label>
-            </div>
           </form>
         </div>
 
@@ -1019,6 +986,41 @@ function CheckoutPageContent() {
               <span className="text-3xl font-heading font-bold text-lc-white">
                 {formatCOP(displayTotal)}
               </span>
+            </div>
+
+            <div className="mb-4">
+              <label className="flex items-start gap-3 rounded-lg border border-lc-border bg-lc-dark/80 p-4 text-sm text-lc-gray-light">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(event) => setAcceptedTerms(event.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-lc-border bg-lc-black text-lc-purple focus:ring-lc-purple"
+                />
+                <span className="leading-6">
+                  He leido y acepto los{" "}
+                  <Link
+                    href="/terminos"
+                    target="_blank"
+                    className="font-semibold text-lc-cyan transition-colors hover:text-white"
+                  >
+                    terminos y condiciones
+                  </Link>{" "}
+                  y la{" "}
+                  <Link
+                    href="/privacidad"
+                    target="_blank"
+                    className="font-semibold text-lc-cyan transition-colors hover:text-white"
+                  >
+                    politica de privacidad
+                  </Link>{" "}
+                  antes de confirmar esta compra.
+                </span>
+              </label>
+              {!acceptedTerms ? (
+                <p className="mt-2 text-xs font-semibold text-lc-gray">
+                  Acepta las politicas para habilitar el boton y continuar.
+                </p>
+              ) : null}
             </div>
 
             <Button

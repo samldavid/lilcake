@@ -185,6 +185,7 @@ graph TB
 - Se mejoro la presentacion de metodos de pago en checkout:
   - Wompi queda como primera opcion y seleccionado por defecto cuando esta activo
   - los metodos muestran logos reales guardados localmente para Wompi, PSE, Bancolombia, Davivienda, Nequi, Visa, Mastercard, Stripe, Amex, WhatsApp y Addi, mas chips de texto para opciones asistidas sin marca
+  - el checkbox de terminos/privacidad ahora aparece en el resumen del pedido, justo antes del CTA de pago, con texto de ayuda cuando falta aceptarlo
   - el fallback `WHATSAPP` dejo de presentarse como transferencia y ahora comunica contraentrega u otros metodos coordinados con asesor
 
 ### 2026-04-25
