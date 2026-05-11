@@ -184,7 +184,7 @@ graph TB
   - after a payment is confirmed, the visible URL is cleaned so old `session_id` or Wompi `id` parameters are not reused on the next visit
 - Improved checkout payment-method presentation:
   - Wompi is now the first option and the default selection when enabled
-  - payment methods now show richer visual trust badges for Wompi, PSE, Bancolombia, Davivienda, Nequi, Visa, Mastercard, Stripe, Amex, WhatsApp, cash on delivery, Addi, and advisor support
+  - payment methods now show real local logo assets for Wompi, PSE, Bancolombia, Davivienda, Nequi, Visa, Mastercard, Stripe, Amex, WhatsApp, Addi, plus text chips for non-brand assisted options
   - the `WHATSAPP` fallback is no longer presented as bank transfer; it now communicates cash-on-delivery or advisor-coordinated payment options
 
 ### 2026-04-25

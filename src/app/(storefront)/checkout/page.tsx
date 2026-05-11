@@ -1,18 +1,10 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useSession } from "next-auth/react"
-import {
-  CreditCard,
-  Landmark,
-  MessageCircle,
-  ShieldCheck,
-  Smartphone,
-  Truck,
-  type LucideIcon,
-} from "lucide-react"
 import { useCart, type CartItem } from "@/components/CartProvider"
 import { formatCOP } from "@/lib/utils"
 import { Button } from "@/components/ui/Button"
@@ -26,6 +18,19 @@ const stripeEnabled = process.env.NEXT_PUBLIC_STRIPE_ENABLED === "true"
 const wompiEnabled = process.env.NEXT_PUBLIC_WOMPI_ENABLED === "true"
 const CHECKOUT_DETAILS_STORAGE_KEY = "lilcake-checkout-details"
 const CHECKOUT_RETURN_STORAGE_PREFIX = "lilcake-checkout-return"
+const paymentLogoPaths = {
+  addi: "/images/payments/addi.svg",
+  amex: "/images/payments/amex.svg",
+  bancolombia: "/images/payments/bancolombia.png",
+  davivienda: "/images/payments/davivienda.svg",
+  mastercard: "/images/payments/mastercard.svg",
+  nequi: "/images/payments/nequi.svg",
+  pse: "/images/payments/pse.png",
+  stripe: "/images/payments/stripe.svg",
+  visa: "/images/payments/visa.svg",
+  whatsapp: "/images/payments/whatsapp.svg",
+  wompi: "/images/payments/wompi.svg",
+} as const
 
 type AppliedCoupon = {
   code: string
@@ -46,27 +51,46 @@ type SavedCheckoutDetails = {
   shippingPhone: string
 }
 
-function PaymentBrandBadge({
+function PaymentLogoBadge({
   label,
-  icon: Icon,
-  className,
-  iconClassName,
+  src,
+  size = "compact",
+  imageClassName = "",
 }: {
   label: string
-  icon: LucideIcon
-  className: string
-  iconClassName: string
+  src: string
+  size?: "compact" | "wide" | "square"
+  imageClassName?: string
 }) {
+  const width = size === "wide" ? 112 : size === "square" ? 30 : 76
+
   return (
     <span
-      className={`inline-flex min-h-10 items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[11px] font-black uppercase leading-none tracking-wide ${className}`}
+      title={label}
+      className={`inline-flex h-11 shrink-0 items-center justify-center rounded-lg border border-white/80 bg-white px-3 py-2 shadow-sm ring-1 ring-black/5 ${
+        size === "wide"
+          ? "min-w-[122px]"
+          : size === "square"
+            ? "w-11 px-2"
+            : "min-w-[84px]"
+      }`}
     >
-      <span
-        className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${iconClassName}`}
-      >
-        <Icon size={14} strokeWidth={2.4} />
-      </span>
-      <span className="whitespace-nowrap">{label}</span>
+      <Image
+        src={src}
+        alt={label}
+        width={width}
+        height={28}
+        className={`max-h-6 w-auto max-w-full object-contain ${imageClassName}`}
+        unoptimized
+      />
+    </span>
+  )
+}
+
+function PaymentTextBadge({ label }: { label: string }) {
+  return (
+    <span className="inline-flex h-11 shrink-0 items-center justify-center rounded-lg border border-lc-border bg-lc-black/55 px-3 text-[11px] font-black uppercase tracking-wide text-lc-white">
+      {label}
     </span>
   )
 }
@@ -725,47 +749,36 @@ function CheckoutPageContent() {
                           Paga con PSE, tarjeta, Nequi y bancos disponibles dentro de Wompi.
                         </p>
                         <div className="mt-4 flex flex-wrap gap-2">
-                          <PaymentBrandBadge
+                          <PaymentLogoBadge
                             label="Wompi"
-                            icon={ShieldCheck}
-                            className="border-lc-cyan/30 bg-lc-cyan/10 text-lc-cyan"
-                            iconClassName="bg-lc-cyan text-lc-black"
+                            src={paymentLogoPaths.wompi}
+                            size="wide"
                           />
-                          <PaymentBrandBadge
+                          <PaymentLogoBadge
                             label="PSE"
-                            icon={Landmark}
-                            className="border-lc-purple/30 bg-lc-purple/10 text-lc-purple-light"
-                            iconClassName="bg-lc-purple text-white"
+                            src={paymentLogoPaths.pse}
                           />
-                          <PaymentBrandBadge
+                          <PaymentLogoBadge
                             label="Bancolombia"
-                            icon={Landmark}
-                            className="border-[#ffcc00]/35 bg-[#ffcc00]/10 text-[#ffdd55]"
-                            iconClassName="bg-[#ffcc00] text-lc-black"
+                            src={paymentLogoPaths.bancolombia}
+                            size="wide"
                           />
-                          <PaymentBrandBadge
+                          <PaymentLogoBadge
                             label="Davivienda"
-                            icon={Landmark}
-                            className="border-[#ed1c24]/35 bg-[#ed1c24]/10 text-[#ff6b6b]"
-                            iconClassName="bg-[#ed1c24] text-white"
+                            src={paymentLogoPaths.davivienda}
+                            size="wide"
                           />
-                          <PaymentBrandBadge
+                          <PaymentLogoBadge
                             label="Nequi"
-                            icon={Smartphone}
-                            className="border-[#a855f7]/35 bg-[#a855f7]/10 text-[#d8b4fe]"
-                            iconClassName="bg-[#a855f7] text-white"
+                            src={paymentLogoPaths.nequi}
                           />
-                          <PaymentBrandBadge
+                          <PaymentLogoBadge
                             label="Visa"
-                            icon={CreditCard}
-                            className="border-lc-border bg-lc-black/40 text-lc-white"
-                            iconClassName="bg-lc-white text-lc-black"
+                            src={paymentLogoPaths.visa}
                           />
-                          <PaymentBrandBadge
+                          <PaymentLogoBadge
                             label="Mastercard"
-                            icon={CreditCard}
-                            className="border-[#ff8a00]/30 bg-[#ff8a00]/10 text-[#ffbd6a]"
-                            iconClassName="bg-[#ff8a00] text-lc-black"
+                            src={paymentLogoPaths.mastercard}
                           />
                         </div>
                       </div>
@@ -796,29 +809,22 @@ function CheckoutPageContent() {
                           Pago seguro e inmediato con tarjetas procesadas por Stripe.
                         </p>
                         <div className="mt-4 flex flex-wrap gap-2">
-                          <PaymentBrandBadge
+                          <PaymentLogoBadge
                             label="Stripe"
-                            icon={ShieldCheck}
-                            className="border-lc-purple/30 bg-lc-purple/10 text-lc-purple-light"
-                            iconClassName="bg-lc-purple text-white"
+                            src={paymentLogoPaths.stripe}
+                            size="wide"
                           />
-                          <PaymentBrandBadge
+                          <PaymentLogoBadge
                             label="Visa"
-                            icon={CreditCard}
-                            className="border-lc-border bg-lc-black/40 text-lc-white"
-                            iconClassName="bg-lc-white text-lc-black"
+                            src={paymentLogoPaths.visa}
                           />
-                          <PaymentBrandBadge
+                          <PaymentLogoBadge
                             label="Mastercard"
-                            icon={CreditCard}
-                            className="border-[#ff8a00]/30 bg-[#ff8a00]/10 text-[#ffbd6a]"
-                            iconClassName="bg-[#ff8a00] text-lc-black"
+                            src={paymentLogoPaths.mastercard}
                           />
-                          <PaymentBrandBadge
+                          <PaymentLogoBadge
                             label="Amex"
-                            icon={CreditCard}
-                            className="border-lc-cyan/30 bg-lc-cyan/10 text-lc-cyan"
-                            iconClassName="bg-lc-cyan text-lc-black"
+                            src={paymentLogoPaths.amex}
                           />
                         </div>
                       </div>
@@ -848,30 +854,18 @@ function CheckoutPageContent() {
                         Ideal para pagar contraentrega o revisar opciones asistidas como Addi directamente con un asesor.
                       </p>
                       <div className="mt-4 flex flex-wrap gap-2">
-                        <PaymentBrandBadge
+                        <PaymentLogoBadge
                           label="WhatsApp"
-                          icon={MessageCircle}
-                          className="border-lc-success/30 bg-lc-success/10 text-lc-success"
-                          iconClassName="bg-lc-success text-lc-black"
+                          src={paymentLogoPaths.whatsapp}
+                          size="square"
                         />
-                        <PaymentBrandBadge
-                          label="Contraentrega"
-                          icon={Truck}
-                          className="border-lc-success/30 bg-lc-success/10 text-lc-success"
-                          iconClassName="bg-lc-success text-lc-black"
-                        />
-                        <PaymentBrandBadge
+                        <PaymentTextBadge label="Contraentrega" />
+                        <PaymentLogoBadge
                           label="Addi"
-                          icon={CreditCard}
-                          className="border-lc-purple/30 bg-lc-purple/10 text-lc-purple-light"
-                          iconClassName="bg-lc-purple text-white"
+                          src={paymentLogoPaths.addi}
+                          size="square"
                         />
-                        <PaymentBrandBadge
-                          label="Asesor"
-                          icon={MessageCircle}
-                          className="border-lc-border bg-lc-black/40 text-lc-white"
-                          iconClassName="bg-lc-white text-lc-black"
-                        />
+                        <PaymentTextBadge label="Asesor" />
                       </div>
                     </div>
                   </div>
