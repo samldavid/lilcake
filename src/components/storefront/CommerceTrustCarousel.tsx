@@ -15,12 +15,10 @@ import { cn } from "@/lib/utils"
 type CommerceSlide = {
   eyebrow: string
   title: string
-  highlight: string
+  accent: string
   text: string
   href: string
   cta: string
-  image: string
-  imageAlt: string
   icon: React.ComponentType<{ size?: number; className?: string }>
   tone: "purple" | "pink" | "green"
   logos?: { label: string; src: string; wide?: boolean }[]
@@ -40,41 +38,32 @@ const paymentLogos = [
 const slides: CommerceSlide[] = [
   {
     eyebrow: "Pagos locales",
-    title: "Paga como compras",
-    highlight: "en Colombia",
-    text: "Wompi, PSE, Nequi y tarjetas en un checkout claro, con el boton de pago protegido por validaciones del servidor.",
+    title: "Paga seguro",
+    accent: "en Colombia",
+    text: "Elige Wompi, PSE, Nequi o tarjeta. El checkout valida el total en servidor antes de enviarte a pagar.",
     href: "/productos",
-    cta: "Ver tienda",
-    image:
-      "https://images.pexels.com/photos/7007188/pexels-photo-7007188.jpeg?auto=compress&cs=tinysrgb&w=1400",
-    imageAlt: "Compra online desde celular",
+    cta: "Comprar ahora",
     icon: CreditCard,
     tone: "purple",
     logos: paymentLogos,
   },
   {
     eyebrow: "Envios nacionales",
-    title: "Tu pedido sale",
-    highlight: "con seguimiento",
-    text: "Despachos en Colombia y soporte cercano si necesitas confirmar ciudad, tiempos o estado del envio.",
+    title: "Recibe tu pedido",
+    accent: "con seguimiento",
+    text: "Despachamos a Colombia con datos claros de envio y soporte si necesitas revisar ciudad, tiempos o estado.",
     href: "/ayuda",
-    cta: "Ver ayuda",
-    image:
-      "https://images.pexels.com/photos/6699402/pexels-photo-6699402.jpeg?auto=compress&cs=tinysrgb&w=1400",
-    imageAlt: "Entrega de paquete a cliente",
+    cta: "Ver envios",
     icon: Truck,
     tone: "green",
   },
   {
     eyebrow: "Asesoria real",
-    title: "Elige talla y paga",
-    highlight: "sin dudas",
-    text: "Si una prenda, talla o metodo de pago no te queda claro, el asesor por WhatsApp te ayuda antes de comprar.",
+    title: "Compra con ayuda",
+    accent: "por WhatsApp",
+    text: "Te acompanamos para confirmar talla, disponibilidad o metodo de pago antes de cerrar tu compra.",
     href: whatsappHref,
     cta: "Hablar por WhatsApp",
-    image:
-      "https://images.pexels.com/photos/4914811/pexels-photo-4914811.jpeg?auto=compress&cs=tinysrgb&w=1400",
-    imageAlt: "Interior de una tienda de ropa",
     icon: MessageCircle,
     tone: "pink",
   },
@@ -83,15 +72,15 @@ const slides: CommerceSlide[] = [
 const toneClasses = {
   purple: {
     chip: "border-lc-purple/35 bg-lc-purple/15 text-lc-purple-light",
-    highlight: "bg-lc-purple text-white",
+    accent: "text-lc-purple-light",
   },
   pink: {
     chip: "border-lc-pink/35 bg-lc-pink/15 text-lc-pink",
-    highlight: "bg-lc-pink text-white",
+    accent: "text-lc-pink",
   },
   green: {
     chip: "border-lc-success/35 bg-lc-success/15 text-lc-success",
-    highlight: "bg-lc-success text-lc-black",
+    accent: "text-lc-success",
   },
 }
 
@@ -122,12 +111,23 @@ export function CommerceTrustCarousel() {
 
   return (
     <div
-      className="relative overflow-hidden rounded-lg border border-white/10 bg-lc-card"
+      className="relative min-h-[520px] overflow-hidden rounded-lg border border-white/10 bg-lc-card sm:min-h-[430px]"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div className="grid min-h-[360px] lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="relative z-10 flex flex-col justify-center px-5 py-8 sm:px-8 lg:px-10">
+      <div className="absolute inset-0 bg-lc-black">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/images/storefront-store.jpg"
+          alt="Interior de tienda urbana con sneakers y ropa"
+          className="h-full w-full object-cover object-[68%_50%] opacity-95"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-lc-black via-lc-black/70 to-lc-black/15 sm:bg-gradient-to-r sm:from-lc-card sm:via-lc-card/88 sm:to-lc-card/10" />
+        <div className="absolute inset-y-0 left-0 hidden w-[52%] bg-lc-card/70 sm:block" />
+      </div>
+
+      <div className="relative z-10 flex min-h-[520px] items-center px-5 py-10 sm:min-h-[430px] sm:px-8 lg:px-10">
+        <div className="max-w-[620px]">
           <div
             className={cn(
               "mb-5 inline-flex w-fit items-center gap-2 rounded-md border px-3 py-2 text-xs font-bold uppercase",
@@ -138,19 +138,14 @@ export function CommerceTrustCarousel() {
             {activeSlide.eyebrow}
           </div>
 
-          <h2 className="max-w-2xl text-4xl font-heading font-black leading-[1.02] text-lc-white sm:text-5xl lg:text-6xl">
-            {activeSlide.title}{" "}
-            <span
-              className={cn(
-                "box-decoration-clone px-2 leading-[1.12]",
-                tone.highlight
-              )}
-            >
-              {activeSlide.highlight}
+          <h2 className="text-4xl font-heading font-black leading-[1.05] text-lc-white sm:text-5xl lg:text-[58px]">
+            {activeSlide.title}
+            <span className={cn("block", tone.accent)}>
+              {activeSlide.accent}
             </span>
           </h2>
 
-          <p className="mt-5 max-w-2xl text-base leading-7 text-lc-gray-light sm:text-lg">
+          <p className="mt-5 max-w-[560px] text-base leading-7 text-lc-gray-light sm:text-lg">
             {activeSlide.text}
           </p>
 
@@ -194,16 +189,6 @@ export function CommerceTrustCarousel() {
               </div>
             ) : null}
           </div>
-        </div>
-
-        <div className="relative min-h-[260px] overflow-hidden bg-lc-black lg:min-h-full">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={activeSlide.image}
-            alt={activeSlide.imageAlt}
-            className="h-full w-full object-cover opacity-90 transition duration-500"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-lc-black via-lc-black/15 to-transparent lg:bg-gradient-to-r lg:from-lc-card lg:via-lc-card/20 lg:to-transparent" />
         </div>
       </div>
 
