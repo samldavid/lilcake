@@ -4,12 +4,9 @@ import * as React from "react"
 import Link from "next/link"
 import { usePathname, useSearchParams } from "next/navigation"
 import {
-  CreditCard,
   Menu,
-  MessageCircle,
   Search,
   ShoppingCart,
-  Truck,
   User,
   X,
 } from "lucide-react"
@@ -17,12 +14,6 @@ import { useSession } from "next-auth/react"
 import { useCart } from "@/components/CartProvider"
 import { StorefrontSearchPanel } from "@/components/storefront/StorefrontSearchPanel"
 import { cn } from "@/lib/utils"
-
-const serviceHighlights = [
-  { label: "Envios nacionales", icon: Truck },
-  { label: "PSE, Nequi y tarjetas", icon: CreditCard },
-  { label: "Asesoria por WhatsApp", icon: MessageCircle },
-]
 
 export function Navbar() {
   const { itemCount } = useCart()
@@ -51,21 +42,6 @@ export function Navbar() {
 
   return (
     <nav className="sticky top-0 z-40 w-full border-b border-lc-border bg-lc-black/[0.94] backdrop-blur-md">
-      <div className="border-b border-white/10 bg-lc-darker/85">
-        <div className="mx-auto flex max-w-7xl gap-4 overflow-x-auto px-4 py-2 text-xs font-semibold text-lc-gray-light sm:justify-center sm:px-6 lg:px-8">
-          {serviceHighlights.map((item) => {
-            const Icon = item.icon
-
-            return (
-              <div key={item.label} className="flex shrink-0 items-center gap-2">
-                <Icon size={14} className="text-lc-purple-light" />
-                <span>{item.label}</span>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between sm:h-[72px]">
           <div className="flex items-center md:hidden">

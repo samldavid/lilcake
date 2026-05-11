@@ -1,16 +1,12 @@
-import {
-  ArrowRight,
-  CreditCard,
-  MessageCircle,
-  Tags,
-  Truck,
-} from "lucide-react"
+import { ArrowRight, Tags } from "lucide-react"
 import Link from "next/link"
+import { CommerceTrustCarousel } from "@/components/storefront/CommerceTrustCarousel"
 import { HeroSection } from "@/components/storefront/HeroSection"
 import {
   ProductCard,
   type ProductCardProduct,
 } from "@/components/storefront/ProductCard"
+import { SaleProductCarousel } from "@/components/storefront/SaleProductCarousel"
 import { ScrollReveal } from "@/components/storefront/ScrollReveal"
 import { StorefrontExperienceSection } from "@/components/storefront/StorefrontExperienceSection"
 import { getFeaturedProducts, getSaleProducts } from "@/lib/storefront-data"
@@ -117,24 +113,6 @@ const categories = [
   },
 ]
 
-const commerceHighlights = [
-  {
-    title: "Pagos locales",
-    text: "Wompi, PSE, Nequi, tarjetas y opciones asistidas.",
-    icon: CreditCard,
-  },
-  {
-    title: "Envios nacionales",
-    text: "Despachos en Colombia con seguimiento del pedido.",
-    icon: Truck,
-  },
-  {
-    title: "Soporte cercano",
-    text: "Asesoria por WhatsApp para talla, disponibilidad o pago.",
-    icon: MessageCircle,
-  },
-]
-
 export default async function HomePage() {
   let featuredProducts: ProductCardProduct[] = []
   let saleProducts: ProductCardProduct[] = []
@@ -161,26 +139,11 @@ export default async function HomePage() {
     <div className="overflow-hidden">
       <HeroSection />
 
-      <section className="border-b border-lc-border bg-lc-darker/80">
-        <div className="mx-auto grid max-w-7xl gap-3 px-4 py-5 sm:px-6 md:grid-cols-3 lg:px-8">
-          {commerceHighlights.map((item) => {
-            const Icon = item.icon
-
-            return (
-              <div
-                key={item.title}
-                className="flex items-start gap-3 rounded-lg border border-white/10 bg-lc-black/35 p-4"
-              >
-                <Icon size={20} className="mt-0.5 shrink-0 text-lc-purple-light" />
-                <div>
-                  <h2 className="text-sm font-bold text-lc-white">{item.title}</h2>
-                  <p className="mt-1 text-sm leading-6 text-lc-gray-light">
-                    {item.text}
-                  </p>
-                </div>
-              </div>
-            )
-          })}
+      <section className="border-b border-lc-border bg-lc-darker py-8 sm:py-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <ScrollReveal>
+            <CommerceTrustCarousel />
+          </ScrollReveal>
         </div>
       </section>
 
@@ -248,13 +211,9 @@ export default async function HomePage() {
               </Link>
             </ScrollReveal>
 
-            <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
-              {saleProductsToDisplay.map((product, index) => (
-                <ScrollReveal key={product.id} delay={index * 70}>
-                  <ProductCard product={product} />
-                </ScrollReveal>
-              ))}
-            </div>
+            <ScrollReveal>
+              <SaleProductCarousel products={saleProductsToDisplay} />
+            </ScrollReveal>
           </div>
         </section>
       ) : null}

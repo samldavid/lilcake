@@ -102,6 +102,7 @@ graph TB
 
 - Se agrego una pasada de confianza comercial inspirada en storefronts reales de moda, sin cambiar servicios de checkout, auth, integraciones de pago, modelos Prisma ni ownership de rutas admin.
 - Se agregaron barra superior de servicios, highlights de pago/envio/soporte en home, seccion de productos en oferta desde productos activos con `compareAtPrice`, footer con senales de pago/confianza, badges de stock en cards y confirmacion visible despues de agregar al carrito.
+- Despues de QA visual se elimino la barra superior, se reemplazaron las cards estaticas de confianza por `CommerceTrustCarousel` con imagenes, y la grilla de ofertas paso a un rail `SaleProductCarousel` de cards fijas con autoavance y controles manuales.
 - Se agrego un toggle de oferta en el formulario de producto del admin sobre el campo existente `compareAtPrice`. La validacion cliente/servidor rechaza precios anteriores menores o iguales al precio final, y admin/storefront muestran badges de oferta de forma consistente.
 - Se actualizo Next.js y `eslint-config-next` de `16.2.3` a `16.2.6` para cerrar el advisory high que reportaba `npm audit --audit-level=high`.
 
