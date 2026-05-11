@@ -13,6 +13,7 @@ export interface ProductCardProps {
     images: { url: string; altText: string | null }[]
     category?: { name: string }
     isFeatured?: boolean
+    variants?: { stock: number }[]
   }
 }
 
@@ -51,6 +52,10 @@ export function ProductCard({ product }: ProductCardProps) {
   const discount = product.compareAtPrice
     ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
     : 0
+  const totalStock = product.variants?.reduce((total, variant) => total + variant.stock, 0)
+  const hasStockSignal = typeof totalStock === "number"
+  const isLowStock = hasStockSignal && totalStock > 0 && totalStock <= 3
+  const isSoldOut = hasStockSignal && totalStock <= 0
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-lg border border-lc-border bg-lc-card transition duration-200 hover:-translate-y-0.5 hover:border-white/[0.18] hover:shadow-[0_18px_45px_rgba(0,0,0,0.22)]">
@@ -68,6 +73,16 @@ export function ProductCard({ product }: ProductCardProps) {
           {discount > 0 ? (
             <Badge variant="pink" className="text-[10px]">
               -{discount}%
+            </Badge>
+          ) : null}
+          {isLowStock ? (
+            <Badge variant="warning" className="text-[10px]">
+              Ultimas tallas
+            </Badge>
+          ) : null}
+          {isSoldOut ? (
+            <Badge variant="error" className="text-[10px]">
+              Agotado
             </Badge>
           ) : null}
         </div>
@@ -125,6 +140,10 @@ export function ProductCard({ product }: ProductCardProps) {
           {product.images.length > 1 ? (
             <span className="rounded-md border border-lc-border px-2 py-1 text-[10px] font-semibold text-lc-gray">
               {product.images.length} fotos
+            </span>
+          ) : discount > 0 ? (
+            <span className="rounded-md border border-lc-pink/25 bg-lc-pink/10 px-2 py-1 text-[10px] font-semibold text-lc-pink">
+              Oferta
             </span>
           ) : null}
         </div>

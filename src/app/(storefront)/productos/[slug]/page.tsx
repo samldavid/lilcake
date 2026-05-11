@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { PackageCheck, RotateCcw, ShieldCheck } from "lucide-react"
+import { MessageCircle, PackageCheck, RotateCcw, ShieldCheck } from "lucide-react"
 import { AddToCartBtn } from "@/components/storefront/AddToCartBtn"
 import { ProductImageGallery } from "@/components/storefront/ProductImageGallery"
 import { Badge } from "@/components/ui/Badge"
@@ -12,7 +12,7 @@ export const revalidate = 60
 const commerceNotes = [
   {
     title: "Pago seguro",
-    text: "El checkout valida precios, descuentos y totales en servidor.",
+    text: "Wompi, PSE, Nequi y tarjetas con validacion de totales en servidor.",
     icon: ShieldCheck,
   },
   {
@@ -24,6 +24,11 @@ const commerceNotes = [
     title: "Cambios",
     text: "Cambios y devoluciones segun politica dentro de los primeros 15 dias.",
     icon: RotateCcw,
+  },
+  {
+    title: "Asesoria por WhatsApp",
+    text: "Resuelve talla, disponibilidad o contraentrega antes de pagar.",
+    icon: MessageCircle,
   },
 ]
 

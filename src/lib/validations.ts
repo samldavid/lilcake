@@ -114,7 +114,7 @@ export const productVariantSchema = z.object({
   priceOverride: z.number().positive().optional().nullable(),
 })
 
-export const createProductSchema = z.object({
+export const productBaseSchema = z.object({
   name: z.string().min(2, "Nombre requerido"),
   description: z.string().min(1, "Descripcion requerida"),
   price: z.number().positive("Precio debe ser positivo"),
@@ -126,7 +126,30 @@ export const createProductSchema = z.object({
   variants: z.array(productVariantSchema).optional(),
 })
 
-export const updateProductSchema = createProductSchema.partial()
+export function validateProductPriceComparison(
+  data: { price?: number; compareAtPrice?: number | null },
+  ctx: z.RefinementCtx
+) {
+  if (
+    typeof data.price === "number" &&
+    typeof data.compareAtPrice === "number" &&
+    data.compareAtPrice <= data.price
+  ) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["compareAtPrice"],
+      message: "El precio anterior debe ser mayor al precio final.",
+    })
+  }
+}
+
+export const createProductSchema = productBaseSchema.superRefine(
+  validateProductPriceComparison
+)
+
+export const updateProductSchema = productBaseSchema
+  .partial()
+  .superRefine(validateProductPriceComparison)
 
 // ORDERS
 

@@ -186,6 +186,9 @@ export function AdminProductsTable({
                           Borrador
                         </Badge>
                       )}
+                      {product.compareAtPrice ? (
+                        <Badge variant="pink">Oferta</Badge>
+                      ) : null}
                     </div>
 
                     <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
@@ -299,6 +302,11 @@ export function AdminProductsTable({
                             <div className="mt-0.5 text-xs text-lc-gray">
                               {product.category.name}
                             </div>
+                            {product.compareAtPrice ? (
+                              <div className="mt-1">
+                                <Badge variant="pink">Oferta</Badge>
+                              </div>
+                            ) : null}
                           </div>
                         </div>
                       </td>

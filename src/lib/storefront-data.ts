@@ -41,12 +41,58 @@ export const getFeaturedProducts = unstable_cache(
           orderBy: { sortOrder: "asc" },
           take: 2,
         },
+        variants: {
+          select: {
+            stock: true,
+          },
+        },
         category: { select: { name: true } },
       },
       orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
       take: 4,
     }),
   ["storefront-featured-products"],
+  {
+    revalidate: 60,
+    tags: ["storefront-products"],
+  }
+)
+
+export const getSaleProducts = unstable_cache(
+  async () =>
+    prisma.product.findMany({
+      where: {
+        isActive: true,
+        compareAtPrice: {
+          not: null,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        price: true,
+        compareAtPrice: true,
+        isFeatured: true,
+        images: {
+          select: {
+            url: true,
+            altText: true,
+          },
+          orderBy: { sortOrder: "asc" },
+          take: 2,
+        },
+        variants: {
+          select: {
+            stock: true,
+          },
+        },
+        category: { select: { name: true } },
+      },
+      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+      take: 4,
+    }),
+  ["storefront-sale-products"],
   {
     revalidate: 60,
     tags: ["storefront-products"],

@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { CreditCard, ShoppingCart } from "lucide-react"
+import Link from "next/link"
+import { ArrowRight, CheckCircle2, CreditCard, ShoppingCart } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useCart, type CartItem } from "@/components/CartProvider"
 import { Button } from "@/components/ui/Button"
@@ -31,9 +32,19 @@ export function AddToCartBtn({ product, variants }: AddToCartBtnProps) {
   )
   const [quantity, setQuantity] = React.useState(1)
   const [added, setAdded] = React.useState(false)
+  const [lastAddedItem, setLastAddedItem] = React.useState<CartItem | null>(null)
+  const addedTimerRef = React.useRef<number | null>(null)
 
   const selectedVariant = variants.find((v) => v.id === selectedVariantId)
   const availableStock = selectedVariant ? selectedVariant.stock : 0
+
+  React.useEffect(() => {
+    return () => {
+      if (addedTimerRef.current) {
+        window.clearTimeout(addedTimerRef.current)
+      }
+    }
+  }, [])
   const requireSelection = variants.length > 1
   const isActionDisabled =
     !selectedVariantId || availableStock === 0 || quantity < 1
@@ -64,7 +75,11 @@ export function AddToCartBtn({ product, variants }: AddToCartBtnProps) {
     addToCart(item)
 
     setAdded(true)
-    setTimeout(() => setAdded(false), 2000)
+    setLastAddedItem(item)
+    if (addedTimerRef.current) {
+      window.clearTimeout(addedTimerRef.current)
+    }
+    addedTimerRef.current = window.setTimeout(() => setAdded(false), 2000)
   }
 
   const handleBuyNow = () => {
@@ -154,6 +169,53 @@ export function AddToCartBtn({ product, variants }: AddToCartBtnProps) {
           {added ? "Agregado" : "Agregar al carrito"}
         </Button>
       </div>
+
+      {lastAddedItem ? (
+        <div
+          className="rounded-lg border border-lc-success/25 bg-lc-success/10 p-4"
+          aria-live="polite"
+        >
+          <div className="flex gap-3">
+            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md border border-lc-border bg-lc-black">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={lastAddedItem.image}
+                alt={lastAddedItem.name}
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 text-sm font-bold text-lc-success">
+                <CheckCircle2 size={17} />
+                Producto agregado
+              </div>
+              <p className="mt-1 line-clamp-2 text-sm font-semibold text-lc-white">
+                {lastAddedItem.name}
+              </p>
+              <p className="mt-1 text-xs text-lc-gray-light">
+                Cantidad {lastAddedItem.quantity}
+                {lastAddedItem.size ? ` - Talla ${lastAddedItem.size}` : ""}
+                {lastAddedItem.color ? ` - ${lastAddedItem.color}` : ""}
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            <Link
+              href="/carrito"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-lc-white px-4 text-sm font-bold text-lc-black transition-colors hover:bg-lc-purple hover:text-white"
+            >
+              Ver carrito <ArrowRight size={16} />
+            </Link>
+            <button
+              type="button"
+              onClick={() => setLastAddedItem(null)}
+              className="inline-flex min-h-11 items-center justify-center rounded-md border border-lc-border px-4 text-sm font-bold text-lc-white transition-colors hover:border-lc-gray-light hover:bg-lc-dark"
+            >
+              Seguir comprando
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

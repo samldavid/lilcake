@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/prisma"
-import { productVariantSchema, createProductSchema } from "@/lib/validations"
+import {
+  productBaseSchema,
+  productVariantSchema,
+  validateProductPriceComparison,
+} from "@/lib/validations"
 import { slugify } from "@/lib/utils"
 import {
   isValidProductImageReference,
@@ -17,12 +21,14 @@ export const adminImageReferenceSchema = z
     "Usa una URL valida o una ruta publica como /images/foto.png"
   )
 
-export const adminProductPayloadSchema = createProductSchema.extend({
-  images: z.array(adminImageReferenceSchema).min(1, "Debes agregar al menos una imagen"),
-  variants: z
-    .array(productVariantSchema.extend({ id: z.string().optional() }))
-    .min(1, "Debes agregar al menos una variante"),
-})
+export const adminProductPayloadSchema = productBaseSchema
+  .extend({
+    images: z.array(adminImageReferenceSchema).min(1, "Debes agregar al menos una imagen"),
+    variants: z
+      .array(productVariantSchema.extend({ id: z.string().optional() }))
+      .min(1, "Debes agregar al menos una variante"),
+  })
+  .superRefine(validateProductPriceComparison)
 
 export type AdminProductPayload = z.infer<typeof adminProductPayloadSchema>
 

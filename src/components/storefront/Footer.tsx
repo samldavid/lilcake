@@ -1,6 +1,15 @@
 import type * as React from "react"
 import Link from "next/link"
-import { ArrowRight, Mail, MapPin, MessageCircle, Music2 } from "lucide-react"
+import {
+  ArrowRight,
+  CreditCard,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Music2,
+  ShieldCheck,
+  Truck,
+} from "lucide-react"
 import { buildWhatsAppLink } from "@/lib/utils"
 
 const shopLinks = [
@@ -15,6 +24,21 @@ const helpLinks = [
   { href: "/ayuda", label: "Cambios y devoluciones" },
   { href: "/ayuda", label: "Guia de tallas" },
   { href: "/ayuda", label: "Contacto" },
+  { href: "/cuenta", label: "Rastrear pedido" },
+]
+
+const trustLinks = [
+  { label: "Pago protegido", icon: ShieldCheck },
+  { label: "Envios en Colombia", icon: Truck },
+  { label: "PSE, Nequi y tarjetas", icon: CreditCard },
+]
+
+const paymentLogos = [
+  { label: "Wompi", src: "/images/payments/wompi.svg", wide: true },
+  { label: "PSE", src: "/images/payments/pse.png" },
+  { label: "Nequi", src: "/images/payments/nequi.svg" },
+  { label: "Visa", src: "/images/payments/visa.svg" },
+  { label: "Mastercard", src: "/images/payments/mastercard.svg" },
 ]
 
 function InstagramIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -160,6 +184,39 @@ export function Footer() {
             <div className="mt-5 flex items-center gap-2 text-sm text-lc-gray">
               <MapPin size={16} />
               Colombia
+            </div>
+            <div className="mt-5 space-y-2">
+              {trustLinks.map((item) => {
+                const Icon = item.icon
+
+                return (
+                  <div
+                    key={item.label}
+                    className="flex items-center gap-2 text-xs font-semibold text-lc-gray-light"
+                  >
+                    <Icon size={15} className="text-lc-purple-light" />
+                    {item.label}
+                  </div>
+                )
+              })}
+            </div>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {paymentLogos.map((logo) => (
+                <span
+                  key={logo.label}
+                  className={`inline-flex h-8 items-center justify-center rounded-md border border-white/80 bg-white px-2 ${
+                    logo.wide ? "min-w-[76px]" : "min-w-[48px]"
+                  }`}
+                  title={logo.label}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={logo.src}
+                    alt={logo.label}
+                    className="max-h-4 max-w-full object-contain"
+                  />
+                </span>
+              ))}
             </div>
           </div>
         </div>

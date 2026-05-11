@@ -1,4 +1,10 @@
-import { ArrowRight } from "lucide-react"
+import {
+  ArrowRight,
+  CreditCard,
+  MessageCircle,
+  Tags,
+  Truck,
+} from "lucide-react"
 import Link from "next/link"
 import { HeroSection } from "@/components/storefront/HeroSection"
 import {
@@ -7,7 +13,7 @@ import {
 } from "@/components/storefront/ProductCard"
 import { ScrollReveal } from "@/components/storefront/ScrollReveal"
 import { StorefrontExperienceSection } from "@/components/storefront/StorefrontExperienceSection"
-import { getFeaturedProducts } from "@/lib/storefront-data"
+import { getFeaturedProducts, getSaleProducts } from "@/lib/storefront-data"
 
 export const revalidate = 60
 
@@ -111,21 +117,72 @@ const categories = [
   },
 ]
 
+const commerceHighlights = [
+  {
+    title: "Pagos locales",
+    text: "Wompi, PSE, Nequi, tarjetas y opciones asistidas.",
+    icon: CreditCard,
+  },
+  {
+    title: "Envios nacionales",
+    text: "Despachos en Colombia con seguimiento del pedido.",
+    icon: Truck,
+  },
+  {
+    title: "Soporte cercano",
+    text: "Asesoria por WhatsApp para talla, disponibilidad o pago.",
+    icon: MessageCircle,
+  },
+]
+
 export default async function HomePage() {
   let featuredProducts: ProductCardProduct[] = []
+  let saleProducts: ProductCardProduct[] = []
 
   try {
-    featuredProducts = await getFeaturedProducts()
+    const [featuredResult, saleResult] = await Promise.all([
+      getFeaturedProducts(),
+      getSaleProducts(),
+    ])
+    featuredProducts = featuredResult
+    saleProducts = saleResult
   } catch (error) {
     console.error("Error fetching products:", error)
   }
 
   const productsToDisplay =
     featuredProducts.length > 0 ? featuredProducts : dummyProducts
+  const saleProductsToDisplay =
+    saleProducts.length > 0
+      ? saleProducts
+      : productsToDisplay.filter((product) => product.compareAtPrice).slice(0, 4)
 
   return (
     <div className="overflow-hidden">
       <HeroSection />
+
+      <section className="border-b border-lc-border bg-lc-darker/80">
+        <div className="mx-auto grid max-w-7xl gap-3 px-4 py-5 sm:px-6 md:grid-cols-3 lg:px-8">
+          {commerceHighlights.map((item) => {
+            const Icon = item.icon
+
+            return (
+              <div
+                key={item.title}
+                className="flex items-start gap-3 rounded-lg border border-white/10 bg-lc-black/35 p-4"
+              >
+                <Icon size={20} className="mt-0.5 shrink-0 text-lc-purple-light" />
+                <div>
+                  <h2 className="text-sm font-bold text-lc-white">{item.title}</h2>
+                  <p className="mt-1 text-sm leading-6 text-lc-gray-light">
+                    {item.text}
+                  </p>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </section>
 
       <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-18 lg:px-8">
         <ScrollReveal className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
@@ -161,6 +218,46 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
+
+      {saleProductsToDisplay.length > 0 ? (
+        <section className="border-y border-lc-border bg-lc-black py-14 sm:py-18">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <ScrollReveal className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-lc-pink">
+                  <Tags size={16} />
+                  Ofertas y ultimas tallas
+                </p>
+                <h2 className="text-3xl font-heading font-bold text-lc-white sm:text-4xl">
+                  Piezas con precio especial
+                </h2>
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-lc-gray-light sm:text-base">
+                  Productos con precio anterior visible, descuentos claros y stock
+                  limitado cuando aplica.
+                </p>
+              </div>
+              <Link
+                href="/productos"
+                className="group inline-flex items-center text-sm font-semibold text-lc-white transition-colors hover:text-lc-pink"
+              >
+                Ver ofertas en catalogo
+                <ArrowRight
+                  size={16}
+                  className="ml-2 transition-transform group-hover:translate-x-0.5"
+                />
+              </Link>
+            </ScrollReveal>
+
+            <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+              {saleProductsToDisplay.map((product, index) => (
+                <ScrollReveal key={product.id} delay={index * 70}>
+                  <ProductCard product={product} />
+                </ScrollReveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="border-y border-lc-border bg-lc-darker py-14 sm:py-18">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

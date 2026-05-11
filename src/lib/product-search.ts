@@ -10,6 +10,7 @@ export type StorefrontSearchProduct = {
   compareAtPrice: number | null
   isFeatured: boolean
   images: { url: string; altText: string | null }[]
+  variants: { stock: number }[]
   category: { name: string; slug: string }
 }
 
@@ -33,6 +34,11 @@ const PRODUCT_SEARCH_SELECT = {
     },
     orderBy: { sortOrder: "asc" },
     take: 2,
+  },
+  variants: {
+    select: {
+      stock: true,
+    },
   },
   category: {
     select: {

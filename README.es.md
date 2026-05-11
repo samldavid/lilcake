@@ -36,6 +36,7 @@ Dentro del demo puedes explorar:
 - Configuracion del negocio desde admin para personalizar datos comerciales usados en notas de venta
 
 - Diseno de storefront orientado a retail, con hero editorial, cards de producto mas limpias, filtros de catalogo mas claros y acentos LilCake usados con mas control
+- Capa de confianza comercial con senales de pago local, envios, soporte, ofertas visibles y confirmacion de carrito
 - 🛍️ Tienda online lista para vender con catálogo, páginas de producto, carrito, búsqueda y checkout
 - 🖼️ Almacenamiento persistente de imágenes con galerías múltiples, portada, orden personalizado y soporte de Vercel Blob
 - 🔐 Autenticación flexible con email/contraseña y acceso con Google
@@ -43,6 +44,7 @@ Dentro del demo puedes explorar:
 - 📦 Ciclo completo de pedidos con estados de pago, seguimiento de envío y visibilidad para el cliente
 - 🎟️ Sistema avanzado de cupones con límites globales, por cliente y control administrativo
 - 🧾 Exportación de ventas, pedidos y clientes en Excel y PDF
+- Opcion de oferta en productos desde admin usando precio anterior validado para descuentos visibles
 - 📬 Correos transaccionales para verificación, recuperación de cuenta, compra y envío
 - 🔎 Búsqueda dinámica tanto en la tienda como en el panel administrativo
 - 🧠 Seguridad backend para que precios, descuentos y totales no dependan del navegador
@@ -86,6 +88,8 @@ Existe un panel administrativo demo disponible en:
 
 ## Mejoras Recientes
 
+- A fecha de 2026-05-11, el storefront suma una capa de confianza comercial inspirada en referencias reales de moda: barra superior de servicios, senales de pagos/envios/soporte, footer con metodos de pago, seccion de ofertas, avisos de stock y confirmacion clara al agregar al carrito.
+- El formulario de producto del admin ahora incluye un toggle de oferta. Usa el campo existente `compareAtPrice`, valida que el precio anterior sea mayor al precio final en cliente y servidor, y muestra badges de oferta en admin y cards publicas.
 - A fecha de 2026-05-10, el storefront recibio una pasada de diseno comercial para que LilCake se vea mas profesional y menos como una plantilla generada, sin tocar comportamiento backend.
 - El detalle de producto ahora separa compra directa y carrito: el cliente puede pagar solo la variante elegida con Comprar ahora, o seguir acumulando prendas con Agregar al carrito.
 - Los metodos de pago del checkout ahora muestran logos reales guardados localmente para Wompi/PSE, bancos, tarjetas y opciones asistidas por WhatsApp.

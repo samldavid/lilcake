@@ -98,6 +98,13 @@ graph TB
 
 ## Changelog
 
+### 2026-05-11
+
+- Added a commercial trust pass inspired by real fashion retail storefronts without changing checkout services, auth, payment integrations, Prisma models, or admin route ownership.
+- Added a top storefront service bar, homepage payment/shipping/support highlights, a sale-products section fed by active products with `compareAtPrice`, richer footer payment/trust signals, stock-aware product badges, and a post-add-to-cart confirmation panel.
+- Added an admin product sale toggle on top of the existing `compareAtPrice` field. Client and server validation now reject previous prices that are less than or equal to the final price, and admin/storefront tables surface offer badges consistently.
+- Updated Next.js and `eslint-config-next` from `16.2.3` to `16.2.6` to clear the high-severity Next.js advisory reported by `npm audit --audit-level=high`.
+
 ### 2026-05-10
 
 - Completed a storefront-only retail design pass without changing backend routes, Prisma models, checkout services, auth logic, or payment integrations.

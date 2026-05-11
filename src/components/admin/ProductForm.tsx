@@ -9,6 +9,7 @@ import {
   ArrowDown,
   ArrowUp,
   ImagePlus,
+  Percent,
   Plus,
   Star,
   Trash2,
@@ -255,6 +256,20 @@ export function ProductForm({
       ? demoSeedState?.variants ?? [createEmptyVariant()]
       : liveSeedState?.variants ?? [createEmptyVariant()]
   )
+  const saleEnabled = formData.compareAtPrice.trim().length > 0
+  const priceValue = Number(formData.price)
+  const compareAtPriceValue = Number(formData.compareAtPrice)
+  const saleDiscount =
+    saleEnabled &&
+    Number.isFinite(priceValue) &&
+    Number.isFinite(compareAtPriceValue) &&
+    compareAtPriceValue > priceValue
+      ? Math.round(((compareAtPriceValue - priceValue) / compareAtPriceValue) * 100)
+      : null
+  const suggestedCompareAtPrice =
+    Number.isFinite(priceValue) && priceValue > 0
+      ? String(Math.ceil(priceValue * 1.2))
+      : "1"
 
   React.useEffect(() => {
     return () => {
@@ -603,13 +618,20 @@ export function ProductForm({
         throw new Error("Debes agregar al menos una imagen.")
       }
 
+      const price = Number(formData.price)
+      const compareAtPrice = formData.compareAtPrice
+        ? Number(formData.compareAtPrice)
+        : null
+
+      if (compareAtPrice !== null && compareAtPrice <= price) {
+        throw new Error("El precio anterior debe ser mayor al precio final.")
+      }
+
       const payload: ProductFormSubmitPayload = {
         name: formData.name.trim(),
         description: formData.description.trim(),
-        price: Number(formData.price),
-        compareAtPrice: formData.compareAtPrice
-          ? Number(formData.compareAtPrice)
-          : null,
+        price,
+        compareAtPrice,
         categoryId: formData.categoryId,
         isActive: formData.isActive,
         isFeatured: formData.isFeatured,
@@ -1058,17 +1080,65 @@ export function ProductForm({
                 disabled={isBootstrapping}
               />
 
-              <Input
-                label="Precio de Comparacion (Opcional)"
-                type="number"
-                min="0"
-                placeholder="180000"
-                value={formData.compareAtPrice}
-                onChange={(e) =>
-                  setFormData({ ...formData, compareAtPrice: e.target.value })
-                }
-                disabled={isBootstrapping}
-              />
+              <div className="rounded-xl border border-lc-border bg-lc-darker p-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 rounded-lg border border-lc-pink/25 bg-lc-pink/10 p-2 text-lc-pink">
+                      <Percent size={16} />
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-lc-white">
+                        Poner en oferta
+                      </div>
+                      <div className="mt-1 text-xs leading-5 text-lc-gray">
+                        Muestra precio anterior tachado, badge de descuento y
+                        bloque de ofertas en la tienda.
+                      </div>
+                    </div>
+                  </div>
+                  <label className="relative inline-flex cursor-pointer items-center">
+                    <input
+                      type="checkbox"
+                      checked={saleEnabled}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          compareAtPrice: e.target.checked
+                            ? formData.compareAtPrice || suggestedCompareAtPrice
+                            : "",
+                        })
+                      }
+                      className="peer sr-only"
+                      disabled={isBootstrapping}
+                    />
+                    <div className="h-6 w-11 rounded-full bg-lc-border peer-focus:outline-none peer-checked:bg-lc-pink peer-checked:after:translate-x-full peer-checked:after:border-white after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-['']"></div>
+                  </label>
+                </div>
+
+                {saleEnabled ? (
+                  <div className="mt-4">
+                    <Input
+                      label="Precio anterior"
+                      type="number"
+                      min="0"
+                      placeholder="180000"
+                      value={formData.compareAtPrice}
+                      onChange={(e) =>
+                        setFormData({ ...formData, compareAtPrice: e.target.value })
+                      }
+                      disabled={isBootstrapping}
+                    />
+                    <p className="mt-2 text-xs leading-5 text-lc-gray">
+                      Debe ser mayor al precio final.{" "}
+                      {saleDiscount ? (
+                        <span className="font-bold text-lc-pink">
+                          Descuento visible: -{saleDiscount}%.
+                        </span>
+                      ) : null}
+                    </p>
+                  </div>
+                ) : null}
+              </div>
             </CardBody>
           </Card>
         </div>

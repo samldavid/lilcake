@@ -36,6 +36,7 @@ Inside the demo you can explore:
 - Admin-managed business settings for the commercial details used in sales notes
 
 - Retail-oriented storefront design with an editorial hero, cleaner product cards, calmer catalog filters, and restrained LilCake accent usage
+- Commercial trust layer with local payment signals, shipping/support cues, sale merchandising, and cart confirmation UX
 - 🛍️ Storefront ready to sell with catalog, product pages, cart, search, and checkout flow
 - 🖼️ Persistent product media storage with multi-image galleries, cover selection, custom ordering, and Vercel Blob support
 - 🔐 Flexible authentication with email/password and Google sign-in
@@ -43,6 +44,7 @@ Inside the demo you can explore:
 - 📦 Complete order lifecycle with payment states, shipment tracking, and customer visibility
 - 🎟️ Advanced coupon engine with global limits, per-customer limits, and admin control
 - 🧾 Excel and PDF exports for sales, orders, and customer data
+- Admin product sale toggle using validated compare-at pricing for visible offers
 - 📬 Transactional emails for verification, password recovery, purchase updates, and shipping notifications
 - 🔎 Dynamic search in both the storefront and the admin panel
 - 🧠 Backend-first security logic so prices, discounts, and checkout totals are not trusted from the browser
@@ -85,6 +87,8 @@ A safe admin sandbox is available at:
 
 ## Recent Improvements
 
+- As of 2026-05-11, the storefront gained a stronger commercial confidence layer inspired by real fashion retail references: top service bar, payment/shipping/support highlights, richer footer trust signals, sale sections, stock cues, and clearer add-to-cart confirmation.
+- The admin product form now includes a dedicated sale toggle. It uses the existing `compareAtPrice` field, validates that the previous price is greater than the final price on both client and server paths, and surfaces offer badges in admin and storefront product cards.
 - As of 2026-05-10, the storefront received a retail design pass focused on making LilCake look more professional and less template-generated without touching backend behavior.
 - Product detail now separates direct purchase from cart building: shoppers can pay for only the selected variant with Buy now, or keep adding items through Add to cart.
 - Checkout payment methods now use real local logo assets for Wompi/PSE banks, card networks, and assisted WhatsApp payment options.
