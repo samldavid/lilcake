@@ -12,23 +12,27 @@ export const revalidate = 60
 const commerceNotes = [
   {
     title: "Pago seguro",
-    text: "Wompi, PSE, Nequi y tarjetas con validacion de totales en servidor.",
+    text: "Wompi, PSE, Nequi y tarjetas con total claro antes de pagar.",
     icon: ShieldCheck,
+    iconClassName: "text-lc-white",
   },
   {
     title: "Envio nacional",
     text: "Entrega estimada de 2 a 5 dias habiles en Colombia.",
     icon: PackageCheck,
+    iconClassName: "text-lc-white",
   },
   {
     title: "Cambios",
     text: "Cambios y devoluciones segun politica dentro de los primeros 15 dias.",
     icon: RotateCcw,
+    iconClassName: "text-lc-white",
   },
   {
     title: "Asesoria por WhatsApp",
     text: "Resuelve talla, disponibilidad o contraentrega antes de pagar.",
     icon: MessageCircle,
+    iconClassName: "text-lc-success",
   },
 ]
 
@@ -163,7 +167,7 @@ export default async function ProductDetailPage({
                   key={note.title}
                   className="flex gap-3 rounded-lg border border-lc-border bg-lc-darker p-4"
                 >
-                  <Icon size={19} className="mt-0.5 shrink-0 text-lc-white" />
+                  <Icon size={19} className={`mt-0.5 shrink-0 ${note.iconClassName}`} />
                   <div>
                     <h2 className="text-sm font-bold text-lc-white">{note.title}</h2>
                     <p className="mt-1 text-sm leading-6 text-lc-gray-light">

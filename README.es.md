@@ -90,7 +90,7 @@ Existe un panel administrativo demo disponible en:
 
 - A fecha de 2026-05-11, el storefront suma una capa de confianza comercial inspirada en referencias reales de moda: barra superior de servicios, senales de pagos/envios/soporte, footer con metodos de pago, seccion de ofertas, avisos de stock y confirmacion clara al agregar al carrito.
 - Despues de revisar el resultado visual, se elimino el banner superior. El bloque de pagos/envios/soporte ahora funciona como carrusel visual con imagenes, y las ofertas se muestran en un rail horizontal mas discreto.
-- El carrusel de confianza ahora usa una sola visual consistente de tienda y textos mas claros para que los cambios de slide no salten, no cambien de tamano y no tapen letras.
+- El carrusel de confianza ahora usa imagenes diferentes normalizadas en un mismo marco visual, textos mas claros y WhatsApp en verde para que los cambios de slide no salten, no cambien de tamano y no tapen letras.
 - El formulario de producto del admin ahora incluye un toggle de oferta. Usa el campo existente `compareAtPrice`, valida que el precio anterior sea mayor al precio final en cliente y servidor, y muestra badges de oferta en admin y cards publicas.
 - A fecha de 2026-05-10, el storefront recibio una pasada de diseno comercial para que LilCake se vea mas profesional y menos como una plantilla generada, sin tocar comportamiento backend.
 - El detalle de producto ahora separa compra directa y carrito: el cliente puede pagar solo la variante elegida con Comprar ahora, o seguir acumulando prendas con Agregar al carrito.

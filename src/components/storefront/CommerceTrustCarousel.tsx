@@ -19,8 +19,11 @@ type CommerceSlide = {
   text: string
   href: string
   cta: string
+  image: string
+  imageAlt: string
+  imagePosition: string
   icon: React.ComponentType<{ size?: number; className?: string }>
-  tone: "purple" | "pink" | "green"
+  tone: "purple" | "cyan" | "green"
   logos?: { label: string; src: string; wide?: boolean }[]
 }
 
@@ -40,9 +43,13 @@ const slides: CommerceSlide[] = [
     eyebrow: "Pagos locales",
     title: "Paga seguro",
     accent: "en Colombia",
-    text: "Elige Wompi, PSE, Nequi o tarjeta. El checkout valida el total en servidor antes de enviarte a pagar.",
+    text: "Elige Wompi, PSE, Nequi o tarjeta con un flujo claro, local y facil de completar.",
     href: "/productos",
     cta: "Comprar ahora",
+    image:
+      "https://images.pexels.com/photos/7007188/pexels-photo-7007188.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    imageAlt: "Compra online con bolsas de colores",
+    imagePosition: "68% 50%",
     icon: CreditCard,
     tone: "purple",
     logos: paymentLogos,
@@ -54,8 +61,12 @@ const slides: CommerceSlide[] = [
     text: "Despachamos a Colombia con datos claros de envio y soporte si necesitas revisar ciudad, tiempos o estado.",
     href: "/ayuda",
     cta: "Ver envios",
+    image:
+      "https://images.pexels.com/photos/13443801/pexels-photo-13443801.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    imageAlt: "Entrega de paquete a domicilio",
+    imagePosition: "58% 50%",
     icon: Truck,
-    tone: "green",
+    tone: "cyan",
   },
   {
     eyebrow: "Asesoria real",
@@ -64,8 +75,11 @@ const slides: CommerceSlide[] = [
     text: "Te acompanamos para confirmar talla, disponibilidad o metodo de pago antes de cerrar tu compra.",
     href: whatsappHref,
     cta: "Hablar por WhatsApp",
+    image: "/images/storefront-store.jpg",
+    imageAlt: "Interior de tienda urbana con sneakers y ropa",
+    imagePosition: "68% 50%",
     icon: MessageCircle,
-    tone: "pink",
+    tone: "green",
   },
 ]
 
@@ -74,9 +88,9 @@ const toneClasses = {
     chip: "border-lc-purple/35 bg-lc-purple/15 text-lc-purple-light",
     accent: "text-lc-purple-light",
   },
-  pink: {
-    chip: "border-lc-pink/35 bg-lc-pink/15 text-lc-pink",
-    accent: "text-lc-pink",
+  cyan: {
+    chip: "border-lc-cyan/35 bg-lc-cyan/15 text-lc-cyan",
+    accent: "text-lc-cyan",
   },
   green: {
     chip: "border-lc-success/35 bg-lc-success/15 text-lc-success",
@@ -111,6 +125,7 @@ export function CommerceTrustCarousel() {
 
   return (
     <div
+      data-trust-carousel
       className="relative min-h-[520px] overflow-hidden rounded-lg border border-white/10 bg-lc-card sm:min-h-[430px]"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
@@ -118,9 +133,10 @@ export function CommerceTrustCarousel() {
       <div className="absolute inset-0 bg-lc-black">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/storefront-store.jpg"
-          alt="Interior de tienda urbana con sneakers y ropa"
-          className="h-full w-full object-cover object-[68%_50%] opacity-95"
+          src={activeSlide.image}
+          alt={activeSlide.imageAlt}
+          className="h-full w-full object-cover opacity-95"
+          style={{ objectPosition: activeSlide.imagePosition }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-lc-black via-lc-black/70 to-lc-black/15 sm:bg-gradient-to-r sm:from-lc-card sm:via-lc-card/88 sm:to-lc-card/10" />
         <div className="absolute inset-y-0 left-0 hidden w-[52%] bg-lc-card/70 sm:block" />

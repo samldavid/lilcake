@@ -2,9 +2,9 @@ import Link from "next/link"
 import { ArrowRight, MessageCircle, ShieldCheck, Truck } from "lucide-react"
 
 const trustItems = [
-  { label: "Envios nacionales", icon: Truck },
-  { label: "Pagos seguros", icon: ShieldCheck },
-  { label: "Asesoria por WhatsApp", icon: MessageCircle },
+  { label: "Envios nacionales", icon: Truck, iconClassName: "text-lc-purple-light" },
+  { label: "Pagos seguros", icon: ShieldCheck, iconClassName: "text-lc-purple-light" },
+  { label: "Asesoria por WhatsApp", icon: MessageCircle, iconClassName: "text-lc-success" },
 ]
 
 const categoryLinks = [
@@ -70,7 +70,7 @@ export function HeroSection() {
                   key={item.label}
                   className="flex items-center gap-3 text-sm font-medium text-lc-gray-light"
                 >
-                  <Icon size={18} className="text-lc-purple-light" />
+                  <Icon size={18} className={item.iconClassName} />
                   {item.label}
                 </div>
               )
