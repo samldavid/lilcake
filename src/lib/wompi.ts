@@ -33,7 +33,7 @@ type WompiApiResponse<T> = {
   }
 }
 
-type WompiEventPayload = {
+export type WompiEventPayload = {
   event?: string
   data?: Record<string, unknown>
   environment?: string
@@ -210,6 +210,36 @@ function safeTimingCompare(left: string, right: string) {
   )
 }
 
+function getWompiWebhookToleranceMs() {
+  const rawTolerance = process.env.WOMPI_WEBHOOK_TOLERANCE_SECONDS
+
+  if (!rawTolerance) {
+    return 15 * 60 * 1000
+  }
+
+  const toleranceSeconds = Number(rawTolerance)
+
+  if (!Number.isFinite(toleranceSeconds) || toleranceSeconds < 0) {
+    return 15 * 60 * 1000
+  }
+
+  return toleranceSeconds * 1000
+}
+
+function normalizeWompiTimestampMs(timestamp: number) {
+  return timestamp > 1_000_000_000_000 ? timestamp : timestamp * 1000
+}
+
+function isWompiTimestampFresh(timestamp: number) {
+  const toleranceMs = getWompiWebhookToleranceMs()
+
+  if (toleranceMs === 0) {
+    return true
+  }
+
+  return Math.abs(Date.now() - normalizeWompiTimestampMs(timestamp)) <= toleranceMs
+}
+
 export function verifyWompiEventSignature(
   payload: WompiEventPayload,
   checksumHeader: string | null
@@ -219,6 +249,10 @@ export function verifyWompiEventSignature(
   const checksum = checksumHeader || payload.signature?.checksum
 
   if (!Array.isArray(properties) || !checksum || typeof timestamp !== "number") {
+    return false
+  }
+
+  if (!isWompiTimestampFresh(timestamp)) {
     return false
   }
 

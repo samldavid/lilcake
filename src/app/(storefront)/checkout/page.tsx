@@ -190,8 +190,10 @@ function CheckoutPageContent() {
     providerParam === "wompi"
       ? searchParams.get("id") || searchParams.get("transaction_id")
       : null
+  const wompiReference =
+    providerParam === "wompi" ? searchParams.get("reference") : null
   const paymentReturnKey = wompiTransactionId
-    ? `wompi:${wompiTransactionId}`
+    ? `wompi:${wompiReference || "missing"}:${wompiTransactionId}`
     : sessionId
       ? `stripe:${sessionId}`
       : null
@@ -296,7 +298,11 @@ function CheckoutPageContent() {
 
         for (let attempt = 0; attempt < 10; attempt += 1) {
           const statusUrl = isWompiReturn
-            ? `/api/checkout/wompi?id=${encodeURIComponent(wompiTransactionId || "")}`
+            ? `/api/checkout/wompi?id=${encodeURIComponent(wompiTransactionId || "")}${
+                wompiReference
+                  ? `&reference=${encodeURIComponent(wompiReference)}`
+                  : ""
+              }`
             : `/api/checkout/stripe?session_id=${encodeURIComponent(sessionId || "")}`
           const response = await fetch(statusUrl, {
             cache: "no-store",
@@ -377,6 +383,7 @@ function CheckoutPageContent() {
     status,
     success,
     successParam,
+    wompiReference,
     wompiTransactionId,
   ])
 

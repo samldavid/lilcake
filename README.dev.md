@@ -79,8 +79,8 @@ graph TB
 | Identity | `User`, `Account`, `Session`, `AccountSecurityToken` | Credentials, Google OAuth, sessions, verification and recovery flows |
 | Catalog | `Category`, `Product`, `ProductImage`, `ProductVariant` | Product organization, sortable media gallery, stock and SKU management |
 | Cart | `CartItem` | Persisted authenticated cart with safer sync behavior |
-| Orders | `Order`, `OrderItem`, `PaymentTransaction` | Checkout snapshots, totals, shipping data, payment state and multi-gateway audit trail |
-| Promotions | `Coupon`, `CouponCustomerUsage` | Global and per-customer discount control with safe backend usage tracking |
+| Orders | `Order`, `OrderItem`, `PaymentTransaction`, `WebhookEvent` | Checkout snapshots, totals, shipping data, payment state, provider idempotency and multi-gateway audit trail |
+| Promotions | `Coupon`, `CouponCustomerUsage` | Global and per-customer discount control with temporary reservations and safe backend usage tracking |
 | Operations | report/export services + transactional emails | Admin exports, order comms, shipping updates and business visibility |
 
 ## API surface summary
@@ -105,6 +105,9 @@ graph TB
 - `429` responses now include `Retry-After`, `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, and `X-RateLimit-Policy` to make testing and monitoring clearer.
 - The proxy rejects `x-middleware-subrequest` traffic and `next.config.ts` adds extra browser security headers, including production HSTS.
 - Added Vercel Firewall production guidance so Vercel Bot Protection and firewall rate limits mirror the app-level defenses.
+- Added coupon reservation timestamps and a `WebhookEvent` table. Pending coupon holds now expire after 30 minutes, repeated holds are capped per customer, and resume/cancel/failure flows release or renew reservations explicitly.
+- Stripe and Wompi status routes now validate the authenticated user's local order/payment record before any provider lookup. Wompi return URLs carry the local reference, and webhooks enforce timestamp freshness plus exact replay idempotency.
+- Registration now uses a generic response for existing emails, and public demo report exports have an endpoint-specific rate limit.
 
 ### 2026-05-11
 
@@ -474,6 +477,7 @@ npm run dev
 - `WOMPI_PRIVATE_KEY`: Wompi private key, reserved for direct API integrations.
 - `WOMPI_EVENTS_SECRET`: event secret used to verify `X-Event-Checksum` or `signature.checksum`.
 - `WOMPI_INTEGRITY_SECRET`: integrity secret used to sign `reference + amount + currency`.
+- `WOMPI_WEBHOOK_TOLERANCE_SECONDS`: freshness window for signed Wompi webhooks. Defaults to `900`.
 - `NEXT_PUBLIC_WHATSAPP_NUMBER`: WhatsApp destination number.
 - `NEXT_PUBLIC_APP_URL`: public app URL used by client flows.
 - `NEXT_PUBLIC_APP_NAME`: display name.

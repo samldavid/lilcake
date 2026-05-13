@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { OrderStatus, PaymentStatus } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { updateOrderSchema } from "@/lib/validations"
-import { releaseCouponUsage } from "@/lib/coupons"
+import { releaseCouponReservationForOrder } from "@/lib/coupons"
 import {
   adminNotFoundResponse,
   requireAdminApiSession,
@@ -43,6 +43,8 @@ export async function PATCH(
         paymentStatus: true,
         couponId: true,
         userId: true,
+        couponReservedAt: true,
+        couponConsumedAt: true,
         trackingNumber: true,
         shippingCarrier: true,
         confirmedAt: true,
@@ -149,10 +151,9 @@ export async function PATCH(
       if (
         nextData.status === "CANCELLED" &&
         currentOrder.status !== "CANCELLED" &&
-        currentOrder.paymentStatus !== "PAID" &&
-        currentOrder.couponId
+        currentOrder.paymentStatus !== "PAID"
       ) {
-        await releaseCouponUsage(tx, currentOrder.couponId, currentOrder.userId)
+        await releaseCouponReservationForOrder(tx, currentOrder)
       }
 
       return tx.order.update({

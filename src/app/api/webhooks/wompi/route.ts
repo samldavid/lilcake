@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server"
+import { Prisma } from "@prisma/client"
+import { prisma } from "@/lib/prisma"
 import {
   finalizePaidOrder,
   markOrderPaymentFailed,
@@ -11,10 +13,12 @@ import {
   validateWompiTransactionForOrder,
 } from "@/lib/wompi-payments"
 import {
+  WOMPI_PROVIDER,
   getPublicWompiStatus,
   getWompiTransactionFromEvent,
   isWompiConfigured,
   toWompiAmountInCents,
+  type WompiEventPayload,
   verifyWompiEventSignature,
 } from "@/lib/wompi"
 
@@ -54,7 +58,7 @@ export async function POST(req: Request) {
     )
   }
 
-  const wompiEvent = payload as Parameters<typeof verifyWompiEventSignature>[0]
+  const wompiEvent = payload as WompiEventPayload
   const checksum = req.headers.get("x-event-checksum")
 
   if (!verifyWompiEventSignature(wompiEvent, checksum)) {
@@ -63,6 +67,8 @@ export async function POST(req: Request) {
       { status: 400 }
     )
   }
+
+  let webhookEventId: string | null = null
 
   try {
     if (wompiEvent.event !== "transaction.updated") {
@@ -76,6 +82,40 @@ export async function POST(req: Request) {
         { error: "El evento no incluye una transaccion valida." },
         { status: 400 }
       )
+    }
+
+    const eventChecksum = checksum || wompiEvent.signature?.checksum || null
+    const eventId = [
+      wompiEvent.event,
+      transaction.reference,
+      transaction.id,
+      transaction.status,
+      wompiEvent.timestamp,
+      eventChecksum || "no-checksum",
+    ].join(":")
+
+    try {
+      const webhookEvent = await prisma.webhookEvent.create({
+        data: {
+          provider: WOMPI_PROVIDER,
+          eventId,
+          checksum: eventChecksum,
+          payload: payload as Prisma.InputJsonValue,
+        },
+        select: {
+          id: true,
+        },
+      })
+      webhookEventId = webhookEvent.id
+    } catch (idempotencyError) {
+      if (
+        idempotencyError instanceof Prisma.PrismaClientKnownRequestError &&
+        idempotencyError.code === "P2002"
+      ) {
+        return NextResponse.json({ received: true, duplicate: true })
+      }
+
+      throw idempotencyError
     }
 
     const payment = await findOrderForWompiTransaction(transaction)
@@ -99,10 +139,13 @@ export async function POST(req: Request) {
     const publicStatus = getPublicWompiStatus(transaction.status)
 
     if (publicStatus === "paid") {
-      await finalizePaidOrder(payment.order.id)
-      await sendOrderConfirmationEmail(payment.order.id).catch((error) => {
-        console.error("Wompi webhook confirmation email error:", error)
-      })
+      const finalizedOrder = await finalizePaidOrder(payment.order.id)
+
+      if (finalizedOrder.status !== "CANCELLED") {
+        await sendOrderConfirmationEmail(payment.order.id).catch((error) => {
+          console.error("Wompi webhook confirmation email error:", error)
+        })
+      }
     }
 
     if (publicStatus === "failed" && payment.order.paymentStatus !== "PAID") {
@@ -112,9 +155,24 @@ export async function POST(req: Request) {
       )
     }
 
+    if (webhookEventId) {
+      await prisma.webhookEvent.update({
+        where: { id: webhookEventId },
+        data: { processedAt: new Date() },
+      })
+    }
+
     return NextResponse.json({ received: true })
   } catch (error) {
     console.error("Wompi webhook processing error:", error)
+
+    if (webhookEventId) {
+      await prisma.webhookEvent.delete({
+        where: { id: webhookEventId },
+      }).catch((deleteError) => {
+        console.error("Wompi webhook idempotency cleanup error:", deleteError)
+      })
+    }
 
     return NextResponse.json(
       {

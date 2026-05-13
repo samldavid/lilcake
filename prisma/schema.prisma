@@ -224,6 +224,8 @@ model Order {
   stripeSessionId String?
   couponId        String?
   coupon          Coupon?     @relation(fields: [couponId], references: [id])
+  couponReservedAt DateTime?
+  couponConsumedAt DateTime?
   confirmedAt     DateTime?
   shippedAt       DateTime?
   receiptEmailSentAt DateTime?
@@ -239,6 +241,7 @@ model Order {
   @@index([shippingCarrier])
   @@index([trackingNumber])
   @@index([stripeSessionId])
+  @@index([couponId, couponReservedAt])
 }
 
 model PaymentTransaction {
@@ -314,4 +317,17 @@ model CouponCustomerUsage {
 
   @@unique([couponId, userId])
   @@index([userId, couponId])
+}
+
+model WebhookEvent {
+  id          String    @id @default(cuid())
+  provider    String
+  eventId     String
+  checksum    String?
+  payload     Json?
+  receivedAt  DateTime  @default(now())
+  processedAt DateTime?
+
+  @@unique([provider, eventId])
+  @@index([provider, receivedAt])
 }

@@ -49,6 +49,7 @@ Inside the demo you can explore:
 - 🔎 Dynamic search in both the storefront and the admin panel
 - 🧠 Backend-first security logic so prices, discounts, and checkout totals are not trusted from the browser
 - Global rate limiting for non-static traffic, API requests, write actions, and auth attempts
+- Hardened checkout state handling for coupon reservations, late payment webhooks, provider status checks, and Wompi replay protection
 - ⚙️ Admin panel to manage products, customers, coupons, orders, and business operations
 
 ## Live Demo
@@ -90,6 +91,7 @@ A safe admin sandbox is available at:
 
 - As of 2026-05-13, LilCake now applies global app-level throttling before route handlers run: non-static traffic, API reads, write actions, and auth POSTs return `429` with `Retry-After` / `X-RateLimit-*` headers when abusive bursts are detected.
 - Production security guidance now includes Vercel Firewall rules that mirror the in-app limits, plus Bot Protection recommendations so traffic can be challenged before reaching Next.js.
+- Checkout security now treats coupons as temporary reservations, expires unpaid holds after 30 minutes, caps repeated pending coupon holds per user, validates local payment ownership before external Stripe/Wompi status calls, and rejects stale or replayed Wompi webhooks.
 
 - As of 2026-05-11, the storefront gained a stronger commercial confidence layer inspired by real fashion retail references: top service bar, payment/shipping/support highlights, richer footer trust signals, sale sections, stock cues, and clearer add-to-cart confirmation.
 - The top service banner was removed after visual review. The payment/shipping/support block is now an image-led trust carousel, and sale products now render in a quieter horizontal rail instead of a fixed grid.

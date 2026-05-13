@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { buildWhatsAppLink, formatCOP, generateOrderNumber } from "@/lib/utils"
 import {
-  releaseCouponUsage,
+  releaseCouponReservationForOrder,
   reserveCouponUsage,
   resolveCouponForSubtotal,
 } from "@/lib/coupons"
@@ -149,9 +149,9 @@ export async function createPendingOrder(
       ? await resolveCouponForSubtotal(tx, payload.couponCode, subtotal, userId)
       : null
 
-    if (couponBreakdown) {
-      await reserveCouponUsage(tx, couponBreakdown.coupon, userId)
-    }
+    const couponReservation = couponBreakdown
+      ? await reserveCouponUsage(tx, couponBreakdown.coupon, userId)
+      : null
 
     return tx.order.create({
       data: {
@@ -168,6 +168,7 @@ export async function createPendingOrder(
         paymentMethod: payload.paymentMethod,
         paymentStatus: "PENDING",
         couponId: couponBreakdown?.coupon.id ?? null,
+        couponReservedAt: couponReservation?.reservedAt ?? null,
         notes: payload.notes?.trim() || null,
         items: {
           create: items.map((item) => ({
@@ -206,6 +207,8 @@ export async function releaseOrderCouponReservation(orderId: string) {
         userId: true,
         status: true,
         paymentStatus: true,
+        couponReservedAt: true,
+        couponConsumedAt: true,
       },
     })
 
@@ -213,8 +216,8 @@ export async function releaseOrderCouponReservation(orderId: string) {
       throw new Error("No encontramos la orden para actualizar el cupon.")
     }
 
-    if (order.couponId && order.status !== "CANCELLED" && order.paymentStatus !== "PAID") {
-      await releaseCouponUsage(tx, order.couponId, order.userId)
+    if (order.paymentStatus !== "PAID") {
+      await releaseCouponReservationForOrder(tx, order)
     }
 
     return order
@@ -235,6 +238,8 @@ export async function markOrderPaymentFailed(
         couponId: true,
         userId: true,
         paymentStatus: true,
+        couponReservedAt: true,
+        couponConsumedAt: true,
       },
     })
 
@@ -242,8 +247,20 @@ export async function markOrderPaymentFailed(
       throw new Error("No encontramos la orden que se debe actualizar.")
     }
 
-    if (order.paymentStatus !== "PAID" && order.paymentStatus !== "FAILED") {
-      await releaseCouponUsage(tx, order.couponId, order.userId)
+    if (order.paymentStatus === "PAID") {
+      return tx.order.findUniqueOrThrow({
+        where: { id: order.id },
+        select: {
+          id: true,
+          orderNumber: true,
+          paymentStatus: true,
+          status: true,
+        },
+      })
+    }
+
+    if (order.paymentStatus !== "FAILED") {
+      await releaseCouponReservationForOrder(tx, order)
     }
 
     return tx.order.update({
@@ -284,6 +301,9 @@ export async function finalizePaidOrder(orderId: string) {
         status: true,
         confirmedAt: true,
         notes: true,
+        couponId: true,
+        couponReservedAt: true,
+        couponConsumedAt: true,
         items: {
           select: {
             variantId: true,
@@ -304,6 +324,26 @@ export async function finalizePaidOrder(orderId: string) {
         paymentStatus: order.paymentStatus,
         status: order.status,
       }
+    }
+
+    if (order.status === "CANCELLED") {
+      const updatedOrder = await tx.order.update({
+        where: { id: order.id },
+        data: {
+          paymentStatus: "PAID",
+          notes: mergeOrderNotes(
+            order.notes,
+            "Pago recibido despues de cancelar el pedido. Revisar manualmente antes de entregar, ajustar inventario o reemitir cupones."
+          ),
+        },
+        select: {
+          orderNumber: true,
+          paymentStatus: true,
+          status: true,
+        },
+      })
+
+      return updatedOrder
     }
 
     const stockAlerts: string[] = []
@@ -359,6 +399,10 @@ export async function finalizePaidOrder(orderId: string) {
         paymentStatus: "PAID",
         status: order.status === "PENDING" ? "CONFIRMED" : order.status,
         confirmedAt: order.confirmedAt ?? new Date(),
+        couponConsumedAt:
+          order.couponId && order.couponReservedAt && !order.couponConsumedAt
+            ? new Date()
+            : order.couponConsumedAt,
         notes: nextNotes || null,
       },
       select: {

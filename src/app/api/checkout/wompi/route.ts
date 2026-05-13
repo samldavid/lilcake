@@ -13,7 +13,8 @@ import { getPublicErrorMessage } from "@/lib/errors"
 import { sendOrderConfirmationEmail } from "@/lib/order-notifications"
 import {
   createOrReuseWompiCheckout,
-  findOrderForWompiTransaction,
+  findCustomerWompiPaymentByReference,
+  findCustomerWompiPaymentByTransactionId,
   updateWompiPaymentTransaction,
   validateWompiTransactionForOrder,
 } from "@/lib/wompi-payments"
@@ -45,6 +46,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url)
     const transactionId =
       searchParams.get("id") || searchParams.get("transaction_id")
+    const reference = searchParams.get("reference")
 
     if (!transactionId) {
       return NextResponse.json(
@@ -53,10 +55,23 @@ export async function GET(req: Request) {
       )
     }
 
-    const transaction = await fetchWompiTransaction(transactionId)
-    const payment = await findOrderForWompiTransaction(transaction)
+    const payment = reference
+      ? await findCustomerWompiPaymentByReference(session.user.id, reference)
+      : await findCustomerWompiPaymentByTransactionId(
+          session.user.id,
+          transactionId
+        )
 
-    if (!payment || payment.order.userId !== session.user.id) {
+    if (!payment) {
+      return NextResponse.json(
+        { error: "No encontramos el pedido asociado a esa transaccion." },
+        { status: 404 }
+      )
+    }
+
+    const transaction = await fetchWompiTransaction(transactionId)
+
+    if (transaction.reference !== payment.providerReference) {
       return NextResponse.json(
         { error: "No encontramos el pedido asociado a esa transaccion." },
         { status: 404 }
@@ -74,12 +89,15 @@ export async function GET(req: Request) {
 
     if (publicStatus === "paid" && payment.order.paymentStatus !== "PAID") {
       const finalizedOrder = await finalizePaidOrder(payment.order.id)
-      await sendOrderConfirmationEmail(payment.order.id).catch((error) => {
-        console.error("Wompi return confirmation email error:", error)
-      })
+
+      if (finalizedOrder.status !== "CANCELLED") {
+        await sendOrderConfirmationEmail(payment.order.id).catch((error) => {
+          console.error("Wompi return confirmation email error:", error)
+        })
+      }
 
       return NextResponse.json({
-        status: "paid",
+        status: finalizedOrder.status === "CANCELLED" ? "failed" : "paid",
         orderNumber: finalizedOrder.orderNumber,
       })
     }
@@ -93,7 +111,11 @@ export async function GET(req: Request) {
 
     return NextResponse.json({
       status:
-        payment.order.paymentStatus === "PAID" ? "paid" : publicStatus,
+        payment.order.status === "CANCELLED"
+          ? "failed"
+          : payment.order.paymentStatus === "PAID"
+            ? "paid"
+            : publicStatus,
       orderNumber: payment.order.orderNumber,
     })
   } catch (error) {

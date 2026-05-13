@@ -2,6 +2,9 @@ import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { getStripe, getStripeUnitAmount } from "@/lib/stripe"
 
+const COUPON_RESERVATION_TTL_MS = 30 * 60 * 1000
+const MAX_ACTIVE_COUPON_RESERVATIONS_PER_USER = 3
+
 const couponSelect = {
   id: true,
   code: true,
@@ -33,6 +36,14 @@ export class CouponValidationError extends Error {
     super(message)
     this.name = "CouponValidationError"
   }
+}
+
+type CouponReservationOrder = {
+  id: string
+  couponId: string | null
+  userId: string
+  couponReservedAt: Date | null
+  couponConsumedAt: Date | null
 }
 
 function roundCurrency(amount: number) {
@@ -153,6 +164,28 @@ export async function reserveCouponUsage(
   userId: string
 ) {
   const now = new Date()
+
+  await releaseExpiredCouponReservations(tx, coupon.id, now)
+
+  const activeUserReservations = await tx.order.count({
+    where: {
+      couponId: coupon.id,
+      userId,
+      paymentStatus: "PENDING",
+      status: "PENDING",
+      couponReservedAt: {
+        not: null,
+      },
+      couponConsumedAt: null,
+    },
+  })
+
+  if (activeUserReservations >= MAX_ACTIVE_COUPON_RESERVATIONS_PER_USER) {
+    throw new CouponValidationError(
+      "Tienes varios pedidos pendientes con este cupon. Finaliza o cancela uno antes de volver a usarlo."
+    )
+  }
+
   const result = await tx.coupon.updateMany({
     where: {
       id: coupon.id,
@@ -172,7 +205,9 @@ export async function reserveCouponUsage(
   }
 
   if (coupon.maxUsesPerUser === null) {
-    return
+    return {
+      reservedAt: now,
+    }
   }
 
   const usage = await tx.couponCustomerUsage.upsert({
@@ -201,6 +236,10 @@ export async function reserveCouponUsage(
     throw new CouponValidationError(
       "Ya alcanzaste el limite de uso permitido para este cupon."
     )
+  }
+
+  return {
+    reservedAt: now,
   }
 }
 
@@ -245,6 +284,84 @@ export async function releaseCouponUsage(
       },
     },
   })
+}
+
+export async function releaseCouponReservationForOrder(
+  tx: Prisma.TransactionClient,
+  order: CouponReservationOrder
+) {
+  if (!order.couponId || !order.couponReservedAt || order.couponConsumedAt) {
+    return false
+  }
+
+  await releaseCouponUsage(tx, order.couponId, order.userId)
+  await tx.order.update({
+    where: { id: order.id },
+    data: {
+      couponReservedAt: null,
+    },
+  })
+
+  return true
+}
+
+export async function ensureCouponReservationForOrder(
+  tx: Prisma.TransactionClient,
+  order: CouponReservationOrder
+) {
+  if (!order.couponId || order.couponReservedAt || order.couponConsumedAt) {
+    return null
+  }
+
+  const coupon = await tx.coupon.findUnique({
+    where: { id: order.couponId },
+    select: couponSelect,
+  })
+
+  if (!coupon) {
+    throw new CouponValidationError("No encontramos el cupon asociado al pedido.")
+  }
+
+  const reservation = await reserveCouponUsage(tx, coupon, order.userId)
+
+  await tx.order.update({
+    where: { id: order.id },
+    data: {
+      couponReservedAt: reservation.reservedAt,
+    },
+  })
+
+  return reservation
+}
+
+async function releaseExpiredCouponReservations(
+  tx: Prisma.TransactionClient,
+  couponId: string,
+  now: Date
+) {
+  const expiresBefore = new Date(now.getTime() - COUPON_RESERVATION_TTL_MS)
+  const expiredReservations = await tx.order.findMany({
+    where: {
+      couponId,
+      paymentStatus: "PENDING",
+      status: "PENDING",
+      couponReservedAt: {
+        lt: expiresBefore,
+      },
+      couponConsumedAt: null,
+    },
+    select: {
+      id: true,
+      couponId: true,
+      userId: true,
+      couponReservedAt: true,
+      couponConsumedAt: true,
+    },
+  })
+
+  for (const reservation of expiredReservations) {
+    await releaseCouponReservationForOrder(tx, reservation)
+  }
 }
 
 export async function createStripeDiscountCoupon(options: {

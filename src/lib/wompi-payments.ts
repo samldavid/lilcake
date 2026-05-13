@@ -46,8 +46,26 @@ export async function createOrReuseWompiCheckout({
   })
 
   if (existingPendingPayment?.checkoutUrl) {
+    const redirectUrl = new URL(returnPath, origin)
+    redirectUrl.searchParams.set("reference", existingPendingPayment.providerReference)
+    const checkoutUrl = buildWompiCheckoutUrl({
+      reference: existingPendingPayment.providerReference,
+      amountInCents: existingPendingPayment.amountInCents,
+      redirectUrl: redirectUrl.toString(),
+      customerEmail: order.customerEmail || "",
+      customerName: order.shippingName,
+      customerPhone: order.shippingPhone,
+    })
+
+    if (checkoutUrl !== existingPendingPayment.checkoutUrl) {
+      await prisma.paymentTransaction.update({
+        where: { id: existingPendingPayment.id },
+        data: { checkoutUrl },
+      })
+    }
+
     return {
-      url: existingPendingPayment.checkoutUrl,
+      url: checkoutUrl,
       reference: existingPendingPayment.providerReference,
     }
   }
@@ -60,11 +78,12 @@ export async function createOrReuseWompiCheckout({
   })
   const reference = buildWompiReference(order.orderNumber, attempt + 1)
   const amountInCents = toWompiAmountInCents(order.total)
-  const redirectUrl = new URL(returnPath, origin).toString()
+  const redirectUrl = new URL(returnPath, origin)
+  redirectUrl.searchParams.set("reference", reference)
   const checkoutUrl = buildWompiCheckoutUrl({
     reference,
     amountInCents,
-    redirectUrl,
+    redirectUrl: redirectUrl.toString(),
     customerEmail: order.customerEmail || "",
     customerName: order.shippingName,
     customerPhone: order.shippingPhone,
@@ -112,6 +131,60 @@ export async function findOrderForWompiTransaction(transaction: WompiTransaction
   })
 
   return payment
+}
+
+export async function findCustomerWompiPaymentByReference(
+  userId: string,
+  reference: string
+) {
+  return prisma.paymentTransaction.findFirst({
+    where: {
+      provider: WOMPI_PROVIDER,
+      providerReference: reference,
+      order: {
+        userId,
+      },
+    },
+    include: {
+      order: {
+        select: {
+          id: true,
+          userId: true,
+          orderNumber: true,
+          paymentStatus: true,
+          status: true,
+          total: true,
+        },
+      },
+    },
+  })
+}
+
+export async function findCustomerWompiPaymentByTransactionId(
+  userId: string,
+  transactionId: string
+) {
+  return prisma.paymentTransaction.findFirst({
+    where: {
+      provider: WOMPI_PROVIDER,
+      providerTransactionId: transactionId,
+      order: {
+        userId,
+      },
+    },
+    include: {
+      order: {
+        select: {
+          id: true,
+          userId: true,
+          orderNumber: true,
+          paymentStatus: true,
+          status: true,
+          total: true,
+        },
+      },
+    },
+  })
 }
 
 export function validateWompiTransactionForOrder({

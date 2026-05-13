@@ -51,8 +51,12 @@ export async function POST(req: Request) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "Ya existe una cuenta con este email" },
-        { status: 409 }
+        {
+          message:
+            "Si los datos son validos, enviaremos las instrucciones al email indicado.",
+          verificationEmailSent: true,
+        },
+        { status: 200 }
       )
     }
 

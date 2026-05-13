@@ -9,11 +9,30 @@ import {
   reportFormatSchema,
 } from "@/lib/business-reports"
 import { getPublicErrorMessage } from "@/lib/errors"
+import {
+  buildRateLimitKey,
+  consumeRateLimit,
+  createRateLimitResponse,
+  getRequestIp,
+} from "@/lib/rate-limit"
 
 export const runtime = "nodejs"
 
 export async function GET(req: Request) {
   try {
+    const rateLimit = consumeRateLimit({
+      key: buildRateLimitKey("demo-report-export", [getRequestIp(req)]),
+      limit: 6,
+      windowMs: 10 * 60 * 1000,
+    })
+
+    if (!rateLimit.allowed) {
+      return createRateLimitResponse(
+        rateLimit.retryAfterSeconds,
+        "Hiciste demasiadas exportaciones demo. Intenta de nuevo en unos minutos."
+      )
+    }
+
     const { searchParams } = new URL(req.url)
     const result = reportFiltersSchema.safeParse({
       kind: searchParams.get("kind") ?? undefined,

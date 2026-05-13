@@ -36,3 +36,28 @@ traffic is throttled globally before it reaches the app:
 The in-app limiter is defense in depth. On a multi-instance or multi-region
 deployment, Vercel Firewall or a durable shared store should be the source of
 truth for globally consistent throttling.
+
+## Checkout and coupon hardening
+
+- Coupon usage is now tracked as a temporary reservation until payment is
+  confirmed. Reservations expire after 30 minutes and each customer can hold at
+  most three pending reservations for the same coupon.
+- Cancelled or failed unpaid orders release only active, unconsumed coupon
+  reservations. Paid orders keep the coupon marked as consumed.
+- Late successful payments for already-cancelled orders are marked as paid for
+  financial visibility, but the app does not re-confirm the order, decrement
+  stock, consume coupons again, or send a normal order-confirmation email.
+- Stripe and Wompi status endpoints validate the authenticated user's local
+  order/payment record before calling the external provider, preventing users
+  from forcing provider lookups with arbitrary IDs.
+- Wompi webhooks now require a fresh signed timestamp and store processed event
+  fingerprints in `WebhookEvent` so exact signed replays are ignored.
+- Public demo PDF/XLSX exports have a tighter endpoint-specific rate limit to
+  reduce CPU abuse in the public sandbox.
+
+## Secret handling
+
+- Keep `.env*` files local only. They are ignored by Git and excluded from
+  Vercel uploads.
+- `NEXTAUTH_SECRET` must be a strong random value in every non-local
+  environment. Rotating it invalidates existing sessions, which is expected.

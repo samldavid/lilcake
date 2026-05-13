@@ -49,6 +49,7 @@ Dentro del demo puedes explorar:
 - 🔎 Búsqueda dinámica tanto en la tienda como en el panel administrativo
 - 🧠 Seguridad backend para que precios, descuentos y totales no dependan del navegador
 - Rate limiting global para trafico no estatico, APIs, acciones de escritura e intentos de autenticacion
+- Checkout reforzado para reservas de cupones, webhooks de pago tardios, consultas de estado con ownership local y proteccion anti-replay en Wompi
 - ⚙️ Panel admin para gestionar productos, clientes, cupones, pedidos y operación comercial
 
 ## Demo en Vivo
@@ -91,6 +92,7 @@ Existe un panel administrativo demo disponible en:
 
 - A fecha de 2026-05-13, LilCake aplica throttling global antes de ejecutar handlers: trafico no estatico, lecturas de API, acciones de escritura y POSTs de auth devuelven `429` con `Retry-After` / `X-RateLimit-*` cuando detectan rafagas abusivas.
 - La guia de seguridad productiva ahora incluye reglas de Vercel Firewall equivalentes a los limites internos, mas recomendaciones de Bot Protection para desafiar trafico antes de que llegue a Next.js.
+- La seguridad de checkout ahora maneja cupones como reservas temporales, expira pedidos sin pago despues de 30 minutos, limita reservas repetidas por usuario, valida ownership local antes de consultar Stripe/Wompi y rechaza webhooks Wompi viejos o repetidos.
 
 - A fecha de 2026-05-11, el storefront suma una capa de confianza comercial inspirada en referencias reales de moda: barra superior de servicios, senales de pagos/envios/soporte, footer con metodos de pago, seccion de ofertas, avisos de stock y confirmacion clara al agregar al carrito.
 - Despues de revisar el resultado visual, se elimino el banner superior. El bloque de pagos/envios/soporte ahora funciona como carrusel visual con imagenes, y las ofertas se muestran en un rail horizontal mas discreto.

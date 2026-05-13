@@ -79,8 +79,8 @@ graph TB
 | Identidad | `User`, `Account`, `Session`, `AccountSecurityToken` | Credenciales, Google OAuth, sesiones, verificacion y recuperacion |
 | Catalogo | `Category`, `Product`, `ProductImage`, `ProductVariant` | Organizacion de productos, galeria ordenable, stock y SKUs |
 | Carrito | `CartItem` | Carrito autenticado persistido con sincronizacion mas segura |
-| Pedidos | `Order`, `OrderItem`, `PaymentTransaction` | Snapshots de checkout, totales, envio, estado de pago y trazabilidad multipasarela |
-| Promociones | `Coupon`, `CouponCustomerUsage` | Control de descuentos globales y por cliente desde backend |
+| Pedidos | `Order`, `OrderItem`, `PaymentTransaction`, `WebhookEvent` | Snapshots de checkout, totales, envio, estado de pago, idempotencia de proveedor y trazabilidad multipasarela |
+| Promociones | `Coupon`, `CouponCustomerUsage` | Control de descuentos globales y por cliente con reservas temporales desde backend |
 | Operacion | servicios de reportes/exportacion + correos transaccionales | Reportes, comunicacion con clientes, envios y visibilidad del negocio |
 
 ## Resumen de APIs
@@ -105,6 +105,9 @@ graph TB
 - Las respuestas `429` ahora incluyen `Retry-After`, `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` y `X-RateLimit-Policy` para facilitar pruebas y monitoreo.
 - El proxy rechaza trafico con `x-middleware-subrequest` y `next.config.ts` agrega headers extra de seguridad, incluyendo HSTS en produccion.
 - Se agrego guia productiva de Vercel Firewall para que Bot Protection y los rate limits de Vercel reflejen las defensas internas de la app.
+- Se agregaron timestamps de reserva de cupon y la tabla `WebhookEvent`. Las reservas pendientes vencen a los 30 minutos, se limitan por cliente, y los flujos de reintento/cancelacion/fallo liberan o renuevan reservas explicitamente.
+- Las rutas de estado de Stripe y Wompi validan primero la orden o transaccion local del usuario autenticado antes de consultar el proveedor. El retorno de Wompi incluye la referencia local, y sus webhooks validan frescura de timestamp mas idempotencia contra replays exactos.
+- Registro responde de forma generica cuando el email ya existe, y las exportaciones demo publicas tienen un rate limit especifico.
 
 ### 2026-05-11
 
@@ -474,6 +477,7 @@ npm run dev
 - `WOMPI_PRIVATE_KEY`: llave privada de Wompi, reservada para integraciones API directas.
 - `WOMPI_EVENTS_SECRET`: secreto de eventos usado para verificar `X-Event-Checksum` o `signature.checksum`.
 - `WOMPI_INTEGRITY_SECRET`: secreto de integridad usado para firmar `reference + amount + currency`.
+- `WOMPI_WEBHOOK_TOLERANCE_SECONDS`: ventana de frescura para webhooks Wompi firmados. Por defecto `900`.
 - `NEXT_PUBLIC_WHATSAPP_NUMBER`: numero de destino de WhatsApp.
 - `NEXT_PUBLIC_APP_URL`: URL publica usada por flujos del cliente.
 - `NEXT_PUBLIC_APP_NAME`: nombre visible de la app.

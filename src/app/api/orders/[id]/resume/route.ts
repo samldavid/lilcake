@@ -10,7 +10,11 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { buildOrderWhatsAppLink, type PreparedCheckoutItem } from "@/lib/checkout"
 import { canCustomerResumeOrder } from "@/lib/order-status"
-import { createStripeDiscountCoupon } from "@/lib/coupons"
+import {
+  CouponValidationError,
+  createStripeDiscountCoupon,
+  ensureCouponReservationForOrder,
+} from "@/lib/coupons"
 import { getPublicErrorMessage } from "@/lib/errors"
 import { createOrReuseWompiCheckout } from "@/lib/wompi-payments"
 import { isWompiCheckoutEnabled } from "@/lib/wompi"
@@ -108,9 +112,18 @@ export async function POST(
         )
       }
 
-      await prisma.order.update({
-        where: { id: order.id },
-        data: { paymentStatus: "PENDING" },
+      await prisma.$transaction(async (tx) => {
+        await ensureCouponReservationForOrder(tx, {
+          id: order.id,
+          couponId: order.couponId,
+          userId: order.userId,
+          couponReservedAt: order.couponReservedAt,
+          couponConsumedAt: order.couponConsumedAt,
+        })
+        await tx.order.update({
+          where: { id: order.id },
+          data: { paymentStatus: "PENDING" },
+        })
       })
 
       const { url, reference } = await createOrReuseWompiCheckout({
@@ -145,6 +158,20 @@ export async function POST(
         { status: 503 }
       )
     }
+
+    await prisma.$transaction(async (tx) => {
+      await ensureCouponReservationForOrder(tx, {
+        id: order.id,
+        couponId: order.couponId,
+        userId: order.userId,
+        couponReservedAt: order.couponReservedAt,
+        couponConsumedAt: order.couponConsumedAt,
+      })
+      await tx.order.update({
+        where: { id: order.id },
+        data: { paymentStatus: "PENDING" },
+      })
+    })
 
     const origin = getTrustedAppOrigin(req.url)
     const stripeCurrency = "cop"
@@ -196,7 +223,6 @@ export async function POST(
     await prisma.order.update({
       where: { id: order.id },
       data: {
-        paymentStatus: "PENDING",
         stripeSessionId: checkoutSession.id,
       },
     })
@@ -207,6 +233,10 @@ export async function POST(
     })
   } catch (error) {
     console.error("Resume order error:", error)
+
+    if (error instanceof CouponValidationError) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
 
     return NextResponse.json(
       {

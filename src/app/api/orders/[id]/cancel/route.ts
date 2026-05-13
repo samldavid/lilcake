@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { canCustomerCancelOrder } from "@/lib/order-status"
-import { releaseCouponUsage } from "@/lib/coupons"
+import { releaseCouponReservationForOrder } from "@/lib/coupons"
 import { getPublicErrorMessage } from "@/lib/errors"
 import {
   consumeCheckoutRateLimit,
@@ -39,6 +39,8 @@ export async function POST(
         paymentStatus: true,
         couponId: true,
         userId: true,
+        couponReservedAt: true,
+        couponConsumedAt: true,
       },
     })
 
@@ -57,8 +59,8 @@ export async function POST(
     }
 
     const updatedOrder = await prisma.$transaction(async (tx) => {
-      if (order.couponId && order.paymentStatus !== "PAID") {
-        await releaseCouponUsage(tx, order.couponId, order.userId)
+      if (order.paymentStatus !== "PAID") {
+        await releaseCouponReservationForOrder(tx, order)
       }
 
       return tx.order.update({

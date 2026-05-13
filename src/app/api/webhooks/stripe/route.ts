@@ -69,9 +69,12 @@ async function completeStripeOrder(session: Stripe.Checkout.Session) {
   }
 
   const finalizedOrder = await finalizePaidOrder(order.id)
-  await sendOrderConfirmationEmail(order.id).catch((error) => {
-    console.error("Stripe webhook confirmation email error:", error)
-  })
+
+  if (finalizedOrder.status !== "CANCELLED") {
+    await sendOrderConfirmationEmail(order.id).catch((error) => {
+      console.error("Stripe webhook confirmation email error:", error)
+    })
+  }
 
   return finalizedOrder
 }

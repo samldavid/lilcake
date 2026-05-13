@@ -72,26 +72,11 @@ export async function GET(req: Request) {
       )
     }
 
-    const stripe = getStripe()
-    const checkoutSession = await stripe.checkout.sessions.retrieve(sessionId)
-    const orderId =
-      checkoutSession.metadata?.orderId ||
-      (
-        await prisma.order.findFirst({
-          where: { stripeSessionId: sessionId },
-          select: { id: true },
-        })
-      )?.id
-
-    if (!orderId) {
-      return NextResponse.json(
-        { error: "La sesion no esta asociada a una orden" },
-        { status: 400 }
-      )
-    }
-
-    const order = await prisma.order.findUnique({
-      where: { id: orderId },
+    const order = await prisma.order.findFirst({
+      where: {
+        stripeSessionId: sessionId,
+        userId: session.user.id,
+      },
       select: {
         id: true,
         userId: true,
@@ -101,7 +86,20 @@ export async function GET(req: Request) {
       },
     })
 
-    if (!order || order.userId !== session.user.id) {
+    if (!order) {
+      return NextResponse.json(
+        { error: "No encontramos la orden asociada a esa sesion." },
+        { status: 404 }
+      )
+    }
+
+    const stripe = getStripe()
+    const checkoutSession = await stripe.checkout.sessions.retrieve(sessionId)
+
+    if (
+      checkoutSession.metadata?.orderId &&
+      checkoutSession.metadata.orderId !== order.id
+    ) {
       return NextResponse.json(
         { error: "No encontramos la orden asociada a esa sesion." },
         { status: 404 }
@@ -123,27 +121,33 @@ export async function GET(req: Request) {
       order.paymentStatus !== "PAID"
     ) {
       const finalizedOrder = await finalizePaidOrder(order.id)
-      await sendOrderConfirmationEmail(order.id).catch((error) => {
-        console.error("Stripe return confirmation email error:", error)
-      })
+
+      if (finalizedOrder.status !== "CANCELLED") {
+        await sendOrderConfirmationEmail(order.id).catch((error) => {
+          console.error("Stripe return confirmation email error:", error)
+        })
+      }
 
       return NextResponse.json({
-        status: "paid",
+        status: finalizedOrder.status === "CANCELLED" ? "failed" : "paid",
         orderNumber: finalizedOrder.orderNumber,
       })
     }
 
-    if (order.paymentStatus === "PAID") {
+    if (order.paymentStatus === "PAID" && order.status !== "CANCELLED") {
       await sendOrderConfirmationEmail(order.id).catch((error) => {
         console.error("Stripe paid order confirmation email retry error:", error)
       })
     }
 
     return NextResponse.json({
-      status: getCheckoutStatus(
-        order.paymentStatus,
-        checkoutSession.payment_status ?? null
-      ),
+      status:
+        order.status === "CANCELLED"
+          ? "failed"
+          : getCheckoutStatus(
+              order.paymentStatus,
+              checkoutSession.payment_status ?? null
+            ),
       orderNumber: order.orderNumber,
     })
   } catch (error) {
