@@ -98,6 +98,14 @@ graph TB
 
 ## Changelog
 
+### 2026-05-13
+
+- Added app-level throttling in `src/proxy.ts` so every non-static request passes through a central per-IP limiter before route handlers execute.
+- Current proxy policies are documented in `SECURITY.md`: 180 non-static requests/min, 90 API requests/min, 40 write actions/min, and 20 auth POSTs/10 min.
+- `429` responses now include `Retry-After`, `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, and `X-RateLimit-Policy` to make testing and monitoring clearer.
+- The proxy rejects `x-middleware-subrequest` traffic and `next.config.ts` adds extra browser security headers, including production HSTS.
+- Added Vercel Firewall production guidance so Vercel Bot Protection and firewall rate limits mirror the app-level defenses.
+
 ### 2026-05-11
 
 - Added a commercial trust pass inspired by real fashion retail storefronts without changing checkout services, auth, payment integrations, Prisma models, or admin route ownership.
@@ -573,6 +581,8 @@ Notes:
 - Admin upload endpoints now validate file signatures for supported image formats instead of relying only on file extensions or browser-provided MIME types.
 - Checkout, auth, order, and webhook routes now sanitize unexpected internal errors through a shared public-error helper so production responses leak less implementation detail.
 - The checkout coupon preview endpoint is rate-limited per user and IP to make coupon probing harder.
+- `src/proxy.ts` applies per-IP rate limits to all non-static traffic, API requests, write methods, and auth POSTs before route handlers run.
+- Payment webhooks stay excluded from generic write/API throttles so signed providers are not blocked by broad app rules.
 - `next.config.ts` now sends a Content Security Policy that allows Stripe checkout resources while still blocking unapproved frames, objects, and third-party scripts by default.
 
 ### Local Gmail SMTP example
@@ -661,6 +671,10 @@ Important connection notes:
   - `https://lilcake.vercel.app/api/webhooks/stripe`
 - Wompi webhook production endpoint:
   - `https://lilcake.vercel.app/api/webhooks/wompi`
+- Production traffic policy:
+  - app-level proxy throttling is enabled for all non-static traffic
+  - Vercel Firewall should mirror the documented `SECURITY.md` limits for global edge enforcement
+  - Bot Protection should run in challenge mode for suspicious automated traffic
 
 Operational notes:
 

@@ -98,6 +98,14 @@ graph TB
 
 ## Historial de cambios
 
+### 2026-05-13
+
+- Se agrego throttling a nivel de app en `src/proxy.ts` para que cada request no estatico pase por un limitador central por IP antes de ejecutar handlers.
+- Las politicas actuales del proxy quedan documentadas en `SECURITY.md`: 180 requests no estaticos/min, 90 requests de API/min, 40 acciones de escritura/min y 20 POSTs de auth/10 min.
+- Las respuestas `429` ahora incluyen `Retry-After`, `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` y `X-RateLimit-Policy` para facilitar pruebas y monitoreo.
+- El proxy rechaza trafico con `x-middleware-subrequest` y `next.config.ts` agrega headers extra de seguridad, incluyendo HSTS en produccion.
+- Se agrego guia productiva de Vercel Firewall para que Bot Protection y los rate limits de Vercel reflejen las defensas internas de la app.
+
 ### 2026-05-11
 
 - Se agrego una pasada de confianza comercial inspirada en storefronts reales de moda, sin cambiar servicios de checkout, auth, integraciones de pago, modelos Prisma ni ownership de rutas admin.
@@ -574,6 +582,8 @@ Notas:
 - Las rutas de upload del admin validan firmas reales de archivo para imagenes soportadas en lugar de confiar solo en extensiones o MIME enviados por el navegador.
 - Checkout, autenticacion, pedidos y webhooks ahora sanitizan errores inesperados mediante un helper compartido para que las respuestas de produccion revelen menos detalles internos.
 - El endpoint de preview de cupon en checkout tiene rate limit por usuario e IP para dificultar pruebas automatizadas de codigos.
+- `src/proxy.ts` aplica rate limits por IP a todo trafico no estatico, requests de API, metodos de escritura y POSTs de auth antes de ejecutar handlers.
+- Los webhooks de pago quedan fuera de los throttles genericos de escritura/API para no bloquear proveedores firmados por reglas amplias de app.
 - `next.config.ts` ahora envia una Content Security Policy que permite los recursos necesarios de Stripe, pero sigue bloqueando por defecto frames, objetos y scripts no aprobados.
 
 ### Ejemplo de Gmail SMTP en local
@@ -662,6 +672,10 @@ Notas importantes de conexion:
   - `https://lilcake.vercel.app/api/webhooks/stripe`
 - Endpoint productivo del webhook de Wompi:
   - `https://lilcake.vercel.app/api/webhooks/wompi`
+- Politica productiva de trafico:
+  - el throttling de proxy a nivel de app esta activo para todo trafico no estatico
+  - Vercel Firewall debe reflejar los limites documentados en `SECURITY.md` para enforcement global en el edge
+  - Bot Protection debe quedar en modo challenge para trafico automatizado sospechoso
 
 Notas operativas:
 

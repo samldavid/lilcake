@@ -48,6 +48,7 @@ Dentro del demo puedes explorar:
 - 📬 Correos transaccionales para verificación, recuperación de cuenta, compra y envío
 - 🔎 Búsqueda dinámica tanto en la tienda como en el panel administrativo
 - 🧠 Seguridad backend para que precios, descuentos y totales no dependan del navegador
+- Rate limiting global para trafico no estatico, APIs, acciones de escritura e intentos de autenticacion
 - ⚙️ Panel admin para gestionar productos, clientes, cupones, pedidos y operación comercial
 
 ## Demo en Vivo
@@ -87,6 +88,9 @@ Existe un panel administrativo demo disponible en:
 - El admin real se mantiene protegido con control por roles, sesiones seguras, APIs de escritura protegidas, rate limits y validacion backend.
 
 ## Mejoras Recientes
+
+- A fecha de 2026-05-13, LilCake aplica throttling global antes de ejecutar handlers: trafico no estatico, lecturas de API, acciones de escritura y POSTs de auth devuelven `429` con `Retry-After` / `X-RateLimit-*` cuando detectan rafagas abusivas.
+- La guia de seguridad productiva ahora incluye reglas de Vercel Firewall equivalentes a los limites internos, mas recomendaciones de Bot Protection para desafiar trafico antes de que llegue a Next.js.
 
 - A fecha de 2026-05-11, el storefront suma una capa de confianza comercial inspirada en referencias reales de moda: barra superior de servicios, senales de pagos/envios/soporte, footer con metodos de pago, seccion de ofertas, avisos de stock y confirmacion clara al agregar al carrito.
 - Despues de revisar el resultado visual, se elimino el banner superior. El bloque de pagos/envios/soporte ahora funciona como carrusel visual con imagenes, y las ofertas se muestran en un rail horizontal mas discreto.
